@@ -2,6 +2,7 @@
 #define GAMEJAM2024_CORE_H
 
     #define TICKRATE 30
+    #define DELTATIME  (1.0f/(f64)TICKRATE)
 
     #define PLAYERCOLOR_1 0xFF0000
     #define PLAYERCOLOR_2 0x00FF00
@@ -28,5 +29,8 @@
 
     // These functions will be disabled when shipping the final game and only exist for minigame testing reasons
     void  core_test_set_aidifficulty(AiDiff level);
+
+    // These functions shouldn't be used unless you really know what you're doing
+    void core_set_frametime();
 
 #endif

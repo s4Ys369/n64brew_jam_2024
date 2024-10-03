@@ -8,12 +8,15 @@
         char* instructions;
         char* iconpath
         void (*funcPointer_init)(void);
-        void (*funcPointer_loop)(void);
-        void (*funcPointer_fixedloop)(void);
+        void (*funcPointer_loop)(float deltatime);
+        void (*funcPointer_fixedloop)(float deltatime);
         void (*funcPointer_cleanup)(void);
     } Minigame;
 
-    void     minigame_play(Minigame* mini);
-    void     minigame_end();
+    void      minigame_play(Minigame* mini);
+    void      minigame_end();
+
+    Minigame* minigame_get_game();
+    bool      minigame_get_ended();
 
 #endif 

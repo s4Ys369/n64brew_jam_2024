@@ -2,7 +2,7 @@ ROMNAME = gamejam2024
 BUILD_DIR = build
 include $(N64_INST)/include/n64.mk
 
-src = main.c minigame.c games.c core.c
+SRC = main.c minigame.c games.c core.c
 
 ifeq ($(DEBUG), 1)
 	N64_CFLAGS += -g -O0
@@ -10,6 +10,8 @@ ifeq ($(DEBUG), 1)
 else
 	N64_CFLAGS += -O2
 endif
+
+all: $(ROMNAME).z64
 
 -include $(wildcard $(BUILD_DIR)/*.d)
 
