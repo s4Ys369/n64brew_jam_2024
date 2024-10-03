@@ -1,12 +1,14 @@
 #ifndef GAMEJAM2024_MINIGAME_H
 #define GAMEJAM2024_MINIGAME_H
 
+    #include <stdbool.h>
+
     typedef struct {
         char* gamename;
         char* developername;
         char* description;
         char* instructions;
-        char* iconpath
+        char* iconpath;
         void (*funcPointer_init)(void);
         void (*funcPointer_loop)(float deltatime);
         void (*funcPointer_fixedloop)(float deltatime);

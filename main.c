@@ -3,6 +3,8 @@
 #include "core.h"
 #include "minigame.h"
 
+#include "code/examplegame/examplegame.h"
+
 typedef long long ticks;
 
 int main()
@@ -19,7 +21,6 @@ int main()
     srand(time(NULL));
     display_init(RESOLUTION_320x240, DEPTH_16_BPP, 3, GAMMA_NONE, FILTERS_RESAMPLE_ANTIALIAS_DEDITHER);
     rdpq_init();
-    gl_init();
 
     // Enable RDP debugging
     #if DEBUG_RDP
@@ -29,7 +30,7 @@ int main()
     #endif
 
     // Set the initial minigame
-    minigame_play(); // Need to load the examplegame minigame overlay into here
+    minigame_play(&global_minigamedef_examplegame);
 
     // Program Loop
     while (1)
@@ -39,7 +40,7 @@ int main()
         const ticks dt = TICKS_FROM_MS(DELTATIME*1000);
 
         // Initialize the minigame
-        minigame_get_game()->funcPointer_init()
+        minigame_get_game()->funcPointer_init();
         
         // Handle the engine loop
         while (!minigame_get_ended())
@@ -66,9 +67,6 @@ int main()
             // Perform the unfixed loop
             core_set_subtick(((double)accumulator)/((double)dt));
             minigame_get_game()->funcPointer_loop(frametime);
-
-            // Advance the game time
-            engine_increment_gametime();
         }
         
         // End the current level

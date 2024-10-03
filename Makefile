@@ -2,7 +2,10 @@ ROMNAME = gamejam2024
 BUILD_DIR = build
 include $(N64_INST)/include/n64.mk
 
-SRC = main.c minigame.c games.c core.c
+SRC = main.c core.c minigame.c
+SRC_MINIGAMES = $(wildcard code/*/*.c) # Needs to be split into DSOs
+
+SRC += $(SRC_MINIGAMES)
 
 ifeq ($(DEBUG), 1)
 	N64_CFLAGS += -g -O0
@@ -17,7 +20,7 @@ all: $(ROMNAME).z64
 
 $(BUILD_DIR)/$(ROMNAME).elf: $(SRC:%.c=$(BUILD_DIR)/%.o)
 
-$(ROMNAME).z64: N64_ROM_TITLE="N64BREW GAME JAM 2024"
+$(ROMNAME).z64: N64_ROM_TITLE="N64BREW GAMEJAM 2024"
 
 clean:
 	rm -rf $(BUILD_DIR) $(ROMNAME).z64
