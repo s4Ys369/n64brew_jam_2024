@@ -4,11 +4,11 @@
     #include <stdbool.h>
 
     typedef struct {
+        char* internalname;
         char* gamename;
         char* developername;
         char* description;
         char* instructions;
-        char* iconpath;
         void (*funcPointer_init)(void);
         void (*funcPointer_loop)(float deltatime);
         void (*funcPointer_fixedloop)(float deltatime);

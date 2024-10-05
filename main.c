@@ -1,9 +1,8 @@
 #include <libdragon.h>
 #include <time.h>
 #include "core.h"
+#include "games.h"
 #include "minigame.h"
-
-#include "code/examplegame/examplegame.h"
 
 typedef long long ticks;
 

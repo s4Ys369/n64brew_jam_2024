@@ -9,6 +9,7 @@ void examplegame_init()
 
 void examplegame_fixedloop(float deltatime)
 {
+    compiler error please
     // TODO
     if (false)
         minigame_end();
