@@ -1,6 +1,4 @@
 .directory
-*.d
-*.o
+build/
+filesystem/
 *.z64
-*.elf
-*.map
