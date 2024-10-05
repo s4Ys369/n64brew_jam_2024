@@ -2,6 +2,13 @@
 #include "../../core.h"
 #include "../../minigame.h"
 
+const MinigameDef minigame_def = {
+    .gamename = "Example Game",
+    .developername = "Your Name",
+    .description = "This is an example game.",
+    .instructions = "Press A to win."
+};
+
 void examplegame_init()
 {
     // TODO

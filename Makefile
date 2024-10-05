@@ -4,7 +4,7 @@ MINIGAME_DIR = code
 FILESYSTEM_DIR = filesystem
 include $(N64_INST)/include/n64.mk
 
-SRC = main.c core.c minigame.c games.c
+SRC = main.c core.c minigame.c
 
 MINIGAMES_LIST = $(notdir $(wildcard $(MINIGAME_DIR)/*))
 DSO_LIST = $(addprefix $(FILESYSTEM_DIR)/, $(addsuffix .dso, $(MINIGAMES_LIST)))
@@ -38,7 +38,7 @@ $(ROMNAME).z64: $(BUILD_DIR)/$(ROMNAME).dfs $(BUILD_DIR)/$(ROMNAME).msym
 $(BUILD_DIR)/$(ROMNAME).msym: $(BUILD_DIR)/$(ROMNAME).elf
 
 clean:
-	rm -rf $(BUILD_DIR) $(DSO_LIST) $(ROMNAME).z64
+	rm -rf $(BUILD_DIR) $(FILESYSTEM_DIR) $(DSO_LIST) $(ROMNAME).z64 
 
 -include $(wildcard $(BUILD_DIR)/*.d)
 

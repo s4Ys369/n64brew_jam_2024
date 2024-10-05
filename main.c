@@ -1,7 +1,6 @@
 #include <libdragon.h>
 #include <time.h>
 #include "core.h"
-#include "games.h"
 #include "minigame.h"
 
 typedef long long ticks;
@@ -29,7 +28,7 @@ int main()
     #endif
 
     // Set the initial minigame
-    minigame_play(&global_minigamedef_examplegame);
+    minigame_play("examplegame");
 
     // Program Loop
     while (1)

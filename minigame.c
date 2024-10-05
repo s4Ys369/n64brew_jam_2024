@@ -3,11 +3,18 @@
 #include "minigame.h"
 
 Minigame* global_minigame_current = NULL;
+MinigameDef* global_minigame_list;
 
-void minigame_play(Minigame* mini)
+
+void minigame_loadall()
 {
-    global_minigame_current = mini;
-    // TODO: Load overlays
+    // TODO: Search through the code directory and list the number of games, allocate a MinigameDef struct for each all
+}
+
+void minigame_play(char* name)
+{
+    //global_minigame_current = mini;
+    // TODO: Load overlays and generate the Minigame struct
 }
 
 void minigame_end()
