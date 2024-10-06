@@ -11,7 +11,7 @@ const MinigameDef minigame_def = {
 
 void examplegame_init()
 {
-    // TODO
+    debugf("Hello world, from examplegame initialization!\n");
 }
 
 void examplegame_fixedloop(float deltatime)

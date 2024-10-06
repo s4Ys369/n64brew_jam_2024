@@ -10,8 +10,15 @@
         char* instructions;
     } MinigameDef;
 
+    void minigame_end();
+
+
+    // Internal stuff. Don't use this
+
     typedef struct {
-        MinigameDef* definition;
+        char* internalname;
+        MinigameDef definition;
+        void* handle;
         void (*funcPointer_init)(void);
         void (*funcPointer_loop)(float deltatime);
         void (*funcPointer_fixedloop)(float deltatime);
@@ -20,8 +27,7 @@
 
     void      minigame_loadall();
     void      minigame_play(char* name);
-    void      minigame_end();
-
+    void      minigame_cleanup();
     Minigame* minigame_get_game();
     bool      minigame_get_ended();
 
