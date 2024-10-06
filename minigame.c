@@ -62,15 +62,12 @@ void minigame_loadall()
         newdef->internalname = (char*)malloc(strlen(gamename) - 3);
         strncpy(newdef->internalname, gamename, strlen(gamename) - 4);
 
-        debugf("Copied %s to %s, in %s\n", gamename, newdef->internalname, global_minigame_list[0].internalname);
-
         // Cleanup
         dlclose(handle);
         free(fullpath);
         gamecount++;
     }
     while (dir_findnext("rom:/minigames/", &minigamesdir) == 0);
-        debugf("%s\n", global_minigame_list[0].internalname);
 }
 
 void minigame_play(char* name)
@@ -106,15 +103,15 @@ void minigame_play(char* name)
     free(fullpath);
     fullpath = (char*)malloc(strlen(name) + strlen(funcname_fixedloop) + 1);
     sprintf(fullpath, "%s%s", name, funcname_fixedloop);
-    global_minigame_current->funcPointer_init = dlsym(global_minigame_current->handle, fullpath);
+    global_minigame_current->funcPointer_loop = dlsym(global_minigame_current->handle, fullpath);
     free(fullpath);
     fullpath = (char*)malloc(strlen(name) + strlen(funcname_loop) + 1);
     sprintf(fullpath, "%s%s", name, funcname_loop);
-    global_minigame_current->funcPointer_init = dlsym(global_minigame_current->handle, fullpath);
+    global_minigame_current->funcPointer_fixedloop = dlsym(global_minigame_current->handle, fullpath);
     free(fullpath);
     fullpath = (char*)malloc(strlen(name) + strlen(funcname_cleanup) + 1);
     sprintf(fullpath, "%s%s", name, funcname_cleanup);
-    global_minigame_current->funcPointer_init = dlsym(global_minigame_current->handle, fullpath);
+    global_minigame_current->funcPointer_cleanup = dlsym(global_minigame_current->handle, fullpath);
     free(fullpath);
 }
 
