@@ -1,5 +1,6 @@
 #include <libdragon.h>
 #include <time.h>
+#include <unistd.h>
 #include "core.h"
 #include "minigame.h"
 
@@ -18,7 +19,6 @@ int main()
     debug_init_isviewer();
     joypad_init();
     timer_init();
-    srand(time(NULL));
     display_init(RESOLUTION_320x240, DEPTH_16_BPP, 3, GAMMA_NONE, FILTERS_RESAMPLE_ANTIALIAS_DEDITHER);
     rdpq_init();
     minigame_loadall();
@@ -29,6 +29,11 @@ int main()
         rdpq_debug_log(true);
         rspq_profile_start();
     #endif
+
+    // Initialize the random number generator
+    uint32_t seed;
+    getentropy(&seed, sizeof(seed));
+    srand(seed);
 
     // Set the initial minigame
     minigame_play("examplegame");
