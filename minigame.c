@@ -21,10 +21,11 @@ void minigame_loadall()
     dir_findfirst(global_minigamepath, &minigamesdir);
     do
     {
-        gamecount++;
+        if (!strstr(minigamesdir.d_name, ".sym"))
+            gamecount++;
     }
     while (dir_findnext("rom:/minigames/", &minigamesdir) == 0);
-    global_minigame_count = gamecount/2; // Divide by two because we need to ignore the .sym files
+    global_minigame_count = gamecount;
 
     // Allocate the list of minigames
     global_minigame_list = (Minigame*)malloc(sizeof(Minigame));
@@ -37,34 +38,31 @@ void minigame_loadall()
         void* handle;
         MinigameDef* loadeddef;
         Minigame* newdef = &global_minigame_list[gamecount];
-        char* gamename = minigamesdir.d_name;
-        char* fullpath = (char*)malloc(global_minigamepath_len + strlen(gamename) + 1);
+        char* filename = minigamesdir.d_name;
 
         // Ignore the symbol file
-        if (strstr(gamename, ".sym"))
+        if (strstr(filename, ".sym"))
             continue;
 
         // Get the filepath and open the dso
-        sprintf(fullpath, "%s%s", global_minigamepath, gamename);
+        char fullpath[global_minigamepath_len + strlen(filename) + 1];
+        sprintf(fullpath, "%s%s", global_minigamepath, filename);
         handle = dlopen(fullpath, RTLD_LOCAL);
 
         // Get the symbols of the minigame definition. 
         // Since these symbols will only be temporarily stored in memory, we must make a deep copy
         loadeddef = dlsym(handle, "minigame_def");
-        newdef->definition.gamename = (char*)malloc(strlen(loadeddef->gamename)+1);
-        strcpy(newdef->definition.gamename, loadeddef->gamename);
-        newdef->definition.developername = (char*)malloc(strlen(loadeddef->developername)+1);
-        strcpy(newdef->definition.developername, loadeddef->developername);
-        newdef->definition.description = (char*)malloc(strlen(loadeddef->description)+1);
-        strcpy(newdef->definition.description, loadeddef->description);
-        newdef->definition.instructions = (char*)malloc(strlen(loadeddef->instructions)+1);
-        strcpy(newdef->definition.instructions, loadeddef->instructions);
-        newdef->internalname = (char*)malloc(strlen(gamename) - 3);
-        strncpy(newdef->internalname, gamename, strlen(gamename) - 4);
+        newdef->definition.gamename      = strdup(loadeddef->gamename);
+        newdef->definition.developername = strdup(loadeddef->developername);
+        newdef->definition.description   = strdup(loadeddef->description);
+        newdef->definition.instructions  = strdup(loadeddef->instructions);
+
+        // Set the internal name as the filename without the extension
+        strrchr(filename, '.')[0] = '\0';
+        newdef->internalname = strdup(filename);
 
         // Cleanup
         dlclose(handle);
-        free(fullpath);
         gamecount++;
     }
     while (dir_findnext("rom:/minigames/", &minigamesdir) == 0);
