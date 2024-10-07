@@ -28,7 +28,7 @@ void minigame_loadall()
     global_minigame_count = gamecount;
 
     // Allocate the list of minigames
-    global_minigame_list = (Minigame*)malloc(sizeof(Minigame));
+    global_minigame_list = (Minigame*)malloc(sizeof(Minigame) * gamecount);
 
     // Look through the minigames path and register all the known minigames
     gamecount = 0;
@@ -52,6 +52,7 @@ void minigame_loadall()
         // Get the symbols of the minigame definition. 
         // Since these symbols will only be temporarily stored in memory, we must make a deep copy
         loadeddef = dlsym(handle, "minigame_def");
+        assertf(loadeddef, "Unable to find symbol minigame_def in %s\n", filename);
         newdef->definition.gamename      = strdup(loadeddef->gamename);
         newdef->definition.developername = strdup(loadeddef->developername);
         newdef->definition.description   = strdup(loadeddef->description);
@@ -70,17 +71,10 @@ void minigame_loadall()
 
 void minigame_play(char* name)
 {
-    const char* funcname_init = "_init";
-    const char* funcname_fixedloop = "_fixedloop";
-    const char* funcname_loop = "_loop";
-    const char* funcname_cleanup = "_cleanup";
-    char* fullpath = (char*)malloc(global_minigamepath_len + strlen(name) + 4 + 1);
-
     // Find the minigame with that name
     global_minigame_current = NULL;
     for (size_t i=0; i<global_minigame_count; i++)
     {
-        debugf("Comparing %s to %s\n", global_minigame_list[i].internalname, name);
         if (!strcmp(global_minigame_list[i].internalname, name))
         {
             debugf("Success!\n");
@@ -92,25 +86,14 @@ void minigame_play(char* name)
 
     // Load the dso and assign the internal functions
     debugf("Loading functions\n");
+    char fullpath[global_minigamepath_len + strlen(name) + 4 + 1];
     sprintf(fullpath, "%s%s.dso", global_minigamepath, name);
     global_minigame_current->handle = dlopen(fullpath, RTLD_LOCAL);
-    free(fullpath);
-    fullpath = (char*)malloc(strlen(name) + strlen(funcname_init) + 1);
-    sprintf(fullpath, "%s%s", name, funcname_init);
-    global_minigame_current->funcPointer_init = dlsym(global_minigame_current->handle, fullpath);
-    free(fullpath);
-    fullpath = (char*)malloc(strlen(name) + strlen(funcname_fixedloop) + 1);
-    sprintf(fullpath, "%s%s", name, funcname_fixedloop);
-    global_minigame_current->funcPointer_loop = dlsym(global_minigame_current->handle, fullpath);
-    free(fullpath);
-    fullpath = (char*)malloc(strlen(name) + strlen(funcname_loop) + 1);
-    sprintf(fullpath, "%s%s", name, funcname_loop);
-    global_minigame_current->funcPointer_fixedloop = dlsym(global_minigame_current->handle, fullpath);
-    free(fullpath);
-    fullpath = (char*)malloc(strlen(name) + strlen(funcname_cleanup) + 1);
-    sprintf(fullpath, "%s%s", name, funcname_cleanup);
-    global_minigame_current->funcPointer_cleanup = dlsym(global_minigame_current->handle, fullpath);
-    free(fullpath);
+
+    global_minigame_current->funcPointer_init      = dlsym(global_minigame_current->handle, "minigame_init");
+    global_minigame_current->funcPointer_loop      = dlsym(global_minigame_current->handle, "minigame_loop");
+    global_minigame_current->funcPointer_fixedloop = dlsym(global_minigame_current->handle, "minigame_fixedloop");
+    global_minigame_current->funcPointer_cleanup   = dlsym(global_minigame_current->handle, "minigame_cleanup");
 }
 
 void minigame_end()
@@ -132,4 +115,5 @@ void minigame_cleanup()
 {
     global_minigame_ending = false;
     dlclose(global_minigame_current->handle);
+    global_minigame_current->handle = NULL;
 }

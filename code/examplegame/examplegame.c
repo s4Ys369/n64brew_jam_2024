@@ -9,24 +9,24 @@ const MinigameDef minigame_def = {
     .instructions = "Press A to win."
 };
 
-void examplegame_init()
+void minigame_init()
 {
     debugf("Hello world, from examplegame initialization!\n");
 }
 
-void examplegame_fixedloop(float deltatime)
+void minigame_fixedloop(float deltatime)
 {
     // TODO
     if (false)
         minigame_end();
 }
 
-void examplegame_loop(float deltatime)
+void minigame_loop(float deltatime)
 {
     // TODO
 }
 
-void examplegame_cleanup()
+void minigame_cleanup()
 {
     // TODO
 }
