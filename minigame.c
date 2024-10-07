@@ -17,8 +17,8 @@ The file contains the minigame manager
 // Minigame info
 static bool      global_minigame_ending = false;
 static Minigame* global_minigame_current = NULL;
-static Minigame* global_minigame_list;
-static size_t    global_minigame_count;
+Minigame* global_minigame_list;
+size_t    global_minigame_count;
 
 // Helper consts
 static const char*  global_minigamepath = "rom:/minigames/";
