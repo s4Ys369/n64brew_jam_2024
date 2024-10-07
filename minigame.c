@@ -1,15 +1,34 @@
+/***************************************************************
+                           minigame.c
+                               
+The file contains the minigame manager
+***************************************************************/
+
 #include <libdragon.h>
 #include <string.h>
 #include "core.h"
 #include "minigame.h"
 
+
+/*********************************
+             Globals
+*********************************/
+
+// Minigame info
 static bool      global_minigame_ending = false;
 static Minigame* global_minigame_current = NULL;
 static Minigame* global_minigame_list;
 static size_t    global_minigame_count;
 
+// Helper consts
 static const char*  global_minigamepath = "rom:/minigames/";
 static const size_t global_minigamepath_len = 15;
+
+
+/*==============================
+    minigame_loadall
+    Loads all the minigames from the filesystem
+==============================*/
 
 void minigame_loadall()
 {
@@ -68,6 +87,13 @@ void minigame_loadall()
     while (dir_findnext("rom:/minigames/", &minigamesdir) == 0);
 }
 
+
+/*==============================
+    minigame_play
+    Executes a minigame
+    @param  The internal filename of the minigame to play
+==============================*/
+
 void minigame_play(char* name)
 {
     debugf("Loading minigame: %s\n", name);
@@ -96,20 +122,46 @@ void minigame_play(char* name)
     global_minigame_current->funcPointer_cleanup   = dlsym(global_minigame_current->handle, "minigame_cleanup");
 }
 
+
+/*==============================
+    minigame_end
+    Ends the current minigame
+==============================*/
+
 void minigame_end()
 {
     global_minigame_ending = true;
 }
+
+
+/*==============================
+    minigame_get_game
+    Gets the currently executing minigame
+    @return The currently executing minigame
+==============================*/
 
 Minigame* minigame_get_game()
 {
     return global_minigame_current;
 }
 
+
+/*==============================
+    minigame_get_ended
+    Checks whether the current minigame is ending
+    @return Whether the current minigame is ending
+==============================*/
+
 bool minigame_get_ended()
 {
     return global_minigame_ending;
 }
+
+
+/*==============================
+    minigame_cleanup
+    Cleans up minigame settings and memory used by the manager
+==============================*/
 
 void minigame_cleanup()
 {

@@ -1,10 +1,18 @@
-
 #ifndef GAMEJAM2024_MENU_H
 #define GAMEJAM2024_MENU_H
 
-#include "minigame.h"
+    /***************************************************************
+              You have no reason to be incuding this file
+    ***************************************************************/
 
-    // Select a minigame and return the minigame to play
+    #include "minigame.h"
+
+
+    /*==============================
+        menu
+        Select a minigame and return the minigame to play
+        @return The minigame to play
+    ==============================*/
     char* menu(void);
 
 #endif

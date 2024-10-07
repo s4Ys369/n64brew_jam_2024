@@ -1,14 +1,41 @@
+/***************************************************************
+                             menu.c
+                               
+This file contains the code for the basic menu
+***************************************************************/
+
 #include <libdragon.h>
 #include <string.h>
 #include "menu.h"
 
+
+/*********************************
+           Definitions
+*********************************/
+
 #define FONT_TEXT       1
+
+
+/*==============================
+    minigame_sort
+    Sorts two names alphabetically
+    @param  The first name
+    @param  The second name
+    @return -1 if a is less than b, 1 if a is greater than b, and 0 if they are equal
+==============================*/
 
 static int minigame_sort(const void *a, const void *b)
 {
     int idx1 = *(int*)a, idx2 = *(int*)b;
     return strcasecmp(global_minigame_list[idx1].definition.gamename, global_minigame_list[idx2].definition.gamename);
 }
+
+
+/*==============================
+    menu
+    Show the minigame selection menu
+    @return The internal name of the selected minigame
+==============================*/
 
 char* menu(void)
 {

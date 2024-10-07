@@ -1,8 +1,11 @@
 #ifndef GAMEJAM2024_MINIGAME_H
 #define GAMEJAM2024_MINIGAME_H
 
-    #include <stdbool.h>
+    /***************************************************************
+                       Public Minigame Functions
+    ***************************************************************/
 
+    // You need to have one of these structs defined globally for the minigame manager to detect it
     typedef struct {
         char* gamename;
         char* developername;
@@ -10,10 +13,20 @@
         char* instructions;
     } MinigameDef;
 
+
+    /*==============================
+        minigame_end
+        Use this to mark your minigame as finished
+    ==============================*/
     void minigame_end();
 
+    
+    /***************************************************************
+                      Internal Minigame Functions
+                  Do not use anything below this line
+    ***************************************************************/
 
-    // Internal stuff. Don't use this
+    #include <stdbool.h>
 
     typedef struct {
         char* internalname;
@@ -26,7 +39,7 @@
     } Minigame;
 
     extern Minigame* global_minigame_list;
-    extern size_t global_minigame_count;
+    extern size_t    global_minigame_count;
 
     void      minigame_loadall();
     void      minigame_play(char* name);

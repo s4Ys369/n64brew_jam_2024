@@ -3,12 +3,17 @@
 
     #include "core.h"
 
-    #define PLAYER_COUNT      1
+    // The number of human players
+    #define PLAYER_COUNT  1
 
+    // Skip the menu and boot straight into MINIGAME_TO_TEST
+    #define SKIP_MENU  0
+
+    // The current minigame you want to test
     #define MINIGAME_TO_TEST  "examplegame"
 
-    #define AI_DIFFICULTY     DIFF_MEDIUM
-
-    #define FINAL_SUBMISSION  0
+    // The difficulty of the AI. 
+    // Don't use this macro as a getter function, use core_get_aidifficulty()
+    #define AI_DIFFICULTY  DIFF_MEDIUM
 
 #endif

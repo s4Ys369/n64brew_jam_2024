@@ -1,3 +1,10 @@
+/***************************************************************
+                             main.c
+                               
+The ROM entrypoint, which initializes the minigame template core
+and provides a basic game loop.
+***************************************************************/
+
 #include <libdragon.h>
 #include <time.h>
 #include <unistd.h>
@@ -5,6 +12,12 @@
 #include "menu.h"
 #include "config.h"
 #include "minigame.h"
+
+
+/*==============================
+    main
+    The program main
+==============================*/
 
 int main()
 {
@@ -37,16 +50,23 @@ int main()
     // Program Loop
     while (1)
     {
+        char* game;
         float accumulator = 0;
         const float dt = DELTATIME;
 
-        char *game = menu();
+        // Set the test game (or show the menu)
+        #if SKIP_MENU
+            game = MINIGAME_TO_TEST;
+        #else
+            game = menu();
+        #endif
         
         // Set the initial minigame
         core_set_playercount(PLAYER_COUNT);
         minigame_play(game);
 
         // Initialize the minigame
+        core_reset_winners();
         minigame_get_game()->funcPointer_init();
         
         // Handle the engine loop
