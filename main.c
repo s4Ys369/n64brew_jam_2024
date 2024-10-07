@@ -2,9 +2,8 @@
 #include <time.h>
 #include <unistd.h>
 #include "core.h"
+#include "config.h"
 #include "minigame.h"
-
-typedef long long ticks;
 
 int main()
 {
@@ -36,7 +35,8 @@ int main()
     srand(seed);
 
     // Set the initial minigame
-    minigame_play("examplegame");
+    core_set_playercount(PLAYER_COUNT);
+    minigame_play(MINIGAME_TO_TEST);
 
     // Program Loop
     while (1)

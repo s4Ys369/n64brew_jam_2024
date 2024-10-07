@@ -3,14 +3,13 @@
 #include "core.h"
 #include "minigame.h"
 
-bool      global_minigame_ending = false;
-Minigame* global_minigame_current = NULL;
-Minigame* global_minigame_list;
-size_t global_minigame_count;
+static bool      global_minigame_ending = false;
+static Minigame* global_minigame_current = NULL;
+static Minigame* global_minigame_list;
+static size_t    global_minigame_count;
 
-const char* global_minigamepath = "rom:/minigames/";
-const size_t global_minigamepath_len = 15;
-
+static const char*  global_minigamepath = "rom:/minigames/";
+static const size_t global_minigamepath_len = 15;
 
 void minigame_loadall()
 {

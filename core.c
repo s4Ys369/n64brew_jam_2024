@@ -1,32 +1,51 @@
- #include <libdragon.h>
- #include "core.h"
+#include <libdragon.h>
+#include "core.h"
+#include "config.h"
 
-#define FINAL 0
+typedef struct {
+    PlyNum number;
+    joypad_port_t port;
+} Player;
 
-AiDiff global_core_aidifficulty = DIFF_MEDIUM;
-double global_core_subtick = 0;
+static Player   global_core_players[JOYPAD_PORT_COUNT];
+static uint32_t global_core_playercount;
 
+static bool global_core_playeriswinner[MAXPLAYERS];
 
-uint32_t core_get_playercount()
-{
-    // TODO
-    return 0;
-}
-
-joypad_port_t core_get_playercontroller()
-{
-    // TODO
-    return JOYPAD_PORT_1;
-}
+static AiDiff global_core_aidifficulty = AI_DIFFICULTY;
+static double global_core_subtick = 0;
 
 void core_set_subtick(double subtick)
 {
     global_core_subtick = subtick;
 }
 
+void core_set_playercount(uint32_t playercount)
+{
+    int lastcont = 0;
+
+    // Attempt to find the first N left-most available controllers
+    for (int i=0; i<playercount; i++)
+    {
+        bool found = false;
+        for (int j=lastcont; j<JOYPAD_PORT_COUNT; j++)
+        {
+            if (joypad_is_connected(j))
+            {
+                global_core_players[i].port = j;
+                found = true;
+                lastcont = j++;
+                break;
+            }
+        }
+        assertf(found, "Unable to find an available controller for player %d\n", i+1);
+    }
+    global_core_playercount = playercount;
+}
+
 void core_set_winner(PlyNum ply)
 {
-    // TODO
+    global_core_playeriswinner[ply] = true;
 }
 
 AiDiff core_get_aidifficulty()
@@ -39,11 +58,12 @@ double core_get_subtick()
     return global_core_subtick;
 }
 
-void core_test_set_aidifficulty(AiDiff level)
+uint32_t core_get_playercount()
 {
-    #if FINAL
-        (void)level;
-    #else
-        global_core_aidifficulty = level;
-    #endif
+    return global_core_playercount;
+}
+
+joypad_port_t core_get_playercontroller(PlyNum ply)
+{
+    return global_core_players[ply].port;
 }
