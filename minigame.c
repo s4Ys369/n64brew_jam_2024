@@ -71,6 +71,8 @@ void minigame_loadall()
 
 void minigame_play(char* name)
 {
+    debugf("Loading minigame: %s\n", name);
+
     // Find the minigame with that name
     global_minigame_current = NULL;
     for (size_t i=0; i<global_minigame_count; i++)
@@ -85,7 +87,6 @@ void minigame_play(char* name)
     assertf(global_minigame_current != NULL, "Unable to find minigame with internal name '%s'", name);
 
     // Load the dso and assign the internal functions
-    debugf("Loading functions\n");
     char fullpath[global_minigamepath_len + strlen(name) + 4 + 1];
     sprintf(fullpath, "%s%s.dso", global_minigamepath, name);
     global_minigame_current->handle = dlopen(fullpath, RTLD_LOCAL);

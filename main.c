@@ -2,6 +2,7 @@
 #include <time.h>
 #include <unistd.h>
 #include "core.h"
+#include "menu.h"
 #include "minigame.h"
 
 typedef long long ticks;
@@ -19,7 +20,6 @@ int main()
     debug_init_isviewer();
     joypad_init();
     timer_init();
-    display_init(RESOLUTION_320x240, DEPTH_16_BPP, 3, GAMMA_NONE, FILTERS_RESAMPLE_ANTIALIAS_DEDITHER);
     rdpq_init();
     minigame_loadall();
 
@@ -35,14 +35,15 @@ int main()
     getentropy(&seed, sizeof(seed));
     srand(seed);
 
-    // Set the initial minigame
-    minigame_play("examplegame");
-
     // Program Loop
     while (1)
     {
         float accumulator = 0;
         const float dt = DELTATIME;
+
+        char *game = menu();
+        // Set the initial minigame
+        minigame_play(game);
 
         // Initialize the minigame
         minigame_get_game()->funcPointer_init();

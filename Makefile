@@ -7,7 +7,9 @@ MINIGAME_DIR = code
 FILESYSTEM_DIR = filesystem
 MINIGAMEDSO_DIR = $(FILESYSTEM_DIR)/minigames
 
-SRC = main.c core.c minigame.c
+SRC = main.c core.c minigame.c menu.c
+
+filesystem/squarewave.font64: MKFONT_FLAGS += --outline 1 --range all
 
 ###
 
@@ -15,8 +17,11 @@ include $(N64_INST)/include/n64.mk
 
 MINIGAMES_LIST = $(notdir $(wildcard $(MINIGAME_DIR)/*))
 DSO_LIST = $(addprefix $(MINIGAMEDSO_DIR)/, $(addsuffix .dso, $(MINIGAMES_LIST)))
-IMAGES_LIST = $(wildcard $(ASSETS_DIR)/*.png)
-ASSETS_LIST = $(addprefix $(FILESYSTEM_DIR)/,$(notdir $(IMAGES_LIST:%.png=%.sprite)))
+
+IMAGE_LIST = $(wildcard $(ASSETS_DIR)/*.png)
+FONT_LIST  = $(wildcard $(ASSETS_DIR)/*.ttf)
+ASSETS_LIST += $(addprefix $(FILESYSTEM_DIR)/,$(notdir $(IMAGE_LIST:%.png=%.sprite)))
+ASSETS_LIST += $(addprefix $(FILESYSTEM_DIR)/,$(notdir $(FONT_LIST:%.ttf=%.font64)))
 
 ifeq ($(DEBUG), 1)
 	N64_CFLAGS += -g -O0
@@ -32,7 +37,10 @@ $(FILESYSTEM_DIR)/%.sprite: $(ASSETS_DIR)/%.png
 	@echo "    [SPRITE] $@"
 	@$(N64_MKSPRITE) $(MKSPRITE_FLAGS) -o filesystem "$<"
 
--include $(wildcard $(BUILD_DIR)/*.d)
+$(FILESYSTEM_DIR)/%.font64: $(ASSETS_DIR)/%.ttf
+	@mkdir -p $(dir $@)
+	@echo "    [FONT] $@"
+	$(N64_MKFONT) $(MKFONT_FLAGS) -o filesystem "$<"
 
 MAIN_ELF_EXTERNS := $(BUILD_DIR)/$(ROMNAME).externs
 $(BUILD_DIR)/$(ROMNAME).dfs: $(ASSETS_LIST) $(DSO_LIST)

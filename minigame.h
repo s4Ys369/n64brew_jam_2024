@@ -25,6 +25,9 @@
         void (*funcPointer_cleanup)(void);
     } Minigame;
 
+    extern Minigame* global_minigame_list;
+    extern size_t global_minigame_count;
+
     void      minigame_loadall();
     void      minigame_play(char* name);
     void      minigame_cleanup();
