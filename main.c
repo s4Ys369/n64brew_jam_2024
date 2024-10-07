@@ -3,9 +3,8 @@
 #include <unistd.h>
 #include "core.h"
 #include "menu.h"
+#include "config.h"
 #include "minigame.h"
-
-typedef long long ticks;
 
 int main()
 {
@@ -42,7 +41,9 @@ int main()
         const float dt = DELTATIME;
 
         char *game = menu();
+        
         // Set the initial minigame
+        core_set_playercount(PLAYER_COUNT);
         minigame_play(game);
 
         // Initialize the minigame

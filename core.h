@@ -1,13 +1,15 @@
 #ifndef GAMEJAM2024_CORE_H
 #define GAMEJAM2024_CORE_H
 
-    #define TICKRATE 30
+    #define TICKRATE   30
     #define DELTATIME  (1.0f/(double)TICKRATE)
 
-    #define PLAYERCOLOR_1 0xFF0000
-    #define PLAYERCOLOR_2 0x00FF00
-    #define PLAYERCOLOR_3 0x0000FF
-    #define PLAYERCOLOR_4 0xFFFF00
+    #define MAXPLAYERS  4
+
+    #define PLAYERCOLOR_1  0xFF0000
+    #define PLAYERCOLOR_2  0x00FF00
+    #define PLAYERCOLOR_3  0x0000FF
+    #define PLAYERCOLOR_4  0xFFFF00
 
     typedef enum {
         PLAYER_1,
@@ -29,10 +31,8 @@
     
     void          core_set_winner(PlyNum ply);
 
-    // These functions will be disabled when shipping the final game and only exist for minigame testing reasons
-    void  core_test_set_aidifficulty(AiDiff level);
-
     // These functions shouldn't be used unless you really know what you're doing
+    void core_set_playercount(uint32_t playercount);
     void core_set_subtick(double subtick);
 
 #endif
