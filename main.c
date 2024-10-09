@@ -27,6 +27,8 @@ int main()
     #endif
     
     // Initialize most subsystems
+    asset_init_compression(2);
+    asset_init_compression(3);
     dfs_init(DFS_DEFAULT_LOCATION);
     debug_init_usblog();
     debug_init_isviewer();
