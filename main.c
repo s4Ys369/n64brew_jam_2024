@@ -81,13 +81,15 @@ int main()
                 frametime = 0.25f;
             
             // Perform the update in discrete steps (ticks)
-            accumulator += frametime;
-            while (accumulator >= dt)
-            {
-                minigame_get_game()->funcPointer_fixedloop(dt);
-                accumulator -= dt;
+            if (minigame_get_game()->funcPointer_fixedloop) {
+                accumulator += frametime;
+                while (accumulator >= dt)
+                {
+                    minigame_get_game()->funcPointer_fixedloop(dt);
+                    accumulator -= dt;
+                }
             }
-            
+
             // Read controler data
             joypad_poll();
             
@@ -97,6 +99,7 @@ int main()
         }
         
         // End the current level
+        rspq_wait();
         minigame_get_game()->funcPointer_cleanup();
         minigame_cleanup();
     }

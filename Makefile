@@ -14,14 +14,17 @@ filesystem/squarewave.font64: MKFONT_FLAGS += --outline 1 --range all
 ###
 
 include $(N64_INST)/include/n64.mk
+include $(T3D_INST)/t3d.mk
 
 MINIGAMES_LIST = $(notdir $(wildcard $(MINIGAME_DIR)/*))
 DSO_LIST = $(addprefix $(MINIGAMEDSO_DIR)/, $(addsuffix .dso, $(MINIGAMES_LIST)))
 
-IMAGE_LIST = $(wildcard $(ASSETS_DIR)/*.png)
-FONT_LIST  = $(wildcard $(ASSETS_DIR)/*.ttf)
-ASSETS_LIST += $(addprefix $(FILESYSTEM_DIR)/,$(notdir $(IMAGE_LIST:%.png=%.sprite)))
-ASSETS_LIST += $(addprefix $(FILESYSTEM_DIR)/,$(notdir $(FONT_LIST:%.ttf=%.font64)))
+IMAGE_LIST = $(wildcard $(ASSETS_DIR)/*.png) #$(wildcard $(ASSETS_DIR)/**/*.png)
+FONT_LIST  = $(wildcard $(ASSETS_DIR)/*.ttf) #$(wildcard $(ASSETS_DIR)/**/*.ttf)
+MODEL_LIST  = $(wildcard $(ASSETS_DIR)/*.glb) #$(wildcard $(ASSETS_DIR)/**/*.glb)
+ASSETS_LIST += $(subst $(ASSETS_DIR),$(FILESYSTEM_DIR),$(IMAGE_LIST:%.png=%.sprite))
+ASSETS_LIST += $(subst $(ASSETS_DIR),$(FILESYSTEM_DIR),$(FONT_LIST:%.ttf=%.font64))
+ASSETS_LIST += $(subst $(ASSETS_DIR),$(FILESYSTEM_DIR),$(MODEL_LIST:%.glb=%.t3dm))
 
 ifeq ($(DEBUG), 1)
 	N64_CFLAGS += -g -O0
@@ -35,25 +38,31 @@ all: $(ROMNAME).z64
 $(FILESYSTEM_DIR)/%.sprite: $(ASSETS_DIR)/%.png
 	@mkdir -p $(dir $@)
 	@echo "    [SPRITE] $@"
-	@$(N64_MKSPRITE) $(MKSPRITE_FLAGS) -o filesystem "$<"
+	@$(N64_MKSPRITE) $(MKSPRITE_FLAGS) -o $(dir $@) "$<"
 
 $(FILESYSTEM_DIR)/%.font64: $(ASSETS_DIR)/%.ttf
 	@mkdir -p $(dir $@)
 	@echo "    [FONT] $@"
-	$(N64_MKFONT) $(MKFONT_FLAGS) -o filesystem "$<"
+	$(N64_MKFONT) $(MKFONT_FLAGS) -o $(dir $@) "$<"
 
-MAIN_ELF_EXTERNS := $(BUILD_DIR)/$(ROMNAME).externs
-$(BUILD_DIR)/$(ROMNAME).dfs: $(ASSETS_LIST) $(DSO_LIST)
-$(BUILD_DIR)/$(ROMNAME).elf: $(SRC:%.c=$(BUILD_DIR)/%.o) $(MAIN_ELF_EXTERNS)
-$(MAIN_ELF_EXTERNS): $(DSO_LIST)
+$(FILESYSTEM_DIR)/%.t3dm: $(ASSETS_DIR)/%.glb
+	@mkdir -p $(dir $@)
+	@echo "    [T3D-MODEL] $@"
+	$(T3D_GLTF_TO_3D) "$<" $@
+	$(N64_BINDIR)/mkasset -c 2 -o $(dir $@) $@
 
 define MINIGAME_template
 SRC_$(1) = $$(wildcard $$(MINIGAME_DIR)/$(1)/*.c) $$(wildcard $$(MINIGAME_DIR)/$(1)/*.cpp)
 $$(MINIGAMEDSO_DIR)/$(1).dso: $$(SRC_$(1):%.c=$$(BUILD_DIR)/%.o)
+-include $$(MINIGAME_DIR)/$(1)/$(1).mk
 endef
 
 $(foreach minigame, $(MINIGAMES_LIST), $(eval $(call MINIGAME_template,$(minigame))))
 
+MAIN_ELF_EXTERNS := $(BUILD_DIR)/$(ROMNAME).externs
+$(MAIN_ELF_EXTERNS): $(DSO_LIST)
+$(BUILD_DIR)/$(ROMNAME).dfs: $(ASSETS_LIST) $(DSO_LIST)
+$(BUILD_DIR)/$(ROMNAME).elf: $(SRC:%.c=$(BUILD_DIR)/%.o) $(MAIN_ELF_EXTERNS)
 $(ROMNAME).z64: N64_ROM_TITLE=$(ROMTITLE)
 $(ROMNAME).z64: $(BUILD_DIR)/$(ROMNAME).dfs $(BUILD_DIR)/$(ROMNAME).msym
 
@@ -65,4 +74,3 @@ clean:
 -include $(wildcard $(BUILD_DIR)/*.d)
 
 .PHONY: all clean
-	
