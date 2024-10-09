@@ -15,7 +15,6 @@ This file contains the code for the basic menu
 
 #define FONT_TEXT       1
 
-
 /*==============================
     minigame_sort
     Sorts two names alphabetically
@@ -30,7 +29,6 @@ static int minigame_sort(const void *a, const void *b)
     return strcasecmp(global_minigame_list[idx1].definition.gamename, global_minigame_list[idx2].definition.gamename);
 }
 
-
 /*==============================
     menu
     Show the minigame selection menu
@@ -39,14 +37,18 @@ static int minigame_sort(const void *a, const void *b)
 
 char* menu(void)
 {
+    const color_t BLACK = RGBA32(0x00,0x00,0x00,0xFF);
     const color_t ASH_GRAY = RGBA32(0xAD,0xBA,0xBD,0xFF);
     const color_t MAYA_BLUE = RGBA32(0x6C,0xBE,0xED,0xFF);
     const color_t GUN_METAL = RGBA32(0x31,0x39,0x3C,0xFF);
     const color_t REDWOOD = RGBA32(0xB2,0x3A,0x7A,0xFF);
+    const color_t BREWFONT = RGBA32(242,209,155,0xFF);
 
     display_init(RESOLUTION_320x240, DEPTH_16_BPP, 3, GAMMA_NONE, FILTERS_RESAMPLE);
 
-    sprite_t *logo = sprite_load("rom:/logo.ci4.sprite");
+    sprite_t *logo = sprite_load("rom:/n64brew.ia8.sprite");
+    sprite_t *jam = sprite_load("rom:/jam.rgba32.sprite");
+    
     rdpq_font_t *font = rdpq_font_load("rom:/squarewave.font64");
     rdpq_text_register_font(FONT_TEXT, font);
     rdpq_font_style(font, 0, &(rdpq_fontstyle_t){.color = MAYA_BLUE, .outline_color = GUN_METAL });
@@ -79,11 +81,23 @@ char* menu(void)
             .width = 200, .tabstops = (int16_t[]){ 15 },
         };
 
-        rdpq_set_mode_copy(true);
-        rdpq_sprite_blit(logo, 160-logo->width/2, 0, NULL);
+        rdpq_set_mode_standard();
+        rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
+        rdpq_mode_combiner(RDPQ_COMBINER2(
+            // (1-TEX0)*ENV + (TEX0*PRIM)
+            (1,TEX0,ENV,0),             (0,0,0,TEX0),
+            (TEX0_BUG,0,PRIM,COMBINED), (0,0,0,COMBINED)
+        ));
+        rdpq_set_prim_color(BREWFONT);
+        rdpq_set_env_color(BLACK);
+        rdpq_sprite_blit(logo, 35, 20, NULL);
+
+        rdpq_set_mode_standard();
+        rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
+        rdpq_sprite_blit(jam, 35+190, 10, NULL);
 
         int x0 = 80;
-        int y0 = logo->height + 20;
+        int y0 = 20 + logo->height + 20;
 
         if (yselect_target >= 0) {
             if (yselect < 0) yselect = yselect_target;
@@ -98,7 +112,7 @@ char* menu(void)
         int ycur = y0;
         for (int i = 0; i < global_minigame_count; i++) {
             if (select == i) yselect_target = ycur;
-            ycur += rdpq_text_printf(&textparms, FONT_TEXT, x0, ycur, "%d.\t%s", i+1, global_minigame_list[sorted_indices[i]].definition.gamename).advance_y;
+            ycur += rdpq_text_printf(&textparms, FONT_TEXT, x0, ycur, "%d.\t%s\n", i+1, global_minigame_list[sorted_indices[i]].definition.gamename).advance_y;
         }
         
         rdpq_detach_show();
@@ -106,6 +120,7 @@ char* menu(void)
 
     rspq_wait();
     sprite_free(logo);
+    rdpq_text_unregister_font(FONT_TEXT);
     rdpq_font_free(font);
     display_close();
     return global_minigame_list[sorted_indices[select]].internalname;
