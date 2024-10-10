@@ -108,7 +108,7 @@ char* menu(void)
 
         if (yselect_target >= 0) {
             if (yselect < 0) yselect = yselect_target;
-            yselect = yselect * 0.9 + yselect_target * 0.1;
+            yselect = yselect * 0.7 + yselect_target * 0.3;
             rdpq_set_mode_standard();
             rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
             rdpq_set_prim_color(REDWOOD);
