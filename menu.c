@@ -119,6 +119,7 @@ char* menu(void)
     }
 
     rspq_wait();
+    sprite_free(jam);
     sprite_free(logo);
     rdpq_text_unregister_font(FONT_TEXT);
     rdpq_font_free(font);
