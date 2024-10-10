@@ -21,7 +21,7 @@ const MinigameDef minigame_def = {
  * This includes instancing animations, blending animations, and controlling playback.
  */
 
-surface_t depthBuffer;
+surface_t *depthBuffer;
 T3DViewport viewport;
 rdpq_font_t *font;
 T3DMat4FP* modelMatFP;
@@ -45,7 +45,7 @@ T3DVec3 playerPos;
 void minigame_init(void)
 {
   display_init(RESOLUTION_320x240, DEPTH_16_BPP, 3, GAMMA_NONE, FILTERS_RESAMPLE_ANTIALIAS);
-  depthBuffer = surface_alloc(FMT_RGBA16, display_get_width(), display_get_height());
+  depthBuffer = display_get_zbuf();
 
   t3d_init((T3DInitParams){});
   font = rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_MONO);
@@ -203,7 +203,7 @@ void minigame_loop(float deltaTime)
     );
 
     // ======== Draw (3D) ======== //
-    rdpq_attach(display_get(), &depthBuffer);
+    rdpq_attach(display_get(), depthBuffer);
     t3d_frame_start();
     t3d_viewport_attach(&viewport);
 
@@ -256,6 +256,5 @@ void minigame_cleanup(void)
   rdpq_font_free(font);
   t3d_destroy();
 
-  surface_free(&depthBuffer);
   display_close();
 }
