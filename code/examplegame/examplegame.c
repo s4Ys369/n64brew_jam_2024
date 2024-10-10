@@ -14,6 +14,8 @@ the game jam.
              Globals
 *********************************/
 
+#define FONT_TEXT       1
+
 // You need this function defined somewhere in your project
 // so that the minigame manager can work
 const MinigameDef minigame_def = {
@@ -23,6 +25,7 @@ const MinigameDef minigame_def = {
     .instructions = "Press A to win."
 };
 
+rdpq_font_t *font;
 
 /*==============================
     minigame_init
@@ -31,7 +34,9 @@ const MinigameDef minigame_def = {
 
 void minigame_init()
 {
-    debugf("Hello world, from examplegame initialization!\n");
+    display_init(RESOLUTION_320x240, DEPTH_16_BPP, 3, GAMMA_NONE, FILTERS_RESAMPLE);
+    font = rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_VAR);
+    rdpq_text_register_font(FONT_TEXT, font);
 }
 
 
@@ -59,7 +64,15 @@ void minigame_fixedloop(float deltatime)
 
 void minigame_loop(float deltatime)
 {
-    // TODO
+    joypad_buttons_t btn = joypad_get_buttons_pressed(JOYPAD_PORT_1);
+
+    if (btn.a) {
+        minigame_end();
+    }
+
+    rdpq_attach(display_get(), NULL);
+    rdpq_text_printf(NULL, FONT_TEXT, 30, 100, "Press A to win.");
+    rdpq_detach_show();
 }
 
 
@@ -70,5 +83,7 @@ void minigame_loop(float deltatime)
 
 void minigame_cleanup()
 {
-    // TODO
+    display_close();
+    rdpq_text_unregister_font(FONT_TEXT);
+    rdpq_font_free(font);
 }
