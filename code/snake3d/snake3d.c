@@ -23,6 +23,7 @@ const MinigameDef minigame_def = {
 
 surface_t depthBuffer;
 T3DViewport viewport;
+rdpq_font_t *font;
 T3DMat4FP* modelMatFP;
 T3DMat4FP* mapMatFP;
 rspq_block_t *dplSnake;
@@ -47,7 +48,8 @@ void minigame_init(void)
   depthBuffer = surface_alloc(FMT_RGBA16, display_get_width(), display_get_height());
 
   t3d_init((T3DInitParams){});
-  rdpq_text_register_font(FONT_BUILTIN_DEBUG_MONO, rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_MONO));
+  font = rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_MONO);
+  rdpq_text_register_font(FONT_BUILTIN_DEBUG_MONO, font);
   viewport = t3d_viewport_create();
 
   modelMatFP = malloc_uncached(sizeof(T3DMat4FP));
@@ -128,6 +130,8 @@ void minigame_loop(float deltaTime)
       -(float)joypad.stick_y * 0.05f
     }};
     float speed = sqrtf(t3d_vec3_len2(&newDir));
+
+    if(btn.start) minigame_end();
 
     // Player Attack
     if((btn.a || btn.b) && !animAttack.isPlaying) {
@@ -231,8 +235,6 @@ void minigame_loop(float deltaTime)
 
 void minigame_cleanup(void)
 {
-  surface_free(&depthBuffer);
-
   rspq_block_free(dplSnake);
   rspq_block_free(dplMap);
 
@@ -247,5 +249,13 @@ void minigame_cleanup(void)
   t3d_model_free(modelMap);
   t3d_model_free(modelShadow);
 
+  free_uncached(mapMatFP);
+  free_uncached(modelMatFP);
+
+  rdpq_text_unregister_font(FONT_BUILTIN_DEBUG_MONO);
+  rdpq_font_free(font);
   t3d_destroy();
+
+  surface_free(&depthBuffer);
+  display_close();
 }
