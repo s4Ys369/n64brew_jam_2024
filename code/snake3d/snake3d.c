@@ -42,6 +42,13 @@ T3DVec3 lightDirVec;
 T3DVec3 moveDir;
 T3DVec3 playerPos;
 
+float rotY;
+float currSpeed;
+float animBlend;
+bool isAttack;
+
+rspq_syncpoint_t syncPoint;
+
 void minigame_init(void)
 {
   display_init(RESOLUTION_320x240, DEPTH_16_BPP, 3, GAMMA_NONE, FILTERS_RESAMPLE_ANTIALIAS);
@@ -108,19 +115,19 @@ void minigame_init(void)
     t3d_model_draw(modelMap);
     t3d_matrix_pop(1);
   dplMap = rspq_block_end();
+
+  rotY = 0.0f;
+  currSpeed = 0.0f;
+  animBlend = 0.0f;
+  isAttack = false;
+
+  syncPoint = 0;
 }
 
 void minigame_loop(float deltaTime)
 {
-    rspq_syncpoint_t syncPoint = 0;
-
     uint8_t colorAmbient[4] = {0xAA, 0xAA, 0xAA, 0xFF};
     uint8_t colorDir[4]     = {0xFF, 0xAA, 0xAA, 0xFF};
-
-    float rotY = 0.0f;
-    float currSpeed = 0.0f;
-    float animBlend = 0.0f;
-    bool isAttack = false;
 
     joypad_inputs_t joypad = joypad_get_inputs(JOYPAD_PORT_1);
     joypad_buttons_t btn = joypad_get_buttons_pressed(JOYPAD_PORT_1);
