@@ -14,6 +14,7 @@ This file contains the code for the basic menu
 *********************************/
 
 #define FONT_TEXT       1
+#define FONT_DEBUG      2
 
 /*==============================
     minigame_sort
@@ -44,6 +45,9 @@ char* menu(void)
     const color_t REDWOOD = RGBA32(0xB2,0x3A,0x7A,0xFF);
     const color_t BREWFONT = RGBA32(242,209,155,0xFF);
 
+    heap_stats_t heap_stats;
+    sys_get_heap_stats(&heap_stats);
+
     display_init(RESOLUTION_320x240, DEPTH_16_BPP, 3, GAMMA_NONE, FILTERS_RESAMPLE);
 
     sprite_t *logo = sprite_load("rom:/n64brew.ia8.sprite");
@@ -52,6 +56,9 @@ char* menu(void)
     rdpq_font_t *font = rdpq_font_load("rom:/squarewave.font64");
     rdpq_text_register_font(FONT_TEXT, font);
     rdpq_font_style(font, 0, &(rdpq_fontstyle_t){.color = MAYA_BLUE, .outline_color = GUN_METAL });
+
+    rdpq_font_t *fontdbg = rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_VAR);
+    rdpq_text_register_font(FONT_DEBUG, fontdbg);
 
     int select = 0;
     float yselect = -1;
@@ -114,7 +121,11 @@ char* menu(void)
             if (select == i) yselect_target = ycur;
             ycur += rdpq_text_printf(&textparms, FONT_TEXT, x0, ycur, "%d.\t%s\n", i+1, global_minigame_list[sorted_indices[i]].definition.gamename).advance_y;
         }
-        
+
+        if (true) {
+            rdpq_text_printf(NULL, FONT_DEBUG, 320-80, 240-20, 
+                "Mem: %d KiB", heap_stats.used/1024);
+        }
         rdpq_detach_show();
     }
 
@@ -122,7 +133,9 @@ char* menu(void)
     sprite_free(jam);
     sprite_free(logo);
     rdpq_text_unregister_font(FONT_TEXT);
+    rdpq_text_unregister_font(FONT_DEBUG);
     rdpq_font_free(font);
+    rdpq_font_free(fontdbg);
     display_close();
     return global_minigame_list[sorted_indices[select]].internalname;
 }
