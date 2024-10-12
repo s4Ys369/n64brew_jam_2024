@@ -166,7 +166,7 @@ void minigame_init(void)
 
   for (size_t i = 0; i < MAX_PLAYERS; i++)
   {
-    player_init(&players[i], color_from_packed32(colors[i]), start_positions[i]);
+    player_init(&players[i], color_from_packed32(colors[i]<<8), start_positions[i]);
   }
 
   syncPoint = 0;
