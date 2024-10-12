@@ -69,7 +69,7 @@ void core_set_playercount(uint32_t playercount)
             {
                 global_core_players[i].port = j;
                 found = true;
-                lastcont = j++;
+                lastcont = ++j;
                 break;
             }
         }
