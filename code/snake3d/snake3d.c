@@ -16,8 +16,6 @@ const MinigameDef minigame_def = {
     .instructions = "Press A to attack. Last snake slithering wins!"
 };
 
-#define MAX_PLAYERS         4
-
 #define HITBOX_RADIUS       10.f
 
 #define ATTACK_OFFSET       10.f
@@ -66,7 +64,7 @@ typedef struct
   float attackTimer;
 } player_data;
 
-player_data players[MAX_PLAYERS];
+player_data players[MAXPLAYERS];
 
 bool isEnding;
 float endTimer;
@@ -174,7 +172,7 @@ void minigame_init(void)
     M_PI
   };
 
-  for (size_t i = 0; i < MAX_PLAYERS; i++)
+  for (size_t i = 0; i < MAXPLAYERS; i++)
   {
     player_init(&players[i], color_from_packed32(colors[i]<<8), start_positions[i], start_rotations[i]);
   }
@@ -197,7 +195,7 @@ void player_do_damage(player_data *player)
     player->playerPos.v[2] + c * ATTACK_OFFSET,
   };
 
-  for (size_t i = 0; i < MAX_PLAYERS; i++)
+  for (size_t i = 0; i < MAXPLAYERS; i++)
   {
     player_data *other_player = &players[i];
     if (other_player == player || !other_player->isAlive) continue;
@@ -220,13 +218,20 @@ void player_fixedloop(player_data *player, float deltaTime, joypad_port_t port, 
   float speed = 0.0f;
   T3DVec3 newDir = {0};
 
-  if (is_human && player->isAlive)
+  if (player->isAlive)
   {
-    joypad_inputs_t joypad = joypad_get_inputs(port);
+    if (is_human)
+    {
+      joypad_inputs_t joypad = joypad_get_inputs(port);
 
-    newDir.v[0] = (float)joypad.stick_x * 0.05f;
-    newDir.v[2] = -(float)joypad.stick_y * 0.05f;
-    speed = sqrtf(t3d_vec3_len2(&newDir));
+      newDir.v[0] = (float)joypad.stick_x * 0.05f;
+      newDir.v[2] = -(float)joypad.stick_y * 0.05f;
+      speed = sqrtf(t3d_vec3_len2(&newDir));
+    }
+    else
+    {
+      player->rotY += 0.1f;
+    }
   }
 
   // Player movement
@@ -269,6 +274,8 @@ void player_loop(player_data *player, float deltaTime, joypad_port_t port, bool 
   if (is_human && player->isAlive)
   {
     joypad_buttons_t btn = joypad_get_buttons_pressed(port);
+
+    if (btn.start) minigame_end();
 
     // Player Attack
     if((btn.a || btn.b) && !player->animAttack.isPlaying) {
@@ -315,7 +322,7 @@ void player_draw(player_data *player)
 void minigame_fixedloop(float deltaTime)
 {
   uint32_t playercount = core_get_playercount();
-  for (size_t i = 0; i < MAX_PLAYERS; i++)
+  for (size_t i = 0; i < MAXPLAYERS; i++)
   {
     player_fixedloop(&players[i], deltaTime, core_get_playercontroller(i), i < playercount);
   }
@@ -324,7 +331,7 @@ void minigame_fixedloop(float deltaTime)
     // Determine if a player has won
     uint32_t alivePlayers = 0;
     PlyNum lastPlayer = 0;
-    for (size_t i = 0; i < MAX_PLAYERS; i++)
+    for (size_t i = 0; i < MAXPLAYERS; i++)
     {
       if (players[i].isAlive)
       {
@@ -355,7 +362,7 @@ void minigame_loop(float deltaTime)
   t3d_viewport_look_at(&viewport, &camPos, &camTarget, &(T3DVec3){{0,1,0}});
 
   uint32_t playercount = core_get_playercount();
-  for (size_t i = 0; i < MAX_PLAYERS; i++)
+  for (size_t i = 0; i < MAXPLAYERS; i++)
   {
     player_loop(&players[i], deltaTime, core_get_playercontroller(i), i < playercount);
   }
@@ -373,7 +380,7 @@ void minigame_loop(float deltaTime)
   t3d_light_set_count(1);
 
   rspq_block_run(dplMap);
-  for (size_t i = 0; i < MAX_PLAYERS; i++)
+  for (size_t i = 0; i < MAXPLAYERS; i++)
   {
     player_draw(&players[i]);
   }
@@ -405,7 +412,7 @@ void player_cleanup(player_data *player)
 
 void minigame_cleanup(void)
 {
-  for (size_t i = 0; i < MAX_PLAYERS; i++)
+  for (size_t i = 0; i < MAXPLAYERS; i++)
   {
     player_cleanup(&players[i]);
   }
