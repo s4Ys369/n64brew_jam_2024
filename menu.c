@@ -7,6 +7,7 @@ This file contains the code for the basic menu
 #include <libdragon.h>
 #include <string.h>
 #include "menu.h"
+#include "core.h"
 
 
 /*********************************
@@ -15,6 +16,12 @@ This file contains the code for the basic menu
 
 #define FONT_TEXT       1
 #define FONT_DEBUG      2
+
+typedef enum
+{
+    SCREEN_PLAYERCOUNT,
+    SCREEN_MINIGAME
+} menu_screen;
 
 /*==============================
     minigame_sort
@@ -28,6 +35,66 @@ static int minigame_sort(const void *a, const void *b)
 {
     int idx1 = *(int*)a, idx2 = *(int*)b;
     return strcasecmp(global_minigame_list[idx1].definition.gamename, global_minigame_list[idx2].definition.gamename);
+}
+
+/*==============================
+    get_selection_offset
+    Converts a joypad 8-way direction into a vertical selection offset
+    @param  The joypad direction
+    @return The selection offset
+==============================*/
+
+int get_selection_offset(joypad_8way_t direction)
+{
+    switch (direction) {
+    case JOYPAD_8WAY_UP_RIGHT:
+    case JOYPAD_8WAY_UP:
+    case JOYPAD_8WAY_UP_LEFT:
+        return -1;
+    case JOYPAD_8WAY_DOWN_LEFT:
+    case JOYPAD_8WAY_DOWN:
+    case JOYPAD_8WAY_DOWN_RIGHT:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+static uint32_t max_playercount;
+static uint32_t playercount = 1;
+static bool is_first_time = true;
+
+static menu_screen current_screen;  // Current menu screen
+static int item_count;              // The number of selection items in the current screen
+static const char *heading;         // The heading of the menu screen
+static int select;                  // The currently selected item
+
+/*==============================
+    set_menu_screen
+    Switches the menu to another screen
+    @param  The new screen
+==============================*/
+
+void set_menu_screen(menu_screen screen)
+{
+    current_screen = screen;
+    switch (current_screen) {
+    case SCREEN_PLAYERCOUNT:
+        item_count = max_playercount;
+        select = playercount-1;
+
+        if (max_playercount == 0) {
+            heading = "No controllers connected!\n";
+        } else {
+            heading = "How many players?\n";
+        }
+        break;
+    case SCREEN_MINIGAME:
+        item_count = global_minigame_count;
+        select = 0;
+        heading = "Pick a game!\n";
+        break;
+    }
 }
 
 /*==============================
@@ -60,9 +127,20 @@ char* menu(void)
     rdpq_font_t *fontdbg = rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_VAR);
     rdpq_text_register_font(FONT_DEBUG, fontdbg);
 
-    int select = 0;
+    max_playercount = 0;
+    for (int i = 0; i < MAXPLAYERS; i++) {
+        if (joypad_is_connected(i)) max_playercount++;
+    }
+
+    // Show the player count screen when booting the ROM. Go straight to the minigame screen when returning from a minigame.
+    set_menu_screen(is_first_time ? SCREEN_PLAYERCOUNT : SCREEN_MINIGAME);
+
+    bool has_moved_selection = false;
+
     float yselect = -1;
     float yselect_target = -1;
+
+    int selected_minigame = -1;
 
     int sorted_indices[global_minigame_count];
     for (int i = 0; i < global_minigame_count; i++) sorted_indices[i] = i;
@@ -71,13 +149,38 @@ char* menu(void)
     while (1) {
         joypad_poll();
 
-        joypad_buttons_t btn = joypad_get_buttons_pressed(JOYPAD_PORT_1);
-        if (btn.d_up) select--;
-        if (btn.d_down) select++;
-        if (btn.a) break;
+        int selection_offset = get_selection_offset(joypad_get_direction(JOYPAD_PORT_1, JOYPAD_2D_ANY));
+        if (selection_offset != 0) {
+            if (!has_moved_selection) select += selection_offset;
+            has_moved_selection = true;
+        } else {
+            has_moved_selection = false;
+        }
 
         if (select < 0) select = 0;
-        if (select > global_minigame_count-1) select = global_minigame_count-1;
+        if (select > item_count-1) select = item_count-1;
+
+        joypad_buttons_t btn = joypad_get_buttons_pressed(JOYPAD_PORT_1);
+
+        if (btn.a) {
+            switch (current_screen) {
+            case SCREEN_PLAYERCOUNT:
+                playercount = select+1;
+                set_menu_screen(SCREEN_MINIGAME);
+                break;
+            case SCREEN_MINIGAME:
+                selected_minigame = select;
+                break;
+            }
+        } else if (btn.b) {
+            switch (current_screen) {
+            case SCREEN_MINIGAME:
+                set_menu_screen(SCREEN_PLAYERCOUNT);
+                break;
+            default:
+                break;
+            }
+        }
 
         surface_t *disp = display_get();
 
@@ -116,10 +219,22 @@ char* menu(void)
         }
 
         rdpq_set_mode_standard();
+
         int ycur = y0;
-        for (int i = 0; i < global_minigame_count; i++) {
+        ycur += rdpq_text_print(&textparms, FONT_TEXT, x0-20, ycur, heading).advance_y;
+        ycur += 4;
+
+        for (int i = 0; i < item_count; i++) {
             if (select == i) yselect_target = ycur;
-            ycur += rdpq_text_printf(&textparms, FONT_TEXT, x0, ycur, "%d.\t%s\n", i+1, global_minigame_list[sorted_indices[i]].definition.gamename).advance_y;
+
+            switch (current_screen) {
+            case SCREEN_PLAYERCOUNT:
+                ycur += rdpq_text_printf(&textparms, FONT_TEXT, x0, ycur, "%d\n", i+1).advance_y;
+                break;
+            case SCREEN_MINIGAME:
+                ycur += rdpq_text_printf(&textparms, FONT_TEXT, x0, ycur, "%d.\t%s\n", i+1, global_minigame_list[sorted_indices[i]].definition.gamename).advance_y;
+                break;
+            }
         }
 
         if (true) {
@@ -127,7 +242,11 @@ char* menu(void)
                 "Mem: %d KiB", heap_stats.used/1024);
         }
         rdpq_detach_show();
+
+        if (selected_minigame >= 0) break;
     }
+
+    is_first_time = false;
 
     rspq_wait();
     sprite_free(jam);
@@ -137,5 +256,6 @@ char* menu(void)
     rdpq_font_free(font);
     rdpq_font_free(fontdbg);
     display_close();
-    return global_minigame_list[sorted_indices[select]].internalname;
+    core_set_playercount(playercount);
+    return global_minigame_list[sorted_indices[selected_minigame]].internalname;
 }

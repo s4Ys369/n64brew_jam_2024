@@ -61,12 +61,12 @@ int main()
         // Set the test game (or show the menu)
         #if SKIP_MENU
             game = MINIGAME_TO_TEST;
+            core_set_playercount(PLAYER_COUNT);
         #else
             game = menu();
         #endif
         
         // Set the initial minigame
-        core_set_playercount(PLAYER_COUNT);
         minigame_play(game);
 
         // Initialize the minigame
