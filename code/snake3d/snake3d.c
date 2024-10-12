@@ -73,7 +73,7 @@ PlyNum winner;
 
 rspq_syncpoint_t syncPoint;
 
-void player_init(player_data *player, color_t color, T3DVec3 position)
+void player_init(player_data *player, color_t color, T3DVec3 position, float rotation)
 {
   player->modelMatFP = malloc_uncached(sizeof(T3DMat4FP));
 
@@ -111,7 +111,7 @@ void player_init(player_data *player, color_t color, T3DVec3 position)
     t3d_matrix_pop(1);
   player->dplSnake = rspq_block_end();
 
-  player->rotY = 0.0f;
+  player->rotY = rotation;
   player->currSpeed = 0.0f;
   player->animBlend = 0.0f;
   player->isAttack = false;
@@ -164,9 +164,16 @@ void minigame_init(void)
     (T3DVec3){{0,0.15f,100}},
   };
 
+  float start_rotations[] = {
+    M_PI/2,
+    0,
+    3*M_PI/2,
+    M_PI
+  };
+
   for (size_t i = 0; i < MAX_PLAYERS; i++)
   {
-    player_init(&players[i], color_from_packed32(colors[i]<<8), start_positions[i]);
+    player_init(&players[i], color_from_packed32(colors[i]<<8), start_positions[i], start_rotations[i]);
   }
 
   syncPoint = 0;
