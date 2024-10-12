@@ -36,6 +36,8 @@ int main()
     timer_init();
     rdpq_init();
     minigame_loadall();
+    audio_init(32000, 3);
+    mixer_init(32);
 
     // Enable RDP debugging
     #if DEBUG_RDP
@@ -92,6 +94,7 @@ int main()
 
             // Read controler data
             joypad_poll();
+            mixer_try_play();
             
             // Perform the unfixed loop
             core_set_subtick(((double)accumulator)/((double)dt));
