@@ -230,7 +230,7 @@ void player_fixedloop(player_data *player, float deltaTime, joypad_port_t port, 
     }
     else
     {
-      player->rotY += 0.1f;
+      player->rotY += 0.1f * (core_get_aidifficulty()+1);
     }
   }
 
