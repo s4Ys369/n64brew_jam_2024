@@ -204,28 +204,18 @@ void player_do_damage(player_data *player)
   }
 }
 
-void player_loop(player_data *player, float deltaTime, joypad_port_t port, bool is_human)
+void player_fixedloop(player_data *player, float deltaTime, joypad_port_t port, bool is_human)
 {
-
   float speed = 0.0f;
   T3DVec3 newDir = {0};
 
   if (is_human && player->isAlive)
   {
     joypad_inputs_t joypad = joypad_get_inputs(port);
-    joypad_buttons_t btn = joypad_get_buttons_pressed(port);
 
     newDir.v[0] = (float)joypad.stick_x * 0.05f;
     newDir.v[2] = -(float)joypad.stick_y * 0.05f;
     speed = sqrtf(t3d_vec3_len2(&newDir));
-
-    // Player Attack
-    if((btn.a || btn.b) && !player->animAttack.isPlaying) {
-      t3d_anim_set_playing(&player->animAttack, true);
-      t3d_anim_set_time(&player->animAttack, 0.0f);
-      player->isAttack = true;
-      player->attackTimer = 0;
-    }
   }
 
   // Player movement
@@ -235,10 +225,10 @@ void player_loop(player_data *player, float deltaTime, joypad_port_t port, bool 
     player->moveDir = newDir;
 
     float newAngle = atan2f(player->moveDir.v[0], player->moveDir.v[2]);
-    player->rotY = t3d_lerp_angle(player->rotY, newAngle, 0.25f);
-    player->currSpeed = t3d_lerp(player->currSpeed, speed * 0.15f, 0.15f);
+    player->rotY = t3d_lerp_angle(player->rotY, newAngle, 0.5f);
+    player->currSpeed = t3d_lerp(player->currSpeed, speed * 0.3f, 0.15f);
   } else {
-    player->currSpeed *= 0.8f;
+    player->currSpeed *= 0.64f;
   }
 
   // use blend based on speed for smooth transitions
@@ -255,16 +245,35 @@ void player_loop(player_data *player, float deltaTime, joypad_port_t port, bool 
   if(player->playerPos.v[2] < -BOX_SIZE)player->playerPos.v[2] = -BOX_SIZE;
   if(player->playerPos.v[2] >  BOX_SIZE)player->playerPos.v[2] =  BOX_SIZE;
 
+  if (player->isAttack) {
+    player->attackTimer += deltaTime;
+    if (player->attackTimer > ATTACK_TIME_START && player->attackTimer < ATTACK_TIME_END) {
+      player_do_damage(player);
+    }
+  }
+}
+
+void player_loop(player_data *player, float deltaTime, joypad_port_t port, bool is_human)
+{
+  if (is_human && player->isAlive)
+  {
+    joypad_buttons_t btn = joypad_get_buttons_pressed(port);
+
+    // Player Attack
+    if((btn.a || btn.b) && !player->animAttack.isPlaying) {
+      t3d_anim_set_playing(&player->animAttack, true);
+      t3d_anim_set_time(&player->animAttack, 0.0f);
+      player->isAttack = true;
+      player->attackTimer = 0;
+    }
+  }
+  
   // Update the animation and modify the skeleton, this will however NOT recalculate the matrices
   t3d_anim_update(&player->animIdle, deltaTime);
   t3d_anim_set_speed(&player->animWalk, player->animBlend + 0.15f);
   t3d_anim_update(&player->animWalk, deltaTime);
 
   if(player->isAttack) {
-    player->attackTimer += deltaTime;
-    if (player->attackTimer > ATTACK_TIME_START && player->attackTimer < ATTACK_TIME_END) {
-      player_do_damage(player);
-    }
     t3d_anim_update(&player->animAttack, deltaTime); // attack animation now overrides the idle one
     if(!player->animAttack.isPlaying)player->isAttack = false;
   }
@@ -292,18 +301,12 @@ void player_draw(player_data *player)
   }
 }
 
-void minigame_loop(float deltaTime)
+void minigame_fixedloop(float deltaTime)
 {
-  uint8_t colorAmbient[4] = {0xAA, 0xAA, 0xAA, 0xFF};
-  uint8_t colorDir[4]     = {0xFF, 0xAA, 0xAA, 0xFF};
-
-  t3d_viewport_set_projection(&viewport, T3D_DEG_TO_RAD(90.0f), 20.0f, 160.0f);
-  t3d_viewport_look_at(&viewport, &camPos, &camTarget, &(T3DVec3){{0,1,0}});
-
   uint32_t playercount = core_get_playercount();
   for (size_t i = 0; i < MAX_PLAYERS; i++)
   {
-    player_loop(&players[i], deltaTime, core_get_playercontroller(i), i < playercount);
+    player_fixedloop(&players[i], deltaTime, core_get_playercontroller(i), i < playercount);
   }
 
   if (!isEnding) {
@@ -329,6 +332,21 @@ void minigame_loop(float deltaTime)
       core_set_winner(winner);
       minigame_end();
     }
+  }
+}
+
+void minigame_loop(float deltaTime)
+{
+  uint8_t colorAmbient[4] = {0xAA, 0xAA, 0xAA, 0xFF};
+  uint8_t colorDir[4]     = {0xFF, 0xAA, 0xAA, 0xFF};
+
+  t3d_viewport_set_projection(&viewport, T3D_DEG_TO_RAD(90.0f), 20.0f, 160.0f);
+  t3d_viewport_look_at(&viewport, &camPos, &camTarget, &(T3DVec3){{0,1,0}});
+
+  uint32_t playercount = core_get_playercount();
+  for (size_t i = 0; i < MAX_PLAYERS; i++)
+  {
+    player_loop(&players[i], deltaTime, core_get_playercontroller(i), i < playercount);
   }
 
   // ======== Draw (3D) ======== //
