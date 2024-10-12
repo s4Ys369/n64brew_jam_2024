@@ -45,6 +45,11 @@ $(FILESYSTEM_DIR)/%.font64: $(ASSETS_DIR)/%.ttf
 	@echo "    [FONT] $@"
 	$(N64_MKFONT) $(MKFONT_FLAGS) -o $(dir $@) "$<"
 
+$(FILESYSTEM_DIR)/%.xm64: $(ASSETS_DIR)/%.xm
+	@mkdir -p $(dir $@)
+	@echo "    [XM] $@"
+	$(N64_AUDIOCONV) $(AUDIOCONV_FLAGS) -o $(dir $@) "$<"
+
 $(FILESYSTEM_DIR)/%.t3dm: $(ASSETS_DIR)/%.glb
 	@mkdir -p $(dir $@)
 	@echo "    [T3D-MODEL] $@"
