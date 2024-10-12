@@ -8,16 +8,25 @@
 #include <t3d/t3danim.h>
 #include <t3d/t3ddebug.h>
 
-#define MAX_PLAYERS 4
-
 const MinigameDef minigame_def = {
     .gamename = "Snake3D",
     .developername = "HailToDodongo",
     .description = "This is a porting of one of the Tiny3D examples, to show how to "
                    "integrate Tiny3D in minigame",
-    .instructions = "Press A to win."
+    .instructions = "Press A to attack. Last snake slithering wins!"
 };
 
+#define MAX_PLAYERS         4
+
+#define HITBOX_RADIUS       10.f
+
+#define ATTACK_OFFSET       10.f
+#define ATTACK_RADIUS       5.f
+
+#define ATTACK_TIME_START   0.333f
+#define ATTACK_TIME_END     0.4f
+
+#define WIN_DELAY           5.0f
 
 /**
  * Example project showcasing the usage of the animation system.
@@ -52,9 +61,15 @@ typedef struct
   float currSpeed;
   float animBlend;
   bool isAttack;
+  bool isAlive;
+  float attackTimer;
 } player_data;
 
 player_data players[MAX_PLAYERS];
+
+bool isEnding;
+float endTimer;
+PlyNum winner;
 
 rspq_syncpoint_t syncPoint;
 
@@ -100,6 +115,7 @@ void player_init(player_data *player, color_t color, T3DVec3 position)
   player->currSpeed = 0.0f;
   player->animBlend = 0.0f;
   player->isAttack = false;
+  player->isAlive = true;
 }
 
 void minigame_init(void)
@@ -156,136 +172,191 @@ void minigame_init(void)
   syncPoint = 0;
 }
 
+void player_do_damage(player_data *player)
+{
+  if (!player->isAlive) {
+    // Prevent edge cases
+    return;
+  }
+
+  float s, c;
+  fm_sincosf(player->rotY, &s, &c);
+  float attack_pos[] = {
+    player->playerPos.v[0] + s * ATTACK_OFFSET,
+    player->playerPos.v[2] + c * ATTACK_OFFSET,
+  };
+
+  for (size_t i = 0; i < MAX_PLAYERS; i++)
+  {
+    player_data *other_player = &players[i];
+    if (other_player == player || !other_player->isAlive) continue;
+
+    float pos_diff[] = {
+      other_player->playerPos.v[0] - attack_pos[0],
+      other_player->playerPos.v[2] - attack_pos[1],
+    };
+
+    float distance = sqrtf(pos_diff[0]*pos_diff[0] + pos_diff[1]*pos_diff[1]);
+
+    if (distance < (ATTACK_RADIUS + HITBOX_RADIUS)) {
+      other_player->isAlive = false;
+    }
+  }
+}
+
 void player_loop(player_data *player, float deltaTime, joypad_port_t port, bool is_human)
 {
-    float speed = 0.0f;
-    T3DVec3 newDir = {0};
 
-    if (is_human)
-    {
-      joypad_inputs_t joypad = joypad_get_inputs(port);
-      joypad_buttons_t btn = joypad_get_buttons_pressed(port);
+  float speed = 0.0f;
+  T3DVec3 newDir = {0};
 
-      newDir.v[0] = (float)joypad.stick_x * 0.05f;
-      newDir.v[2] = -(float)joypad.stick_y * 0.05f;
-      speed = sqrtf(t3d_vec3_len2(&newDir));
+  if (is_human && player->isAlive)
+  {
+    joypad_inputs_t joypad = joypad_get_inputs(port);
+    joypad_buttons_t btn = joypad_get_buttons_pressed(port);
 
-      if(btn.start) minigame_end();
+    newDir.v[0] = (float)joypad.stick_x * 0.05f;
+    newDir.v[2] = -(float)joypad.stick_y * 0.05f;
+    speed = sqrtf(t3d_vec3_len2(&newDir));
 
-      // Player Attack
-      if((btn.a || btn.b) && !player->animAttack.isPlaying) {
-        t3d_anim_set_playing(&player->animAttack, true);
-        t3d_anim_set_time(&player->animAttack, 0.0f);
-        player->isAttack = true;
-        debugf("ATTACK %d\n", port);
-      }
+    // Player Attack
+    if((btn.a || btn.b) && !player->animAttack.isPlaying) {
+      t3d_anim_set_playing(&player->animAttack, true);
+      t3d_anim_set_time(&player->animAttack, 0.0f);
+      player->isAttack = true;
+      player->attackTimer = 0;
     }
+  }
 
-    // Player movement
-    if(speed > 0.15f && !player->isAttack) {
-      newDir.v[0] /= speed;
-      newDir.v[2] /= speed;
-      player->moveDir = newDir;
+  // Player movement
+  if(speed > 0.15f && !player->isAttack) {
+    newDir.v[0] /= speed;
+    newDir.v[2] /= speed;
+    player->moveDir = newDir;
 
-      float newAngle = atan2f(player->moveDir.v[0], player->moveDir.v[2]);
-      player->rotY = t3d_lerp_angle(player->rotY, newAngle, 0.25f);
-      player->currSpeed = t3d_lerp(player->currSpeed, speed * 0.15f, 0.15f);
-    } else {
-      player->currSpeed *= 0.8f;
+    float newAngle = atan2f(player->moveDir.v[0], player->moveDir.v[2]);
+    player->rotY = t3d_lerp_angle(player->rotY, newAngle, 0.25f);
+    player->currSpeed = t3d_lerp(player->currSpeed, speed * 0.15f, 0.15f);
+  } else {
+    player->currSpeed *= 0.8f;
+  }
+
+  // use blend based on speed for smooth transitions
+  player->animBlend = player->currSpeed / 0.51f;
+  if(player->animBlend > 1.0f)player->animBlend = 1.0f;
+
+  // move player...
+  player->playerPos.v[0] += player->moveDir.v[0] * player->currSpeed;
+  player->playerPos.v[2] += player->moveDir.v[2] * player->currSpeed;
+  // ...and limit position inside the box
+  const float BOX_SIZE = 140.0f;
+  if(player->playerPos.v[0] < -BOX_SIZE)player->playerPos.v[0] = -BOX_SIZE;
+  if(player->playerPos.v[0] >  BOX_SIZE)player->playerPos.v[0] =  BOX_SIZE;
+  if(player->playerPos.v[2] < -BOX_SIZE)player->playerPos.v[2] = -BOX_SIZE;
+  if(player->playerPos.v[2] >  BOX_SIZE)player->playerPos.v[2] =  BOX_SIZE;
+
+  // Update the animation and modify the skeleton, this will however NOT recalculate the matrices
+  t3d_anim_update(&player->animIdle, deltaTime);
+  t3d_anim_set_speed(&player->animWalk, player->animBlend + 0.15f);
+  t3d_anim_update(&player->animWalk, deltaTime);
+
+  if(player->isAttack) {
+    player->attackTimer += deltaTime;
+    if (player->attackTimer > ATTACK_TIME_START && player->attackTimer < ATTACK_TIME_END) {
+      player_do_damage(player);
     }
+    t3d_anim_update(&player->animAttack, deltaTime); // attack animation now overrides the idle one
+    if(!player->animAttack.isPlaying)player->isAttack = false;
+  }
 
-    // use blend based on speed for smooth transitions
-    player->animBlend = player->currSpeed / 0.51f;
-    if(player->animBlend > 1.0f)player->animBlend = 1.0f;
+  // We now blend the walk animation with the idle/attack one
+  t3d_skeleton_blend(&player->skel, &player->skel, &player->skelBlend, player->animBlend);
 
-    // move player...
-    player->playerPos.v[0] += player->moveDir.v[0] * player->currSpeed;
-    player->playerPos.v[2] += player->moveDir.v[2] * player->currSpeed;
-    // ...and limit position inside the box
-    const float BOX_SIZE = 140.0f;
-    if(player->playerPos.v[0] < -BOX_SIZE)player->playerPos.v[0] = -BOX_SIZE;
-    if(player->playerPos.v[0] >  BOX_SIZE)player->playerPos.v[0] =  BOX_SIZE;
-    if(player->playerPos.v[2] < -BOX_SIZE)player->playerPos.v[2] = -BOX_SIZE;
-    if(player->playerPos.v[2] >  BOX_SIZE)player->playerPos.v[2] =  BOX_SIZE;
+  if(syncPoint)rspq_syncpoint_wait(syncPoint); // wait for the RSP to process the previous frame
 
-    // Update the animation and modify the skeleton, this will however NOT recalculate the matrices
-    t3d_anim_update(&player->animIdle, deltaTime);
-    t3d_anim_set_speed(&player->animWalk, player->animBlend + 0.15f);
-    t3d_anim_update(&player->animWalk, deltaTime);
+  // Now recalc. the matrices, this will cause any model referencing them to use the new pose
+  t3d_skeleton_update(&player->skel);
 
-    if(player->isAttack) {
-      t3d_anim_update(&player->animAttack, deltaTime); // attack animation now overrides the idle one
-      if(!player->animAttack.isPlaying)player->isAttack = false;
-    }
-
-    // We now blend the walk animation with the idle/attack one
-    t3d_skeleton_blend(&player->skel, &player->skel, &player->skelBlend, player->animBlend);
-
-    if(syncPoint)rspq_syncpoint_wait(syncPoint); // wait for the RSP to process the previous frame
-
-    // Now recalc. the matrices, this will cause any model referencing them to use the new pose
-    t3d_skeleton_update(&player->skel);
-
-    // Update player matrix
-    t3d_mat4fp_from_srt_euler(player->modelMatFP,
-      (float[3]){0.125f, 0.125f, 0.125f},
-      (float[3]){0.0f, -player->rotY, 0},
-      player->playerPos.v
-    );
+  // Update player matrix
+  t3d_mat4fp_from_srt_euler(player->modelMatFP,
+    (float[3]){0.125f, 0.125f, 0.125f},
+    (float[3]){0.0f, -player->rotY, 0},
+    player->playerPos.v
+  );
 }
 
 void player_draw(player_data *player)
 {
-  rspq_block_run(player->dplSnake);
+  if (player->isAlive) {
+    rspq_block_run(player->dplSnake);
+  }
 }
 
 void minigame_loop(float deltaTime)
 {
-    uint8_t colorAmbient[4] = {0xAA, 0xAA, 0xAA, 0xFF};
-    uint8_t colorDir[4]     = {0xFF, 0xAA, 0xAA, 0xFF};
+  uint8_t colorAmbient[4] = {0xAA, 0xAA, 0xAA, 0xFF};
+  uint8_t colorDir[4]     = {0xFF, 0xAA, 0xAA, 0xFF};
 
-    t3d_viewport_set_projection(&viewport, T3D_DEG_TO_RAD(90.0f), 20.0f, 160.0f);
-    t3d_viewport_look_at(&viewport, &camPos, &camTarget, &(T3DVec3){{0,1,0}});
+  t3d_viewport_set_projection(&viewport, T3D_DEG_TO_RAD(90.0f), 20.0f, 160.0f);
+  t3d_viewport_look_at(&viewport, &camPos, &camTarget, &(T3DVec3){{0,1,0}});
 
-    uint32_t playercount = core_get_playercount();
+  uint32_t playercount = core_get_playercount();
+  for (size_t i = 0; i < MAX_PLAYERS; i++)
+  {
+    player_loop(&players[i], deltaTime, core_get_playercontroller(i), i < playercount);
+  }
+
+  if (!isEnding) {
+    // Determine if a player has won
+    uint32_t alivePlayers = 0;
+    PlyNum lastPlayer = 0;
     for (size_t i = 0; i < MAX_PLAYERS; i++)
     {
-      player_loop(&players[i], deltaTime, core_get_playercontroller(i), i < playercount);
+      if (players[i].isAlive)
+      {
+        alivePlayers++;
+        lastPlayer = i;
+      }
     }
-
-    // ======== Draw (3D) ======== //
-    rdpq_attach(display_get(), depthBuffer);
-    t3d_frame_start();
-    t3d_viewport_attach(&viewport);
-
-    t3d_screen_clear_color(RGBA32(224, 180, 96, 0xFF));
-    t3d_screen_clear_depth();
-
-    t3d_light_set_ambient(colorAmbient);
-    t3d_light_set_directional(0, colorDir, &lightDirVec);
-    t3d_light_set_count(1);
-
-    rspq_block_run(dplMap);
-    for (size_t i = 0; i < MAX_PLAYERS; i++)
-    {
-      player_draw(&players[i]);
+    
+    if (alivePlayers == 1) {
+      isEnding = true;
+      winner = lastPlayer;
     }
+  } else {
+    endTimer += deltaTime;
+    if (endTimer > WIN_DELAY) {
+      core_set_winner(winner);
+      minigame_end();
+    }
+  }
 
-    syncPoint = rspq_syncpoint_new();
+  // ======== Draw (3D) ======== //
+  rdpq_attach(display_get(), depthBuffer);
+  t3d_frame_start();
+  t3d_viewport_attach(&viewport);
 
-  /*
-    // ======== Draw (UI) ======== //
-    float posX = 16;
-    float posY = 24;
+  t3d_screen_clear_color(RGBA32(224, 180, 96, 0xFF));
+  t3d_screen_clear_depth();
 
-    rdpq_sync_pipe();
-    rdpq_text_printf(NULL, FONT_BUILTIN_DEBUG_MONO, posX, posY, "[A] Attack: %d", isAttack);
+  t3d_light_set_ambient(colorAmbient);
+  t3d_light_set_directional(0, colorDir, &lightDirVec);
+  t3d_light_set_count(1);
 
-    posY = 216;
-    rdpq_text_printf(NULL, FONT_BUILTIN_DEBUG_MONO, posX, posY, "Speed: %.4f", currSpeed); posY += 10;
-    rdpq_text_printf(NULL, FONT_BUILTIN_DEBUG_MONO, posX, posY, "Blend: %.4f", animBlend); posY += 10;
-*/
-    rdpq_detach_show();
+  rspq_block_run(dplMap);
+  for (size_t i = 0; i < MAX_PLAYERS; i++)
+  {
+    player_draw(&players[i]);
+  }
+
+  syncPoint = rspq_syncpoint_new();
+
+  if (isEnding) {
+    rdpq_sync_pipe(); // Hardware crashes otherwise
+    rdpq_text_printf(NULL, FONT_BUILTIN_DEBUG_MONO, 120, 100, "Player %d wins!", winner+1);
+  }
+
+  rdpq_detach_show();
 }
 
 void player_cleanup(player_data *player)
