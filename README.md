@@ -2,7 +2,7 @@
 
 Welcome to this year's N64brew game jam. This year, we are creating a large collective minigame ROM, and that requires every project to use the same base. Therefore, we are providing this base template for all projects to fork from. Unfortunately, due to time constraints, we were only able to provide a single template for [Libdragon](https://github.com/DragonMinded/libdragon).
 
-Please ensure that you are using the `preview` branch of Libdragon, and that you are able to compile this ROM without issues. This template has been tested for both OpenGL and [Tiny3D](https://github.com/HailToDodongo/tiny3d). We also recommend that you fork this repository so that you can then perform a pull request for your final project. 
+Please ensure that you are using the **latest** `preview` branch of Libdragon, that you have [Tiny3D](https://github.com/HailToDodongo/tiny3d) installed, and that you are able to compile this ROM without issues. This template has been tested for both OpenGL and [Tiny3D](https://github.com/HailToDodongo/tiny3d). We also recommend that you fork this repository so that you can then perform a pull request for your final project. 
 
 
 ### Starting a new minigame

@@ -9,12 +9,12 @@ the game jam.
 #include "../../core.h"
 #include "../../minigame.h"
 
+#define FONT_TEXT       1
+
 
 /*********************************
              Globals
 *********************************/
-
-#define FONT_TEXT       1
 
 // You need this function defined somewhere in your project
 // so that the minigame manager can work
@@ -50,8 +50,29 @@ void minigame_init()
 
 void minigame_fixedloop(float deltatime)
 {
-    // TODO
-    if (false)
+    // Check for A presses from players
+    bool a_pressed = false;
+    for (uint32_t i=0; i<core_get_playercount(); i++)
+    {
+        joypad_buttons_t btn = joypad_get_buttons_pressed(core_get_playercontroller(i));
+        if (btn.a) {
+            a_pressed = true;
+            core_set_winner(i);
+        }
+    }
+
+    // Make the AI press a button at random
+    for (uint32_t i=core_get_playercount(); i<MAXPLAYERS; i++)
+    {
+        int aipress = rand() % (30/(1+core_get_aidifficulty())); // Speed dependent on AI difficulty
+        if (aipress == 1) {
+            a_pressed = true;
+            core_set_winner(i);
+        }
+    }
+
+    // Handle Winner
+    if (a_pressed)
         minigame_end();
 }
 
@@ -64,12 +85,7 @@ void minigame_fixedloop(float deltatime)
 
 void minigame_loop(float deltatime)
 {
-    joypad_buttons_t btn = joypad_get_buttons_pressed(JOYPAD_PORT_1);
-
-    if (btn.a) {
-        minigame_end();
-    }
-
+    // Render the instructions
     rdpq_attach(display_get(), NULL);
     rdpq_text_printf(NULL, FONT_TEXT, 30, 100, "Press A to win.");
     rdpq_detach_show();
