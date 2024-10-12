@@ -78,6 +78,17 @@ void core_set_playercount(uint32_t playercount)
     global_core_playercount = playercount;
 }
 
+/*==============================
+    core_set_aidifficulty
+    Sets the AI difficulty
+    @param  The AI difficulty
+==============================*/
+
+void core_set_aidifficulty(AiDiff difficulty)
+{
+    global_core_aidifficulty = difficulty;
+}
+
 
 /*==============================
     core_set_winner

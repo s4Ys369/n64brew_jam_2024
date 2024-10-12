@@ -62,6 +62,7 @@ int main()
         #if SKIP_MENU
             game = MINIGAME_TO_TEST;
             core_set_playercount(PLAYER_COUNT);
+            core_set_aidifficulty(AI_DIFFICULTY);
         #else
             game = menu();
         #endif

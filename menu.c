@@ -20,6 +20,7 @@ This file contains the code for the basic menu
 typedef enum
 {
     SCREEN_PLAYERCOUNT,
+    SCREEN_AIDIFFICULTY,
     SCREEN_MINIGAME
 } menu_screen;
 
@@ -60,8 +61,31 @@ int get_selection_offset(joypad_8way_t direction)
     }
 }
 
+/*==============================
+    get_difficulty_name
+    Gets the display name of an AI difficulty level
+    @param  The AI difficulty
+    @return The display name
+==============================*/
+
+const char *get_difficulty_name(AiDiff difficulty)
+{
+    switch (difficulty)
+    {
+    case DIFF_EASY:
+        return "Easy";
+    case DIFF_MEDIUM:
+        return "Medium";
+    case DIFF_HARD:
+        return "Hard";
+    default:
+        return "Unknown";
+    }
+}
+
 static uint32_t max_playercount;
 static uint32_t playercount = 1;
+static AiDiff ai_difficulty = DIFF_MEDIUM;
 static bool is_first_time = true;
 
 static menu_screen current_screen;  // Current menu screen
@@ -88,6 +112,11 @@ void set_menu_screen(menu_screen screen)
         } else {
             heading = "How many players?\n";
         }
+        break;
+    case SCREEN_AIDIFFICULTY:
+        item_count = DIFF_HARD+1;
+        select = ai_difficulty;
+        heading = "AI difficulty?\n";
         break;
     case SCREEN_MINIGAME:
         item_count = global_minigame_count;
@@ -166,6 +195,14 @@ char* menu(void)
             switch (current_screen) {
             case SCREEN_PLAYERCOUNT:
                 playercount = select+1;
+                if (playercount == MAXPLAYERS) {
+                    set_menu_screen(SCREEN_MINIGAME);
+                } else {
+                    set_menu_screen(SCREEN_AIDIFFICULTY);
+                }
+                break;
+            case SCREEN_AIDIFFICULTY:
+                ai_difficulty = select;
                 set_menu_screen(SCREEN_MINIGAME);
                 break;
             case SCREEN_MINIGAME:
@@ -174,8 +211,15 @@ char* menu(void)
             }
         } else if (btn.b) {
             switch (current_screen) {
-            case SCREEN_MINIGAME:
+            case SCREEN_AIDIFFICULTY:
                 set_menu_screen(SCREEN_PLAYERCOUNT);
+                break;
+            case SCREEN_MINIGAME:
+                if (playercount == MAXPLAYERS) {
+                    set_menu_screen(SCREEN_PLAYERCOUNT);
+                } else {
+                    set_menu_screen(SCREEN_AIDIFFICULTY);
+                }
                 break;
             default:
                 break;
@@ -231,6 +275,9 @@ char* menu(void)
             case SCREEN_PLAYERCOUNT:
                 ycur += rdpq_text_printf(&textparms, FONT_TEXT, x0, ycur, "%d\n", i+1).advance_y;
                 break;
+            case SCREEN_AIDIFFICULTY:
+                ycur += rdpq_text_printf(&textparms, FONT_TEXT, x0, ycur, "%s\n", get_difficulty_name(i)).advance_y;
+                break;
             case SCREEN_MINIGAME:
                 ycur += rdpq_text_printf(&textparms, FONT_TEXT, x0, ycur, "%d.\t%s\n", i+1, global_minigame_list[sorted_indices[i]].definition.gamename).advance_y;
                 break;
@@ -257,5 +304,6 @@ char* menu(void)
     rdpq_font_free(fontdbg);
     display_close();
     core_set_playercount(playercount);
+    core_set_aidifficulty(ai_difficulty);
     return global_minigame_list[sorted_indices[selected_minigame]].internalname;
 }

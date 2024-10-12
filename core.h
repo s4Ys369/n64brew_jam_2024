@@ -78,6 +78,7 @@
     #define MAXPLAYERS  4
 
     void core_set_playercount(uint32_t playercount);
+    void core_set_aidifficulty(AiDiff difficulty);
     void core_set_subtick(double subtick);
     void core_reset_winners();
 
