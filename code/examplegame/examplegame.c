@@ -64,7 +64,7 @@ void minigame_fixedloop(float deltatime)
     // Make the AI press a button at random
     for (uint32_t i=core_get_playercount(); i<MAXPLAYERS; i++)
     {
-        int aipress = rand() % (30/(1+core_get_aidifficulty())); // Speed dependent on AI difficulty
+        int aipress = rand() % (300/(1+core_get_aidifficulty())); // Speed dependent on AI difficulty
         if (aipress == 1) {
             a_pressed = true;
             core_set_winner(i);
