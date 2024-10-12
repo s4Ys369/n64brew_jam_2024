@@ -50,7 +50,7 @@ const MinigameDef minigame_def = {
 };
 ```
 
-Please be careful with cleaning up the memory used by your project. 
+Please be careful with cleaning up the memory used by your project, use the `sys_get_heap_stats` function provided by Libdragon to compare the head allocations during your minigame initialization and after everything has been cleaned. Libdragon does use `malloc` internally for handling some things, so if you notice that your cleanup function doesn't account for all bytes, try running your minigame two or three more times. The memory usage should stabilize after the first run of the minigame.
 
 Both the `core.h` and `minigame.h` headers include some public functions which you should be using in your project. Most importantly, you should be using `core_get_playercontroller` to get a specific player's controller port, as there is no guarantee that player 1's controller is plugged into port 1 on the console.
 
