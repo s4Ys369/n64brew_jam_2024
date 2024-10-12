@@ -1,11 +1,14 @@
 #include <libdragon.h>
 #include "../../minigame.h"
+#include "../../core.h"
 #include <t3d/t3d.h>
 #include <t3d/t3dmath.h>
 #include <t3d/t3dmodel.h>
 #include <t3d/t3dskeleton.h>
 #include <t3d/t3danim.h>
 #include <t3d/t3ddebug.h>
+
+#define MAX_PLAYERS 4
 
 const MinigameDef minigame_def = {
     .gamename = "Snake3D",
@@ -24,30 +27,80 @@ const MinigameDef minigame_def = {
 surface_t *depthBuffer;
 T3DViewport viewport;
 rdpq_font_t *font;
-T3DMat4FP* modelMatFP;
 T3DMat4FP* mapMatFP;
-rspq_block_t *dplSnake;
 rspq_block_t *dplMap;
-T3DAnim animAttack;
-T3DAnim animWalk;
-T3DAnim animIdle;
-T3DSkeleton skelBlend;
-T3DSkeleton skel;
 T3DModel *model;
 T3DModel *modelShadow;
 T3DModel *modelMap;
 T3DVec3 camPos;
 T3DVec3 camTarget;
 T3DVec3 lightDirVec;
-T3DVec3 moveDir;
-T3DVec3 playerPos;
 
-float rotY;
-float currSpeed;
-float animBlend;
-bool isAttack;
+
+typedef struct
+{
+  T3DMat4FP* modelMatFP;
+  rspq_block_t *dplSnake;
+  T3DAnim animAttack;
+  T3DAnim animWalk;
+  T3DAnim animIdle;
+  T3DSkeleton skelBlend;
+  T3DSkeleton skel;
+  T3DVec3 moveDir;
+  T3DVec3 playerPos;
+  float rotY;
+  float currSpeed;
+  float animBlend;
+  bool isAttack;
+} player_data;
+
+player_data players[MAX_PLAYERS];
 
 rspq_syncpoint_t syncPoint;
+
+void player_init(player_data *player, color_t color, T3DVec3 position)
+{
+  player->modelMatFP = malloc_uncached(sizeof(T3DMat4FP));
+
+  player->moveDir = (T3DVec3){{0,0,0}};
+  player->playerPos = position;
+
+  // First instantiate skeletons, they will be used to draw models in a specific pose
+  // And serve as the target for animations to modify
+  player->skel = t3d_skeleton_create(model);
+  player->skelBlend = t3d_skeleton_clone(&player->skel, false); // optimized for blending, has no matrices
+
+  // Now create animation instances (by name), the data in 'model' is fixed,
+  // whereas 'anim' contains all the runtime data.
+  // Note that tiny3d internally keeps no track of animations, it's up to the user to manage and play them.
+  player->animIdle = t3d_anim_create(model, "Snake_Idle");
+  t3d_anim_attach(&player->animIdle, &player->skel); // tells the animation which skeleton to modify
+
+  player->animWalk = t3d_anim_create(model, "Snake_Walk");
+  t3d_anim_attach(&player->animWalk, &player->skelBlend);
+
+  // multiple animations can attach to the same skeleton, this will NOT perform any blending
+  // rather the last animation that updates "wins", this can be useful if multiple animations touch different bones
+  player->animAttack = t3d_anim_create(model, "Snake_Attack");
+  t3d_anim_set_looping(&player->animAttack, false); // don't loop this animation
+  t3d_anim_set_playing(&player->animAttack, false); // start in a paused state
+  t3d_anim_attach(&player->animAttack, &player->skel);
+
+  rspq_block_begin();
+    t3d_matrix_push(player->modelMatFP);
+    rdpq_set_prim_color(color);
+    t3d_model_draw_skinned(model, &player->skel); // as in the last example, draw skinned with the main skeleton
+
+    rdpq_set_prim_color(RGBA32(0, 0, 0, 120));
+    t3d_model_draw(modelShadow);
+    t3d_matrix_pop(1);
+  player->dplSnake = rspq_block_end();
+
+  player->rotY = 0.0f;
+  player->currSpeed = 0.0f;
+  player->animBlend = 0.0f;
+  player->isAttack = false;
+}
 
 void minigame_init(void)
 {
@@ -59,15 +112,11 @@ void minigame_init(void)
   rdpq_text_register_font(FONT_BUILTIN_DEBUG_MONO, font);
   viewport = t3d_viewport_create();
 
-  modelMatFP = malloc_uncached(sizeof(T3DMat4FP));
   mapMatFP = malloc_uncached(sizeof(T3DMat4FP));
   t3d_mat4fp_from_srt_euler(mapMatFP, (float[3]){0.3f, 0.3f, 0.3f}, (float[3]){0, 0, 0}, (float[3]){0, 0, -10});
 
-  camPos = (T3DVec3){{0, 45.0f, 80.0f}};
-  camTarget = (T3DVec3){{0, 0,-10}};
-
-  moveDir = (T3DVec3){{0,0,0}};
-  playerPos = (T3DVec3){{0,0.15f,0}};
+  camPos = (T3DVec3){{0, 120.0f, 100.0f}};
+  camTarget = (T3DVec3){{0, 0, 50}};
 
   lightDirVec = (T3DVec3){{1.0f, 1.0f, 1.0f}};
   t3d_vec3_norm(&lightDirVec);
@@ -78,37 +127,6 @@ void minigame_init(void)
   // Model Credits: Quaternius (CC0) https://quaternius.com/packs/easyenemy.html
   model = t3d_model_load("rom:/snake3d/snake.t3dm");
 
-  // First instantiate skeletons, they will be used to draw models in a specific pose
-  // And serve as the target for animations to modify
-  skel = t3d_skeleton_create(model);
-  skelBlend = t3d_skeleton_clone(&skel, false); // optimized for blending, has no matrices
-
-  // Now create animation instances (by name), the data in 'model' is fixed,
-  // whereas 'anim' contains all the runtime data.
-  // Note that tiny3d internally keeps no track of animations, it's up to the user to manage and play them.
-  animIdle = t3d_anim_create(model, "Snake_Idle");
-  t3d_anim_attach(&animIdle, &skel); // tells the animation which skeleton to modify
-
-  animWalk = t3d_anim_create(model, "Snake_Walk");
-  t3d_anim_attach(&animWalk, &skelBlend);
-
-  // multiple animations can attach to the same skeleton, this will NOT perform any blending
-  // rather the last animation that updates "wins", this can be useful if multiple animations touch different bones
-  animAttack = t3d_anim_create(model, "Snake_Attack");
-  t3d_anim_set_looping(&animAttack, false); // don't loop this animation
-  t3d_anim_set_playing(&animAttack, false); // start in a paused state
-  t3d_anim_attach(&animAttack, &skel);
-
-  rspq_block_begin();
-    t3d_matrix_push(modelMatFP);
-    rdpq_set_prim_color(RGBA32(255, 255, 255, 255));
-    t3d_model_draw_skinned(model, &skel); // as in the last example, draw skinned with the main skeleton
-
-    rdpq_set_prim_color(RGBA32(0, 0, 0, 120));
-    t3d_model_draw(modelShadow);
-    t3d_matrix_pop(1);
-  dplSnake = rspq_block_end();
-
   rspq_block_begin();
     t3d_matrix_push(mapMatFP);
     rdpq_set_prim_color(RGBA32(255, 255, 255, 255));
@@ -116,12 +134,109 @@ void minigame_init(void)
     t3d_matrix_pop(1);
   dplMap = rspq_block_end();
 
-  rotY = 0.0f;
-  currSpeed = 0.0f;
-  animBlend = 0.0f;
-  isAttack = false;
+  uint32_t colors[] = {
+    PLAYERCOLOR_1,
+    PLAYERCOLOR_2,
+    PLAYERCOLOR_3,
+    PLAYERCOLOR_4,
+  };
+
+  T3DVec3 start_positions[] = {
+    (T3DVec3){{-100,0.15f,0}},
+    (T3DVec3){{0,0.15f,-100}},
+    (T3DVec3){{100,0.15f,0}},
+    (T3DVec3){{0,0.15f,100}},
+  };
+
+  for (size_t i = 0; i < MAX_PLAYERS; i++)
+  {
+    player_init(&players[i], color_from_packed32(colors[i]), start_positions[i]);
+  }
 
   syncPoint = 0;
+}
+
+void player_loop(player_data *player, float deltaTime, joypad_port_t port, bool is_human)
+{
+    float speed = 0.0f;
+    T3DVec3 newDir = {0};
+
+    if (is_human)
+    {
+      joypad_inputs_t joypad = joypad_get_inputs(port);
+      joypad_buttons_t btn = joypad_get_buttons_pressed(port);
+
+      newDir.v[0] = (float)joypad.stick_x * 0.05f;
+      newDir.v[2] = -(float)joypad.stick_y * 0.05f;
+      speed = sqrtf(t3d_vec3_len2(&newDir));
+
+      if(btn.start) minigame_end();
+
+      // Player Attack
+      if((btn.a || btn.b) && !player->animAttack.isPlaying) {
+        t3d_anim_set_playing(&player->animAttack, true);
+        t3d_anim_set_time(&player->animAttack, 0.0f);
+        player->isAttack = true;
+        debugf("ATTACK %d\n", port);
+      }
+    }
+
+    // Player movement
+    if(speed > 0.15f && !player->isAttack) {
+      newDir.v[0] /= speed;
+      newDir.v[2] /= speed;
+      player->moveDir = newDir;
+
+      float newAngle = atan2f(player->moveDir.v[0], player->moveDir.v[2]);
+      player->rotY = t3d_lerp_angle(player->rotY, newAngle, 0.25f);
+      player->currSpeed = t3d_lerp(player->currSpeed, speed * 0.15f, 0.15f);
+    } else {
+      player->currSpeed *= 0.8f;
+    }
+
+    // use blend based on speed for smooth transitions
+    player->animBlend = player->currSpeed / 0.51f;
+    if(player->animBlend > 1.0f)player->animBlend = 1.0f;
+
+    // move player...
+    player->playerPos.v[0] += player->moveDir.v[0] * player->currSpeed;
+    player->playerPos.v[2] += player->moveDir.v[2] * player->currSpeed;
+    // ...and limit position inside the box
+    const float BOX_SIZE = 140.0f;
+    if(player->playerPos.v[0] < -BOX_SIZE)player->playerPos.v[0] = -BOX_SIZE;
+    if(player->playerPos.v[0] >  BOX_SIZE)player->playerPos.v[0] =  BOX_SIZE;
+    if(player->playerPos.v[2] < -BOX_SIZE)player->playerPos.v[2] = -BOX_SIZE;
+    if(player->playerPos.v[2] >  BOX_SIZE)player->playerPos.v[2] =  BOX_SIZE;
+
+    // Update the animation and modify the skeleton, this will however NOT recalculate the matrices
+    t3d_anim_update(&player->animIdle, deltaTime);
+    t3d_anim_set_speed(&player->animWalk, player->animBlend + 0.15f);
+    t3d_anim_update(&player->animWalk, deltaTime);
+
+    if(player->isAttack) {
+      t3d_anim_update(&player->animAttack, deltaTime); // attack animation now overrides the idle one
+      if(!player->animAttack.isPlaying)player->isAttack = false;
+    }
+
+    // We now blend the walk animation with the idle/attack one
+    t3d_skeleton_blend(&player->skel, &player->skel, &player->skelBlend, player->animBlend);
+
+    if(syncPoint)rspq_syncpoint_wait(syncPoint); // wait for the RSP to process the previous frame
+
+    // Now recalc. the matrices, this will cause any model referencing them to use the new pose
+    t3d_skeleton_update(&player->skel);
+
+    // Update player matrix
+    t3d_mat4fp_from_srt_euler(player->modelMatFP,
+      (float[3]){0.125f, 0.125f, 0.125f},
+      (float[3]){0.0f, -player->rotY, 0},
+      player->playerPos.v
+    );
+}
+
+void player_draw(player_data *player)
+{
+  rspq_block_run(player->dplSnake);
 }
 
 void minigame_loop(float deltaTime)
@@ -129,85 +244,14 @@ void minigame_loop(float deltaTime)
     uint8_t colorAmbient[4] = {0xAA, 0xAA, 0xAA, 0xFF};
     uint8_t colorDir[4]     = {0xFF, 0xAA, 0xAA, 0xFF};
 
-    joypad_inputs_t joypad = joypad_get_inputs(JOYPAD_PORT_1);
-    joypad_buttons_t btn = joypad_get_buttons_pressed(JOYPAD_PORT_1);
-
-    T3DVec3 newDir = {{
-       (float)joypad.stick_x * 0.05f, 0,
-      -(float)joypad.stick_y * 0.05f
-    }};
-    float speed = sqrtf(t3d_vec3_len2(&newDir));
-
-    if(btn.start) minigame_end();
-
-    // Player Attack
-    if((btn.a || btn.b) && !animAttack.isPlaying) {
-      t3d_anim_set_playing(&animAttack, true);
-      t3d_anim_set_time(&animAttack, 0.0f);
-      isAttack = true;
-    }
-
-    // Player movement
-    if(speed > 0.15f && !isAttack) {
-      newDir.v[0] /= speed;
-      newDir.v[2] /= speed;
-      moveDir = newDir;
-
-      float newAngle = atan2f(moveDir.v[0], moveDir.v[2]);
-      rotY = t3d_lerp_angle(rotY, newAngle, 0.25f);
-      currSpeed = t3d_lerp(currSpeed, speed * 0.15f, 0.15f);
-    } else {
-      currSpeed *= 0.8f;
-    }
-
-    // use blend based on speed for smooth transitions
-    animBlend = currSpeed / 0.51f;
-    if(animBlend > 1.0f)animBlend = 1.0f;
-
-    // move player...
-    playerPos.v[0] += moveDir.v[0] * currSpeed;
-    playerPos.v[2] += moveDir.v[2] * currSpeed;
-    // ...and limit position inside the box
-    const float BOX_SIZE = 140.0f;
-    if(playerPos.v[0] < -BOX_SIZE)playerPos.v[0] = -BOX_SIZE;
-    if(playerPos.v[0] >  BOX_SIZE)playerPos.v[0] =  BOX_SIZE;
-    if(playerPos.v[2] < -BOX_SIZE)playerPos.v[2] = -BOX_SIZE;
-    if(playerPos.v[2] >  BOX_SIZE)playerPos.v[2] =  BOX_SIZE;
-
-    // position the camera behind the player
-    camTarget = playerPos;
-    camTarget.v[2] -= 20;
-    camPos.v[0] = camTarget.v[0];
-    camPos.v[1] = camTarget.v[1] + 45;
-    camPos.v[2] = camTarget.v[2] + 65;
-
-    t3d_viewport_set_projection(&viewport, T3D_DEG_TO_RAD(85.0f), 10.0f, 150.0f);
+    t3d_viewport_set_projection(&viewport, T3D_DEG_TO_RAD(90.0f), 20.0f, 160.0f);
     t3d_viewport_look_at(&viewport, &camPos, &camTarget, &(T3DVec3){{0,1,0}});
 
-    // Update the animation and modify the skeleton, this will however NOT recalculate the matrices
-    t3d_anim_update(&animIdle, deltaTime);
-    t3d_anim_set_speed(&animWalk, animBlend + 0.15f);
-    t3d_anim_update(&animWalk, deltaTime);
-
-    if(isAttack) {
-      t3d_anim_update(&animAttack, deltaTime); // attack animation now overrides the idle one
-      if(!animAttack.isPlaying)isAttack = false;
+    uint32_t playercount = core_get_playercount();
+    for (size_t i = 0; i < MAX_PLAYERS; i++)
+    {
+      player_loop(&players[i], deltaTime, core_get_playercontroller(i), i < playercount);
     }
-
-    // We now blend the walk animation with the idle/attack one
-    t3d_skeleton_blend(&skel, &skel, &skelBlend, animBlend);
-
-    if(syncPoint)rspq_syncpoint_wait(syncPoint); // wait for the RSP to process the previous frame
-
-    // Now recalc. the matrices, this will cause any model referencing them to use the new pose
-    t3d_skeleton_update(&skel);
-
-    // Update player matrix
-    t3d_mat4fp_from_srt_euler(modelMatFP,
-      (float[3]){0.125f, 0.125f, 0.125f},
-      (float[3]){0.0f, -rotY, 0},
-      playerPos.v
-    );
 
     // ======== Draw (3D) ======== //
     rdpq_attach(display_get(), depthBuffer);
@@ -222,10 +266,14 @@ void minigame_loop(float deltaTime)
     t3d_light_set_count(1);
 
     rspq_block_run(dplMap);
-    rspq_block_run(dplSnake);
+    for (size_t i = 0; i < MAX_PLAYERS; i++)
+    {
+      player_draw(&players[i]);
+    }
 
     syncPoint = rspq_syncpoint_new();
 
+  /*
     // ======== Draw (UI) ======== //
     float posX = 16;
     float posY = 24;
@@ -236,28 +284,38 @@ void minigame_loop(float deltaTime)
     posY = 216;
     rdpq_text_printf(NULL, FONT_BUILTIN_DEBUG_MONO, posX, posY, "Speed: %.4f", currSpeed); posY += 10;
     rdpq_text_printf(NULL, FONT_BUILTIN_DEBUG_MONO, posX, posY, "Blend: %.4f", animBlend); posY += 10;
-
+*/
     rdpq_detach_show();
+}
+
+void player_cleanup(player_data *player)
+{
+  rspq_block_free(player->dplSnake);
+
+  t3d_skeleton_destroy(&player->skel);
+  t3d_skeleton_destroy(&player->skelBlend);
+
+  t3d_anim_destroy(&player->animIdle);
+  t3d_anim_destroy(&player->animWalk);
+  t3d_anim_destroy(&player->animAttack);
+
+  free_uncached(player->modelMatFP);
 }
 
 void minigame_cleanup(void)
 {
-  rspq_block_free(dplSnake);
+  for (size_t i = 0; i < MAX_PLAYERS; i++)
+  {
+    player_cleanup(&players[i]);
+  }
+
   rspq_block_free(dplMap);
-
-  t3d_skeleton_destroy(&skel);
-  t3d_skeleton_destroy(&skelBlend);
-
-  t3d_anim_destroy(&animIdle);
-  t3d_anim_destroy(&animWalk);
-  t3d_anim_destroy(&animAttack);
 
   t3d_model_free(model);
   t3d_model_free(modelMap);
   t3d_model_free(modelShadow);
 
   free_uncached(mapMatFP);
-  free_uncached(modelMatFP);
 
   rdpq_text_unregister_font(FONT_BUILTIN_DEBUG_MONO);
   rdpq_font_free(font);
