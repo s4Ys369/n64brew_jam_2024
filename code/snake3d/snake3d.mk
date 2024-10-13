@@ -9,4 +9,4 @@ ASSETS_LIST += \
 	filesystem/snake3d/bottled_bubbles.xm64 \
 	filesystem/snake3d/m6x11plus.font64
 
-filesystem/snake3d/m6x11plus.font64: MKFONT_FLAGS += --outline 1 --size 32
+filesystem/snake3d/m6x11plus.font64: MKFONT_FLAGS += --outline 1 --size 36
