@@ -16,6 +16,11 @@ const MinigameDef minigame_def = {
     .instructions = "Press A to attack. Last snake slithering wins!"
 };
 
+#define FONT_TEXT           1
+#define FONT_BILLBOARD      2
+#define TEXT_COLOR          0x6CBB3CFF
+#define TEXT_OUTLINE        0x30521AFF
+
 #define HITBOX_RADIUS       10.f
 
 #define ATTACK_OFFSET       10.f
@@ -28,6 +33,8 @@ const MinigameDef minigame_def = {
 #define GO_DELAY            1.0f
 #define WIN_DELAY           5.0f
 
+#define BILLBOARD_YOFFSET   15.0f
+
 /**
  * Example project showcasing the usage of the animation system.
  * This includes instancing animations, blending animations, and controlling playback.
@@ -36,6 +43,7 @@ const MinigameDef minigame_def = {
 surface_t *depthBuffer;
 T3DViewport viewport;
 rdpq_font_t *font;
+rdpq_font_t *fontBillboard;
 T3DMat4FP* mapMatFP;
 rspq_block_t *dplMap;
 T3DModel *model;
@@ -122,19 +130,36 @@ void player_init(player_data *player, color_t color, T3DVec3 position, float rot
 
 void minigame_init(void)
 {
+  const color_t colors[] = {
+    color_from_packed32(PLAYERCOLOR_1<<8),
+    color_from_packed32(PLAYERCOLOR_2<<8),
+    color_from_packed32(PLAYERCOLOR_3<<8),
+    color_from_packed32(PLAYERCOLOR_4<<8),
+  };
+
   display_init(RESOLUTION_320x240, DEPTH_16_BPP, 3, GAMMA_NONE, FILTERS_RESAMPLE_ANTIALIAS);
   depthBuffer = display_get_zbuf();
 
   t3d_init((T3DInitParams){});
-  font = rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_MONO);
-  rdpq_text_register_font(FONT_BUILTIN_DEBUG_MONO, font);
+
+  font = rdpq_font_load("rom:/snake3d/m6x11plus.font64");
+  rdpq_text_register_font(FONT_TEXT, font);
+  rdpq_font_style(font, 0, &(rdpq_fontstyle_t){.color = color_from_packed32(TEXT_COLOR) });
+
+  fontBillboard = rdpq_font_load("rom:/squarewave.font64");
+  rdpq_text_register_font(FONT_BILLBOARD, fontBillboard);
+  for (size_t i = 0; i < MAXPLAYERS; i++)
+  {
+    rdpq_font_style(fontBillboard, i, &(rdpq_fontstyle_t){ .color = colors[i] });
+  }
+
   viewport = t3d_viewport_create();
 
   mapMatFP = malloc_uncached(sizeof(T3DMat4FP));
   t3d_mat4fp_from_srt_euler(mapMatFP, (float[3]){0.3f, 0.3f, 0.3f}, (float[3]){0, 0, 0}, (float[3]){0, 0, -10});
 
-  camPos = (T3DVec3){{0, 120.0f, 100.0f}};
-  camTarget = (T3DVec3){{0, 0, 50}};
+  camPos = (T3DVec3){{0, 125.0f, 100.0f}};
+  camTarget = (T3DVec3){{0, 0, 40}};
 
   lightDirVec = (T3DVec3){{1.0f, 1.0f, 1.0f}};
   t3d_vec3_norm(&lightDirVec);
@@ -152,13 +177,6 @@ void minigame_init(void)
     t3d_matrix_pop(1);
   dplMap = rspq_block_end();
 
-  uint32_t colors[] = {
-    PLAYERCOLOR_1,
-    PLAYERCOLOR_2,
-    PLAYERCOLOR_3,
-    PLAYERCOLOR_4,
-  };
-
   T3DVec3 start_positions[] = {
     (T3DVec3){{-100,0.15f,0}},
     (T3DVec3){{0,0.15f,-100}},
@@ -175,7 +193,7 @@ void minigame_init(void)
 
   for (size_t i = 0; i < MAXPLAYERS; i++)
   {
-    player_init(&players[i], color_from_packed32(colors[i]<<8), start_positions[i], start_rotations[i]);
+    player_init(&players[i], colors[i], start_positions[i], start_rotations[i]);
   }
 
   countDownTimer = COUNTDOWN_DELAY;
@@ -328,6 +346,28 @@ void player_draw(player_data *player)
   }
 }
 
+void player_draw_billboard(player_data *player, PlyNum playerNum)
+{
+  if (!player->isAlive) return;
+
+  T3DVec3 billboardPos = (T3DVec3){{
+    player->playerPos.v[0],
+    player->playerPos.v[1] + BILLBOARD_YOFFSET,
+    player->playerPos.v[2]
+  }};
+
+  T3DVec3 billboardScreenPos;
+  t3d_viewport_calc_viewspace_pos(&viewport, &billboardScreenPos, &billboardPos);
+
+  int x = floorf(billboardScreenPos.v[0]);
+  int y = floorf(billboardScreenPos.v[1]);
+
+  rdpq_sync_pipe(); // Hardware crashes otherwise
+  rdpq_sync_tile(); // Hardware crashes otherwise
+
+  rdpq_text_printf(&(rdpq_textparms_t){ .style_id = playerNum }, FONT_BILLBOARD, x-5, y-16, "P%d", playerNum+1);
+}
+
 void minigame_fixedloop(float deltaTime)
 {
   uint32_t playercount = core_get_playercount();
@@ -398,14 +438,20 @@ void minigame_loop(float deltaTime)
 
   syncPoint = rspq_syncpoint_new();
 
+  for (size_t i = 0; i < MAXPLAYERS; i++)
+  {
+    player_draw_billboard(&players[i], i);
+  }
+
+  rdpq_sync_tile();
   rdpq_sync_pipe(); // Hardware crashes otherwise
 
   if (countDownTimer > 0.0f) {
-    rdpq_text_printf(NULL, FONT_BUILTIN_DEBUG_MONO, 155, 100, "%d", (int)ceilf(countDownTimer));
+    rdpq_text_printf(NULL, FONT_TEXT, 155, 100, "%d", (int)ceilf(countDownTimer));
   } else if (countDownTimer > -GO_DELAY) {
-    rdpq_text_print(NULL, FONT_BUILTIN_DEBUG_MONO, 150, 100, "GO!");
+    rdpq_text_print(NULL, FONT_TEXT, 150, 100, "GO!");
   } else if (isEnding) {
-    rdpq_text_printf(NULL, FONT_BUILTIN_DEBUG_MONO, 120, 100, "Player %d wins!", winner+1);
+    rdpq_text_printf(NULL, FONT_TEXT, 100, 100, "Player %d wins!", winner+1);
   }
 
   rdpq_detach_show();
@@ -442,7 +488,9 @@ void minigame_cleanup(void)
 
   free_uncached(mapMatFP);
 
-  rdpq_text_unregister_font(FONT_BUILTIN_DEBUG_MONO);
+  rdpq_text_unregister_font(FONT_BILLBOARD);
+  rdpq_font_free(fontBillboard);
+  rdpq_text_unregister_font(FONT_TEXT);
   rdpq_font_free(font);
   t3d_destroy();
 
