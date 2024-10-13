@@ -449,9 +449,11 @@ void minigame_loop(float deltaTime)
   if (countDownTimer > 0.0f) {
     rdpq_text_printf(NULL, FONT_TEXT, 155, 100, "%d", (int)ceilf(countDownTimer));
   } else if (countDownTimer > -GO_DELAY) {
-    rdpq_text_print(NULL, FONT_TEXT, 150, 100, "GO!");
+    rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, };
+    rdpq_text_print(&textparms, FONT_TEXT, 0, 100, "GO!");
   } else if (isEnding) {
-    rdpq_text_printf(NULL, FONT_TEXT, 100, 100, "Player %d wins!", winner+1);
+    rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, };
+    rdpq_text_printf(&textparms, FONT_TEXT, 0, 100, "Player %d wins!", winner+1);
   }
 
   rdpq_detach_show();
