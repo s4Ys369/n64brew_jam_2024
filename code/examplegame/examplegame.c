@@ -182,9 +182,10 @@ void minigame_loop(float deltatime)
         ycur += 4;
         
         // Draw power bars
-        rdpq_set_mode_fill(color_from_packed32(POWERBAR_BACKGROUND));
+        rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
+        rdpq_set_prim_color(color_from_packed32(POWERBAR_BACKGROUND));
         rdpq_fill_rectangle(xcur, ycur, xcur+POWERBAR_WIDTH, ycur+POWERBAR_HEIGHT);
-        rdpq_set_fill_color(color_from_packed32(POWERBAR_FOREGROUND));
+        rdpq_set_prim_color(color_from_packed32(POWERBAR_FOREGROUND));
         int width = (player_points[i]*POWERBAR_WIDTH)/POINTS_TO_WIN;
         if (width > POWERBAR_WIDTH) width = POWERBAR_WIDTH;
         rdpq_fill_rectangle(xcur, ycur, xcur+width, ycur+POWERBAR_HEIGHT);
