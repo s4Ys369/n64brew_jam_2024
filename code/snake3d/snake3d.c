@@ -115,8 +115,6 @@ void player_init(player_data *player, color_t color, T3DVec3 position, float rot
   player->animBlend = 0.0f;
   player->isAttack = false;
   player->isAlive = true;
-
-  xm64player_open(&music, "rom:/snake3d/bottled_bubbles.xm64");
 }
 
 void minigame_init(void)
@@ -178,6 +176,7 @@ void minigame_init(void)
   }
 
   syncPoint = 0;
+  xm64player_open(&music, "rom:/snake3d/bottled_bubbles.xm64");
   xm64player_play(&music, 0);
 }
 
@@ -407,7 +406,6 @@ void player_cleanup(player_data *player)
   t3d_anim_destroy(&player->animAttack);
 
   free_uncached(player->modelMatFP);
-  xm64player_stop(&music);
 }
 
 void minigame_cleanup(void)
@@ -417,6 +415,7 @@ void minigame_cleanup(void)
     player_cleanup(&players[i]);
   }
 
+  xm64player_stop(&music);
   xm64player_close(&music);
   rspq_block_free(dplMap);
 
