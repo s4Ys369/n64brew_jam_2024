@@ -24,6 +24,8 @@ const MinigameDef minigame_def = {
 #define ATTACK_TIME_START   0.333f
 #define ATTACK_TIME_END     0.4f
 
+#define COUNTDOWN_DELAY     3.0f
+#define GO_DELAY            1.0f
 #define WIN_DELAY           5.0f
 
 /**
@@ -66,6 +68,7 @@ typedef struct
 
 player_data players[MAXPLAYERS];
 
+float countDownTimer;
 bool isEnding;
 float endTimer;
 PlyNum winner;
@@ -175,6 +178,8 @@ void minigame_init(void)
     player_init(&players[i], color_from_packed32(colors[i]<<8), start_positions[i], start_rotations[i]);
   }
 
+  countDownTimer = COUNTDOWN_DELAY;
+
   syncPoint = 0;
   xm64player_open(&music, "rom:/snake3d/bottled_bubbles.xm64");
   xm64player_play(&music, 0);
@@ -212,12 +217,17 @@ void player_do_damage(player_data *player)
   }
 }
 
+bool player_has_control(player_data *player)
+{
+  return player->isAlive && countDownTimer < 0.0f;
+}
+
 void player_fixedloop(player_data *player, float deltaTime, joypad_port_t port, bool is_human)
 {
   float speed = 0.0f;
   T3DVec3 newDir = {0};
 
-  if (player->isAlive)
+  if (player_has_control(player))
   {
     if (is_human)
     {
@@ -270,7 +280,7 @@ void player_fixedloop(player_data *player, float deltaTime, joypad_port_t port, 
 
 void player_loop(player_data *player, float deltaTime, joypad_port_t port, bool is_human)
 {
-  if (is_human && player->isAlive)
+  if (is_human && player_has_control(player))
   {
     joypad_buttons_t btn = joypad_get_buttons_pressed(port);
 
@@ -325,6 +335,8 @@ void minigame_fixedloop(float deltaTime)
   {
     player_fixedloop(&players[i], deltaTime, core_get_playercontroller(i), i < playercount);
   }
+
+  countDownTimer -= deltaTime;
 
   if (!isEnding) {
     // Determine if a player has won
@@ -386,8 +398,13 @@ void minigame_loop(float deltaTime)
 
   syncPoint = rspq_syncpoint_new();
 
-  if (isEnding) {
-    rdpq_sync_pipe(); // Hardware crashes otherwise
+  rdpq_sync_pipe(); // Hardware crashes otherwise
+
+  if (countDownTimer > 0.0f) {
+    rdpq_text_printf(NULL, FONT_BUILTIN_DEBUG_MONO, 155, 100, "%d", (int)ceilf(countDownTimer));
+  } else if (countDownTimer > -GO_DELAY) {
+    rdpq_text_print(NULL, FONT_BUILTIN_DEBUG_MONO, 150, 100, "GO!");
+  } else if (isEnding) {
     rdpq_text_printf(NULL, FONT_BUILTIN_DEBUG_MONO, 120, 100, "Player %d wins!", winner+1);
   }
 
