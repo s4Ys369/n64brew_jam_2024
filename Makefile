@@ -19,9 +19,9 @@ include $(T3D_INST)/t3d.mk
 MINIGAMES_LIST = $(notdir $(wildcard $(MINIGAME_DIR)/*))
 DSO_LIST = $(addprefix $(MINIGAMEDSO_DIR)/, $(addsuffix .dso, $(MINIGAMES_LIST)))
 
-IMAGE_LIST = $(wildcard $(ASSETS_DIR)/*.png) #$(wildcard $(ASSETS_DIR)/**/*.png)
-FONT_LIST  = $(wildcard $(ASSETS_DIR)/*.ttf) #$(wildcard $(ASSETS_DIR)/**/*.ttf)
-MODEL_LIST  = $(wildcard $(ASSETS_DIR)/*.glb) #$(wildcard $(ASSETS_DIR)/**/*.glb)
+IMAGE_LIST = $(wildcard $(ASSETS_DIR)/*.png) $(wildcard $(ASSETS_DIR)/core/*.png)
+FONT_LIST  = $(wildcard $(ASSETS_DIR)/*.ttf)
+MODEL_LIST  = $(wildcard $(ASSETS_DIR)/*.glb)
 ASSETS_LIST += $(subst $(ASSETS_DIR),$(FILESYSTEM_DIR),$(IMAGE_LIST:%.png=%.sprite))
 ASSETS_LIST += $(subst $(ASSETS_DIR),$(FILESYSTEM_DIR),$(FONT_LIST:%.ttf=%.font64))
 ASSETS_LIST += $(subst $(ASSETS_DIR),$(FILESYSTEM_DIR),$(MODEL_LIST:%.glb=%.t3dm))

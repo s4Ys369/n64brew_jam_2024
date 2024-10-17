@@ -42,7 +42,7 @@ void minigame_loadall()
         if (!strstr(minigamesdir.d_name, ".sym"))
             gamecount++;
     }
-    while (dir_findnext("rom:/minigames/", &minigamesdir) == 0);
+    while (dir_findnext(global_minigamepath, &minigamesdir) == 0);
     global_minigame_count = gamecount;
 
     // Allocate the list of minigames
