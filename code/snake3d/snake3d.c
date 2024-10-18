@@ -54,9 +54,9 @@ T3DVec3 camTarget;
 T3DVec3 lightDirVec;
 xm64player_t music;
 
-
 typedef struct
 {
+  PlyNum plynum;
   T3DMat4FP* modelMatFP;
   rspq_block_t *dplSnake;
   T3DAnim animAttack;
@@ -72,6 +72,8 @@ typedef struct
   bool isAttack;
   bool isAlive;
   float attackTimer;
+  PlyNum ai_target;
+  int ai_reactionspeed;
 } player_data;
 
 player_data players[MAXPLAYERS];
@@ -126,6 +128,8 @@ void player_init(player_data *player, color_t color, T3DVec3 position, float rot
   player->animBlend = 0.0f;
   player->isAttack = false;
   player->isAlive = true;
+  player->ai_target = rand()%MAXPLAYERS;
+  player->ai_reactionspeed = (2-core_get_aidifficulty())*5 + rand()%((3-core_get_aidifficulty())*3);
 }
 
 void minigame_init(void)
@@ -194,6 +198,7 @@ void minigame_init(void)
   for (size_t i = 0; i < MAXPLAYERS; i++)
   {
     player_init(&players[i], colors[i], start_positions[i], start_rotations[i]);
+    players[i].plynum = i;
   }
 
   countDownTimer = COUNTDOWN_DELAY;
@@ -245,19 +250,41 @@ void player_fixedloop(player_data *player, float deltaTime, joypad_port_t port, 
   float speed = 0.0f;
   T3DVec3 newDir = {0};
 
-  if (player_has_control(player))
-  {
-    if (is_human)
-    {
+  if (player_has_control(player)) {
+    if (is_human) {
       joypad_inputs_t joypad = joypad_get_inputs(port);
 
       newDir.v[0] = (float)joypad.stick_x * 0.05f;
       newDir.v[2] = -(float)joypad.stick_y * 0.05f;
       speed = sqrtf(t3d_vec3_len2(&newDir));
-    }
-    else
-    {
-      player->rotY += 0.1f * (core_get_aidifficulty()+1);
+    } else {
+      player_data* target = &players[player->ai_target];
+      if (player->plynum != target->plynum && target->isAlive) { // Check for a valid target
+        // Move towards the direction of the target
+        float dist, norm;
+        newDir.v[0] = (target->playerPos.v[0] - player->playerPos.v[0]);
+        newDir.v[2] = (target->playerPos.v[2] - player->playerPos.v[2]);
+        dist = sqrtf(newDir.v[0]*newDir.v[0] + newDir.v[2]*newDir.v[2]);
+        norm = 1/dist;
+        newDir.v[0] *= norm;
+        newDir.v[2] *= norm;
+        speed = 20;
+    
+        // Attack if close, and the reaction time has elapsed
+        if (dist < 25 && !player->isAttack) {
+          if (player->ai_reactionspeed <= 0) {
+            t3d_anim_set_playing(&player->animAttack, true);
+            t3d_anim_set_time(&player->animAttack, 0.0f);
+            player->isAttack = true;
+            player->attackTimer = 0;
+            player->ai_reactionspeed = (2-core_get_aidifficulty())*5 + rand()%((3-core_get_aidifficulty())*3);
+          } else {
+            player->ai_reactionspeed--;
+          }
+        }
+      } else {
+        player->ai_target = rand()%MAXPLAYERS; // (Attempt) to aquire a new target this frame
+      }
     }
   }
 
