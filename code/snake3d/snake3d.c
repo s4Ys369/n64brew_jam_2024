@@ -32,6 +32,7 @@ const MinigameDef minigame_def = {
 #define COUNTDOWN_DELAY     3.0f
 #define GO_DELAY            1.0f
 #define WIN_DELAY           5.0f
+#define WIN_SHOW_DELAY      2.0f
 
 #define BILLBOARD_YOFFSET   15.0f
 
@@ -82,6 +83,11 @@ float countDownTimer;
 bool isEnding;
 float endTimer;
 PlyNum winner;
+
+wav64_t sfx_start;
+wav64_t sfx_countdown;
+wav64_t sfx_stop;
+wav64_t sfx_winner;
 
 rspq_syncpoint_t syncPoint;
 
@@ -204,6 +210,10 @@ void minigame_init(void)
   countDownTimer = COUNTDOWN_DELAY;
 
   syncPoint = 0;
+  wav64_open(&sfx_start, "rom:/core/Start.wav64");
+  wav64_open(&sfx_countdown, "rom:/core/Countdown.wav64");
+  wav64_open(&sfx_stop, "rom:/core/Stop.wav64");
+  wav64_open(&sfx_winner, "rom:/core/Winner.wav64");
   xm64player_open(&music, "rom:/snake3d/bottled_bubbles.xm64");
   xm64player_play(&music, 0);
 }
@@ -397,13 +407,22 @@ void player_draw_billboard(player_data *player, PlyNum playerNum)
 
 void minigame_fixedloop(float deltaTime)
 {
+  bool controlbefore = player_has_control(&players[0]);
   uint32_t playercount = core_get_playercount();
   for (size_t i = 0; i < MAXPLAYERS; i++)
   {
     player_fixedloop(&players[i], deltaTime, core_get_playercontroller(i), i < playercount);
   }
 
-  countDownTimer -= deltaTime;
+  if (countDownTimer > -GO_DELAY)
+  {
+    float prevCountDown = countDownTimer;
+    countDownTimer -= deltaTime;
+    if ((int)prevCountDown != (int)countDownTimer && countDownTimer >= 0)
+      wav64_play(&sfx_countdown, 31);
+  }
+  if (!controlbefore && player_has_control(&players[0]))
+    wav64_play(&sfx_start, 31);
 
   if (!isEnding) {
     // Determine if a player has won
@@ -421,9 +440,13 @@ void minigame_fixedloop(float deltaTime)
     if (alivePlayers == 1) {
       isEnding = true;
       winner = lastPlayer;
+      wav64_play(&sfx_stop, 31);
     }
   } else {
+    float prevEndTime = endTimer;
     endTimer += deltaTime;
+    if ((int)prevEndTime != (int)endTimer && (int)endTimer == WIN_SHOW_DELAY)
+        wav64_play(&sfx_winner, 31);
     if (endTimer > WIN_DELAY) {
       core_set_winner(winner);
       minigame_end();
@@ -478,7 +501,7 @@ void minigame_loop(float deltaTime)
   } else if (countDownTimer > -GO_DELAY) {
     rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, };
     rdpq_text_print(&textparms, FONT_TEXT, 0, 100, "GO!");
-  } else if (isEnding) {
+  } else if (isEnding && endTimer >= WIN_SHOW_DELAY) {
     rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, };
     rdpq_text_printf(&textparms, FONT_TEXT, 0, 100, "Player %d wins!", winner+1);
   }
@@ -507,6 +530,10 @@ void minigame_cleanup(void)
     player_cleanup(&players[i]);
   }
 
+  wav64_close(&sfx_start);
+  wav64_close(&sfx_countdown);
+  wav64_close(&sfx_stop);
+  wav64_close(&sfx_winner);
   xm64player_stop(&music);
   xm64player_close(&music);
   rspq_block_free(dplMap);

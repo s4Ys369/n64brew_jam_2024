@@ -51,10 +51,10 @@ float countdown_timer;
 bool is_ending;
 float end_timer;
 
-static wav64_t sfx_start;
-static wav64_t sfx_countdown;
-static wav64_t sfx_stop;
-static wav64_t sfx_winner;
+wav64_t sfx_start;
+wav64_t sfx_countdown;
+wav64_t sfx_stop;
+wav64_t sfx_winner;
 
 bool has_player_won(PlyNum player)
 {
@@ -123,20 +123,20 @@ void minigame_fixedloop(float deltatime)
         float prevtime = countdown_timer;
         countdown_timer -= deltatime;
         if ((int)prevtime != (int)countdown_timer && countdown_timer >= 0)
-            wav64_play(&sfx_countdown, 0);
+            wav64_play(&sfx_countdown, 31);
     }
 
     if (is_ending) {
         float prevendtime = end_timer;
         end_timer += deltatime;
         if ((int)prevendtime != (int)end_timer && (int)end_timer == WIN_SHOW_DELAY)
-            wav64_play(&sfx_winner, 0);
+            wav64_play(&sfx_winner, 31);
         if (end_timer > WIN_DELAY) minigame_end();
     }
 
     if (!can_control()) return;
     if (!couldcontrol && can_control())
-        wav64_play(&sfx_start, 0);
+        wav64_play(&sfx_start, 31);
 
     for (size_t i = 0; i < MAXPLAYERS; i++)
     {
@@ -159,7 +159,7 @@ void minigame_fixedloop(float deltatime)
         if (has_player_won(i)) {
             core_set_winner(i);
             is_ending = true;
-            wav64_play(&sfx_stop, 0);
+            wav64_play(&sfx_stop, 31);
         }
     }
 }
