@@ -49,6 +49,10 @@ Vertex vertices[MAX_VERTICES];
 Face faces[MAX_FACES];
 int num_vertices = 0;
 int num_faces = 0;
+rspq_block_t *poly = NULL;
+sprite_t *bkg = NULL;
+rdpq_font_t *font = NULL;
+#define FONT_TEXT 1
 
 float angleX = 0.0f;
 float angleY = 0.0f;
@@ -134,12 +138,40 @@ void compute_convex_hull() {
     } while (p != start && num_faces < MAX_FACES);
 }
 
+void draw_polyhedron(void)
+{
+    glBegin(GL_TRIANGLES);
+    for (int i = 0; i < num_faces; i++) {
+        Vertex v1 = vertices[faces[i].v1];
+        Vertex v2 = vertices[faces[i].v2];
+        Vertex v3 = vertices[faces[i].v3];
+
+        Vertex normal;
+        normal.x = (v2.y - v1.y) * (v3.z - v1.z) - (v2.z - v1.z) * (v3.y - v1.y);
+        normal.y = (v2.z - v1.z) * (v3.x - v1.x) - (v2.x - v1.x) * (v3.z - v1.z);
+        normal.z = (v2.x - v1.x) * (v3.y - v1.y) - (v2.y - v1.y) * (v3.x - v1.x);
+
+        glNormal3f(normal.x, normal.y, normal.z);
+        glColor4f(faces[i].color.r, faces[i].color.g, faces[i].color.b, 0.8f);
+
+        glVertex3f(v1.x, v1.y, v1.z);
+        glVertex3f(v2.x, v2.y, v2.z);
+        glVertex3f(v3.x, v3.y, v3.z);
+    }
+    glEnd();
+}
+
 void generate_random_polyhedron(int num_vertices_input, float range_min, float range_max) {
     num_vertices = num_vertices_input;
     for (int i = 0; i < num_vertices; i++) {
         vertices[i] = random_vertex(range_min, range_max);
     }
     compute_convex_hull();
+
+    if (poly) rspq_block_free(poly);
+    rspq_block_begin();
+        draw_polyhedron();
+    poly = rspq_block_end();
 }
 
 void minigame_init()
@@ -147,7 +179,6 @@ void minigame_init()
     display_init(RESOLUTION_640x480, DEPTH_16_BPP, 2, GAMMA_NONE, ANTIALIAS_RESAMPLE);
     gl_init();
 
-    // glEnable(GL_DEPTH_TEST);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);  // Colore di sfondo
 
     glEnable(GL_LIGHTING);
@@ -155,12 +186,10 @@ void minigame_init()
 
     GLfloat light_dir[] = { -1.0f, -1.0f, -1.0f, 0.0f };
     GLfloat light_diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    GLfloat light_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    GLfloat light_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+    GLfloat light_ambient[] = { 0.5f, 0.5f, 0.5f, 1.0f };
 
     glLightfv(GL_LIGHT0, GL_POSITION, light_dir);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
     glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
 
     glEnable(GL_NORMALIZE);
@@ -176,37 +205,22 @@ void minigame_init()
     glLoadIdentity();
     glFrustum(-near_plane*aspect_ratio, near_plane*aspect_ratio, -near_plane, near_plane, near_plane, far_plane);
 
-    // int num_vertices = rand() % 20 + 5;
-    generate_random_polyhedron(10, -1.0f, 1.0f);
+    int num_vertices = rand() % 10 + 5;
+    generate_random_polyhedron(num_vertices, -1.0f, 1.0f);
+
+    bkg = sprite_load("rom:/polyquiz/plaster2.ci4.sprite");
+    font = rdpq_font_load("rom:/polyquiz/abaddon.font64");
+    rdpq_text_register_font(FONT_TEXT, font);
 }
 
 void minigame_cleanup()
 {
+    rdpq_text_unregister_font(FONT_TEXT);
+    rdpq_font_free(font);
+    sprite_free(bkg);
+    if (poly) rspq_block_free(poly);
     gl_close();
     display_close();
-}
-
-void draw_polyhedron(void)
-{
-    glBegin(GL_TRIANGLES);
-    for (int i = 0; i < num_faces; i++) {
-        Vertex v1 = vertices[faces[i].v1];
-        Vertex v2 = vertices[faces[i].v2];
-        Vertex v3 = vertices[faces[i].v3];
-
-        Vertex normal;
-        normal.x = (v2.y - v1.y) * (v3.z - v1.z) - (v2.z - v1.z) * (v3.y - v1.y);
-        normal.y = (v2.z - v1.z) * (v3.x - v1.x) - (v2.x - v1.x) * (v3.z - v1.z);
-        normal.z = (v2.x - v1.x) * (v3.y - v1.y) - (v2.y - v1.y) * (v3.x - v1.x);
-
-        glNormal3f(normal.x, normal.y, normal.z);
-        glColor3f(faces[i].color.r, faces[i].color.g, faces[i].color.b);
-
-        glVertex3f(v1.x, v1.y, v1.z);
-        glVertex3f(v2.x, v2.y, v2.z);
-        glVertex3f(v3.x, v3.y, v3.z);
-    }
-    glEnd();
 }
 
 void minigame_fixedloop(float dt)
@@ -227,24 +241,36 @@ void minigame_loop(float dt)
     surface_t *disp = display_get();
     rdpq_attach(disp, NULL);
 
+    rdpq_set_mode_copy(false);
+    rdpq_sprite_upload(TILE0, bkg, &(rdpq_texparms_t){
+        .s.repeats = REPEAT_INFINITE, .t.repeats = REPEAT_INFINITE,
+    });
+    rdpq_texture_rectangle(TILE0, 0, 0, display_get_width(), display_get_height(), 0, 0);
+
     gl_context_begin();
 
     // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClear(GL_COLOR_BUFFER_BIT);
+    // glClear(GL_COLOR_BUFFER_BIT);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gluLookAt(0.0, 0.0, 4.0,  // Camera pos
+    gluLookAt(0.0, 0.0, 3.0,  // Camera pos
               0.0, 0.0, 0.0,  // Look at
               0.0, 1.0, 0.0); // Up vector
 
+    glScalef(1.2f, 1.2f, 1.2f);
     glRotatef(angleX, 1.0f, 0.0f, 0.0f);
     glRotatef(angleY, 0.0f, 1.0f, 0.0f);
     glRotatef(angleZ, 0.0f, 0.0f, 1.0f);
 
-    draw_polyhedron();
+    rspq_block_run(poly);
 
     gl_context_end();
+
+    rdpq_set_mode_standard();
+    rdpq_text_printf(&(rdpq_textparms_t){
+        .width = display_get_width(), .align = ALIGN_CENTER,
+    }, FONT_TEXT, 0, 50, "Guess the number of faces!");
 
     rdpq_detach_show();
 }
