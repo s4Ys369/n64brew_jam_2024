@@ -307,9 +307,6 @@ void generate_ai_guesses(void)
         player[i].ai_guess_times[2] = t2;
         player[i].ai_guess_times[1] = t1;
         player[i].ai_guess_times[0] = t0;
-
-        debugf("AI %d guesses: %d (%.2f), %d (%.2f), %d (%.2f)\n", i, player[i].ai_guesses[0], player[i].ai_guess_times[0],
-            player[i].ai_guesses[1], player[i].ai_guess_times[1], player[i].ai_guesses[2], player[i].ai_guess_times[2]);
     }
 }
 
@@ -532,11 +529,17 @@ void minigame_loop(float dt)
             }
         }
 
-        rdpq_text_printf(&(rdpq_textparms_t){
-            .width = display_get_width(), .align = ALIGN_CENTER,
-            .style_id = 1,
-        }, FONT_TEXT, 0, 240, "Player %d wins!", closest+1);
-
+        if (closest != -1) {
+            rdpq_text_printf(&(rdpq_textparms_t){
+                .width = display_get_width(), .align = ALIGN_CENTER,
+                .style_id = 1,
+            }, FONT_TEXT, 0, 240, "Player %d wins!", closest+1);
+        } else {
+            rdpq_text_printf(&(rdpq_textparms_t){
+                .width = display_get_width(), .align = ALIGN_CENTER,
+                .style_id = 1,
+            }, FONT_TEXT, 0, 240, "Nobody wins");
+        }
         break;
     default:
         break;
