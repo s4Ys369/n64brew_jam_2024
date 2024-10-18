@@ -7,6 +7,7 @@
 
 #define MAX_VERTICES 100
 #define MAX_FACES 200
+#define NUM_BKGS 20
 
 const MinigameDef minigame_def = {
     .gamename = "Polyquiz",
@@ -50,10 +51,11 @@ Face faces[MAX_FACES];
 int num_vertices = 0;
 int num_faces = 0;
 rspq_block_t *poly = NULL;
-sprite_t *bkg = NULL;
+sprite_t *bkg[NUM_BKGS];
 rdpq_font_t *font = NULL;
 #define FONT_TEXT 1
 
+int cur_bkg = 0;
 float angle = 0.0f;
 float rotationSpeed = 50.0f;
 float axisX = 0.0f, axisY = 1.0f, axisZ = 0.0f; 
@@ -222,6 +224,8 @@ void generate_random_polyhedron(int num_vertices_input, float range_min, float r
     rspq_block_begin();
         draw_polyhedron();
     poly = rspq_block_end();
+
+    cur_bkg = rand() % NUM_BKGS;
 }
 
 void minigame_init()
@@ -258,7 +262,11 @@ void minigame_init()
     int num_vertices = rand() % 10 + 5;
     generate_random_polyhedron(num_vertices, -1.0f, 1.0f);
 
-    bkg = sprite_load("rom:/polyquiz/plaster2.ci4.sprite");
+    for (int i=0; i<NUM_BKGS; i++) {
+        char fn[64];
+        sprintf(fn, "rom:/polyquiz/plaster%d.ci4.sprite", i+1);
+        bkg[i] = sprite_load(fn);
+    }
     font = rdpq_font_load("rom:/polyquiz/abaddon.font64");
     rdpq_text_register_font(FONT_TEXT, font);
     rdpq_font_style(font, 0, &(rdpq_fontstyle_t){
@@ -274,7 +282,9 @@ void minigame_cleanup()
 {
     rdpq_text_unregister_font(FONT_TEXT);
     rdpq_font_free(font);
-    sprite_free(bkg);
+    for (int i=0; i<NUM_BKGS; i++) {
+        sprite_free(bkg[i]);
+    }
     if (poly) rspq_block_free(poly);
     gl_close();
     display_close();
@@ -321,7 +331,7 @@ void minigame_loop(float dt)
     rdpq_attach(disp, NULL);
 
     rdpq_set_mode_copy(false);
-    rdpq_sprite_upload(TILE0, bkg, &(rdpq_texparms_t){
+    rdpq_sprite_upload(TILE0, bkg[cur_bkg], &(rdpq_texparms_t){
         .s.repeats = REPEAT_INFINITE, .t.repeats = REPEAT_INFINITE,
     });
     rdpq_texture_rectangle(TILE0, 0, 0, display_get_width(), display_get_height(), 0, 0);
