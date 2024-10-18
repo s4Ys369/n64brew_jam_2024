@@ -8,6 +8,7 @@ This file contains the code for the basic menu
 #include <string.h>
 #include "menu.h"
 #include "core.h"
+#include "config.h"
 
 
 /*********************************
@@ -84,8 +85,8 @@ const char *get_difficulty_name(AiDiff difficulty)
 }
 
 static uint32_t max_playercount;
-static uint32_t playercount = 1;
-static AiDiff ai_difficulty = DIFF_MEDIUM;
+static uint32_t playercount = PLAYER_COUNT;
+static AiDiff ai_difficulty = AI_DIFFICULTY;
 static bool is_first_time = true;
 
 static menu_screen current_screen;  // Current menu screen
@@ -161,21 +162,39 @@ char* menu(void)
         if (joypad_is_connected(i)) max_playercount++;
     }
 
-    // Show the player count screen when booting the ROM. Go straight to the minigame screen when returning from a minigame.
-    set_menu_screen(is_first_time ? SCREEN_PLAYERCOUNT : SCREEN_MINIGAME);
-
     bool has_moved_selection = false;
+    bool menu_done = false;
 
     float yselect = -1;
     float yselect_target = -1;
-
-    int selected_minigame = -1;
 
     int sorted_indices[global_minigame_count];
     for (int i = 0; i < global_minigame_count; i++) sorted_indices[i] = i;
     qsort(sorted_indices, global_minigame_count, sizeof(int), minigame_sort);
 
-    while (1) {
+    int selected_minigame = -1;
+    if (SKIP_MINIGAMESELECTION) {
+        for (int i = 0; i < global_minigame_count; i++) {
+            if (!strcasecmp(global_minigame_list[sorted_indices[i]].internalname, MINIGAME_TO_TEST)) {
+                selected_minigame = i;
+                break;
+            }
+        }
+    }
+
+    // Set the initial menu screen
+    menu_screen targetscreen = SCREEN_MINIGAME;
+    if (is_first_time)
+        targetscreen = SCREEN_PLAYERCOUNT;
+    if (targetscreen == SCREEN_PLAYERCOUNT && SKIP_PLAYERSELECTION)
+        targetscreen = SCREEN_AIDIFFICULTY;
+    if (targetscreen == SCREEN_AIDIFFICULTY && (SKIP_DIFFICULTYSELECTION || playercount == MAXPLAYERS))
+        targetscreen = SCREEN_MINIGAME;
+    if (targetscreen == SCREEN_MINIGAME && SKIP_MINIGAMESELECTION)
+        menu_done = true;
+    set_menu_screen(targetscreen);
+
+    while (!menu_done) {
         joypad_poll();
 
         int selection_offset = get_selection_offset(joypad_get_direction(JOYPAD_PORT_1, JOYPAD_2D_ANY));
@@ -193,36 +212,41 @@ char* menu(void)
 
         if (btn.a) {
             switch (current_screen) {
-            case SCREEN_PLAYERCOUNT:
-                playercount = select+1;
-                if (playercount == MAXPLAYERS) {
-                    set_menu_screen(SCREEN_MINIGAME);
-                } else {
-                    set_menu_screen(SCREEN_AIDIFFICULTY);
-                }
-                break;
-            case SCREEN_AIDIFFICULTY:
-                ai_difficulty = select;
-                set_menu_screen(SCREEN_MINIGAME);
-                break;
-            case SCREEN_MINIGAME:
-                selected_minigame = select;
-                break;
+                case SCREEN_PLAYERCOUNT:
+                    playercount = select+1;
+                    targetscreen = SCREEN_AIDIFFICULTY;
+                    if (targetscreen == SCREEN_AIDIFFICULTY && (SKIP_DIFFICULTYSELECTION || playercount == MAXPLAYERS))
+                        targetscreen = SCREEN_MINIGAME;
+                    if (targetscreen == SCREEN_MINIGAME && SKIP_MINIGAMESELECTION)
+                        menu_done = true;
+                    set_menu_screen(targetscreen);
+                    break;
+                case SCREEN_AIDIFFICULTY:
+                    ai_difficulty = select;
+                    if (SKIP_MINIGAMESELECTION)
+                        menu_done = true;
+                    else
+                        set_menu_screen(SCREEN_MINIGAME);
+                    break;
+                case SCREEN_MINIGAME:
+                    selected_minigame = select;
+                    menu_done = true;
+                    break;
             }
         } else if (btn.b) {
             switch (current_screen) {
-            case SCREEN_AIDIFFICULTY:
-                set_menu_screen(SCREEN_PLAYERCOUNT);
-                break;
-            case SCREEN_MINIGAME:
-                if (playercount == MAXPLAYERS) {
+                case SCREEN_AIDIFFICULTY:
                     set_menu_screen(SCREEN_PLAYERCOUNT);
-                } else {
-                    set_menu_screen(SCREEN_AIDIFFICULTY);
-                }
-                break;
-            default:
-                break;
+                    break;
+                case SCREEN_MINIGAME:
+                    if (playercount == MAXPLAYERS) {
+                        set_menu_screen(SCREEN_PLAYERCOUNT);
+                    } else {
+                        set_menu_screen(SCREEN_AIDIFFICULTY);
+                    }
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -289,8 +313,6 @@ char* menu(void)
                 "Mem: %d KiB", heap_stats.used/1024);
         }
         rdpq_detach_show();
-
-        if (selected_minigame >= 0) break;
     }
 
     is_first_time = false;
@@ -305,5 +327,8 @@ char* menu(void)
     display_close();
     core_set_playercount(playercount);
     core_set_aidifficulty(ai_difficulty);
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Warray-bounds"
     return global_minigame_list[sorted_indices[selected_minigame]].internalname;
+    #pragma GCC diagnostic pop
 }

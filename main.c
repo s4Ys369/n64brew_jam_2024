@@ -58,14 +58,8 @@ int main()
         float accumulator = 0;
         const float dt = DELTATIME;
 
-        // Set the test game (or show the menu)
-        #if SKIP_MENU
-            game = MINIGAME_TO_TEST;
-            core_set_playercount(PLAYER_COUNT);
-            core_set_aidifficulty(AI_DIFFICULTY);
-        #else
-            game = menu();
-        #endif
+        // Show the menu
+        game = menu();
         
         // Set the initial minigame
         minigame_play(game);
