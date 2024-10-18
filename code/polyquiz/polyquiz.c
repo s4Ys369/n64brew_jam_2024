@@ -9,6 +9,10 @@
 #define MAX_FACES 200
 #define NUM_BKGS 20
 
+#define MAX_TIME  20.0f
+#define FADEIN_TIME 2.0f
+#define FADEOUT_TIME 3.0f
+
 const MinigameDef minigame_def = {
     .gamename = "Polyquiz",
     .developername = "Rasky",
@@ -55,10 +59,29 @@ sprite_t *bkg[NUM_BKGS];
 rdpq_font_t *font = NULL;
 #define FONT_TEXT 1
 
+typedef enum {
+    GS_FADEIN,
+    GS_PLAY,
+    GS_FADEOUT,
+    GS_RESULT,
+} GameState;
+
+GameState state;
+float state_time;
+
 int cur_bkg = 0;
 float angle = 0.0f;
 float rotationSpeed = 50.0f;
 float axisX = 0.0f, axisY = 1.0f, axisZ = 0.0f; 
+float zoom = 1.0f;
+
+struct {
+    int guess;
+    bool confirmed;
+    float confirm_time;
+    int ai_guesses[3];
+    float ai_guess_times[3];
+} player[4];
 
 void generateRandomAxis() {
     axisX = ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
@@ -77,8 +100,8 @@ Vertex random_vertex(float range_min, float range_max) {
     Vertex v;
 
     float radius = (range_max - range_min)/2;
-    float theta = ((float)rand() / RAND_MAX) * 2.0f * 3.1415628f;  // Angolo azimutale [0, 2*PI]
-    float phi = acosf(1.0f - 2.0f * ((float)rand() / RAND_MAX));  // Angolo polare [0, PI]
+    float theta = ((float)rand() / RAND_MAX) * 2.0f * 3.1415628f;
+    float phi = acosf(1.0f - 2.0f * ((float)rand() / RAND_MAX));
 
     v.x = radius * sinf(phi) * cosf(theta);
     v.y = radius * sinf(phi) * sinf(theta);
@@ -228,6 +251,68 @@ void generate_random_polyhedron(int num_vertices_input, float range_min, float r
     cur_bkg = rand() % NUM_BKGS;
 }
 
+float gauss_random(float mean, float stddev) {
+    static int has_spare = 0;
+    static float spare;    
+
+    if (has_spare) {
+        has_spare = 0;
+        return mean + stddev * spare;
+    }
+
+    has_spare = 1;
+    float u, v, s;
+    do {
+        u = (rand() / ((float) RAND_MAX)) * 2.0 - 1.0;
+        v = (rand() / ((float) RAND_MAX)) * 2.0 - 1.0;
+        s = u * u + v * v;
+    } while (s >= 1.0 || s == 0.0);
+
+    s = sqrtf(-2.0 * logf(s) / s);
+    spare = v * s;
+    return mean + stddev * u * s;
+}
+
+float random_gaussian_truncated(float A, float B, float C, float sigma) {
+    float x;
+    do {
+        float u1 = rand() / (float) RAND_MAX;
+        float u2 = rand() / (float) RAND_MAX;
+        float z0 = sqrtf(-2.0 * logf(u1)) * cosf(2.0 * 3.1415628f * u2);
+        x = C + sigma * z0;
+    } while (x < A || x > B);
+    return x;
+}
+
+void generate_ai_guesses(void)
+{
+    float stddev[] = { 5.0f, 3.0f, 1.0f };
+    float times[] = { 15.0f, 10.0f, 5.0f };
+
+    AiDiff diff = core_get_aidifficulty();
+    for (int i=core_get_playercount(); i<4; i++) {
+        player[i].ai_guesses[2] = gauss_random(num_faces, stddev[diff]*1.0f);
+        player[i].ai_guesses[1] = gauss_random(num_faces, stddev[diff]*2.0f);
+        player[i].ai_guesses[0] = gauss_random(num_faces, stddev[diff]*3.0f);
+
+        for (int j=0;j<3;j++) {
+            if (player[i].ai_guesses[j] < 0) player[i].ai_guesses[j] = 0;
+            if (player[i].ai_guesses[j] > 40) player[i].ai_guesses[j] = 40;
+        }
+
+        float t2 = random_gaussian_truncated(times[diff]/2, MAX_TIME*1.3f, times[diff], stddev[diff]*2);
+        float t1 = random_gaussian_truncated(t2*0.4f, t2*0.8f, t2*0.6f, stddev[diff]*2);
+        float t0 = random_gaussian_truncated(t1*0.4f, t1*0.8f, t1*0.6f, stddev[diff]*2);
+
+        player[i].ai_guess_times[2] = t2;
+        player[i].ai_guess_times[1] = t1;
+        player[i].ai_guess_times[0] = t0;
+
+        debugf("AI %d guesses: %d (%.2f), %d (%.2f), %d (%.2f)\n", i, player[i].ai_guesses[0], player[i].ai_guess_times[0],
+            player[i].ai_guesses[1], player[i].ai_guess_times[1], player[i].ai_guesses[2], player[i].ai_guess_times[2]);
+    }
+}
+
 void minigame_init()
 {
     display_init(RESOLUTION_640x480, DEPTH_16_BPP, 2, GAMMA_NONE, FILTERS_RESAMPLE_ANTIALIAS);
@@ -276,6 +361,16 @@ void minigame_init()
         .color = RGBA32(palette[2].r*255, palette[2].g*255, palette[2].b*255, 0xFF),
         .outline_color = RGBA32(0x0, 0x0, 0x0, 0xFF),
     });
+    rdpq_font_style(font, 2, &(rdpq_fontstyle_t){
+        .color = RGBA32(palette[0].r*255, palette[0].g*255, palette[0].b*255, 0xFF),
+        .outline_color = RGBA32(0x0, 0x0, 0x0, 0xFF),
+    });
+
+    generate_ai_guesses();
+
+    state = GS_FADEIN;
+    state_time = FADEIN_TIME;
+    zoom = 0.001f;
 }
 
 void minigame_cleanup()
@@ -292,20 +387,69 @@ void minigame_cleanup()
 
 void minigame_fixedloop(float dt)
 {
-    angle += rotationSpeed * dt;
-    if (angle > 360.0f) {
-        angle -= 360.0f;
+    state_time -= dt;
+    switch (state) {
+    case GS_PLAY:
+        angle += rotationSpeed * dt;
+        if (angle > 360.0f) {
+            angle -= 360.0f;
+            generateRandomAxis();
+        }
+        break;
+    case GS_FADEIN:
+        // Zoom in the polyhedron
+        zoom = 1.0f - (state_time / FADEIN_TIME);
+        if (state_time <= 0) {
+            state = GS_PLAY;
+            state_time = 20.0f;
+        }
+        return;
+    case GS_FADEOUT:
+        // Zoom out the polyhedron
+        zoom = 1.0f * (state_time / FADEOUT_TIME);
+        if (state_time <= 0) {
+            state = GS_RESULT;
+            state_time = 5.0f;
+        }
+        return;
+    case GS_RESULT:
+        if (state_time <= 0) {
+            minigame_end();
+        }
+        return;
+    }
 
-        // Cambia l'asse di rotazione ogni volta che l'angolo raggiunge 360 gradi
-        generateRandomAxis();
+    int num_humans = core_get_playercount();
+    for (int i=num_humans; i<4; i++) {
+        if (player[i].confirmed) continue;
+        for (int j=0; j<3; j++) 
+            player[i].ai_guess_times[j] -= dt;
+        for (int j=0; j<3; j++) {
+            if (player[i].ai_guess_times[j] > 0) {
+                int target_guess = player[i].ai_guesses[j] * (1 - player[i].ai_guess_times[j] / MAX_TIME);
+                if (player[i].guess < target_guess) player[i].guess++;
+                if (player[i].guess > target_guess) player[i].guess--;
+                break;
+            } else if (j == 2 && !player[i].confirmed) {
+                player[i].confirmed = true;
+                player[i].guess = player[i].ai_guesses[j];
+            }
+        }
+    }
+
+    // Check if all players have confirmed
+    bool all_confirmed = true;
+    for (int i=0; i<4; i++) {
+        if (!player[i].confirmed) {
+            all_confirmed = false;
+            break;
+        }
+    }
+    if (all_confirmed || state_time <= 0) {
+        state = GS_FADEOUT;
+        state_time = FADEOUT_TIME;
     }
 }
-
-struct {
-    int guess;
-    bool confirmed;
-    float confirm_time;
-} player[4];
 
 void minigame_loop(float dt)
 {
@@ -315,18 +459,21 @@ void minigame_loop(float dt)
         minigame_end();
     }
 
-    for (int i=0; i<4; i++) {
-        if (player[i].confirmed) break;
-        joypad_buttons_t btn = joypad_get_buttons_pressed(JOYPAD_PORT_1+i);
-        if (btn.d_up) player[i].guess++;
-        if (btn.d_down) player[i].guess--;
-        if (btn.d_left) player[i].guess -= 10;
-        if (btn.d_right) player[i].guess += 10;
-        if (player[i].guess < 0) player[i].guess = 0;
-        if (player[i].guess > 30) player[i].guess = 30;
-        if (btn.a) player[i].confirmed = true;
+    if (state == GS_PLAY) {
+        int num_humans = core_get_playercount();
+        for (int i=0; i<num_humans; i++) {
+            if (player[i].confirmed) break;
+            joypad_buttons_t btn = joypad_get_buttons_pressed(JOYPAD_PORT_1+i);
+            if (btn.d_up) player[i].guess++;
+            if (btn.d_down) player[i].guess--;
+            if (btn.d_left) player[i].guess -= 10;
+            if (btn.d_right) player[i].guess += 10;
+            if (player[i].guess < 0) player[i].guess = 0;
+            if (player[i].guess > 40) player[i].guess = 40;
+            if (btn.a) player[i].confirmed = true;
+        }
     }
-
+    
     surface_t *disp = display_get();
     rdpq_attach(disp, NULL);
 
@@ -344,6 +491,7 @@ void minigame_loop(float dt)
               0.0, 0.0, 0.0,  // Look at
               0.0, 1.0, 0.0); // Up vector
 
+    glScalef(zoom, zoom, zoom);
     glRotatef(angle, axisX, axisY, axisZ);
 
     rspq_block_run(poly);
@@ -351,15 +499,56 @@ void minigame_loop(float dt)
     gl_context_end();
 
     rdpq_set_mode_standard();
-    rdpq_text_printf(&(rdpq_textparms_t){
-        .width = display_get_width(), .align = ALIGN_CENTER,
-    }, FONT_TEXT, 0, 50, "Guess the number of faces!");
+    switch (state) {
+    case GS_FADEIN:
+        rdpq_text_printf(&(rdpq_textparms_t){
+            .width = display_get_width(), .align = ALIGN_CENTER,
+        }, FONT_TEXT, 0, 50, "Guess the number of faces!");
+        break;
+    case GS_PLAY: {
+        char buf[16];
+        sprintf(buf, "%02d:%02d", (int)state_time, (int)((state_time - (int)state_time) * 100));
+        rdpq_text_printf(NULL, FONT_TEXT, 250, 50, "%c", buf[0]);
+        rdpq_text_printf(NULL, FONT_TEXT, 270, 50, "%c", buf[1]);
+        rdpq_text_printf(NULL, FONT_TEXT, 295, 50, "%c", ':');
+        rdpq_text_printf(NULL, FONT_TEXT, 310, 50, "%c", buf[3]);
+        rdpq_text_printf(NULL, FONT_TEXT, 330, 50, "%c", buf[4]);
+    }   break;
+    case GS_RESULT:
+        rdpq_text_printf(&(rdpq_textparms_t){
+            .width = display_get_width(), .align = ALIGN_CENTER,
+        }, FONT_TEXT, 0, 50, "Faces: %d", num_faces);
 
-    for (int i=0; i<4; i++) {
-        rdpq_textparms_t parms = {
-            .style_id = player[i].confirmed ? 1 : 0,
-        };
-        rdpq_text_printf(&parms, FONT_TEXT, 100+i*140, 460, "%d", player[i].guess);
+        // Found the player with the closest guess, and between evens,
+        // the one with the earliest guess
+        int closest = -1;
+        int closest_diff = 1000;
+        for (int i=0; i<4; i++) {
+            if (!player[i].confirmed) continue;
+            int diff = abs(player[i].guess - num_faces);
+            if (diff < closest_diff || (diff == closest_diff && player[i].guess < player[closest].guess)) {
+                closest = i;
+                closest_diff = diff;
+            }
+        }
+
+        rdpq_text_printf(&(rdpq_textparms_t){
+            .width = display_get_width(), .align = ALIGN_CENTER,
+            .style_id = 1,
+        }, FONT_TEXT, 0, 240, "Player %d wins!", closest+1);
+
+        break;
+    default:
+        break;
+    }
+
+    if (state != GS_FADEIN) {
+        for (int i=0; i<4; i++) {
+            rdpq_textparms_t parms = {
+                .style_id = player[i].confirmed ? 1 : (state == GS_PLAY ? 0 : 2),
+            };
+            rdpq_text_printf(&parms, FONT_TEXT, 100+i*140, 460, "%d", player[i].guess);
+        }
     }
 
     rdpq_detach_show();
