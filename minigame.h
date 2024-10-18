@@ -2,7 +2,7 @@
 #define GAMEJAM2024_MINIGAME_H
 
     /***************************************************************
-                       Public Minigame Functions
+                       Public Minigame Constants
     ***************************************************************/
 
     // You need to have one of these structs defined globally for the minigame manager to detect it
@@ -13,6 +13,10 @@
         char* instructions;
     } MinigameDef;
 
+
+    /***************************************************************
+                       Public Minigame Functions
+    ***************************************************************/
 
     /*==============================
         minigame_end

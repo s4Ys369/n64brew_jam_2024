@@ -63,4 +63,14 @@ When in doubt, refer to how the example games are done.
 
 ### Configuration during testing
 
-When you boot the ROM, a small menu appears to let you configure the testing environment. Alternatively, you can modify the provided `config.h` file to automatically set a specific configuration (and thus skip the menu). **This is the only core file which you should be making any modifications to,** you should avoid making **any changes** to the template itself. If you encounter a bug in the template, feel free to open an issue or create a pull request with a fix **so that said fix can be made available to all users**.
+When you boot the ROM, a small menu appears to let you configure the testing environment. Alternatively, you can modify the provided `config.h` file to automatically set a specific configuration (and thus skip the menu). **This is the only core file which you should be making any modifications to**, you should avoid making **any changes** to the template itself. If you encounter a bug in the template, feel free to open an issue or create a pull request with a fix **so that said fix can be made available to all users**.
+
+
+### Minigame QOL recommendations
+
+Here's some suggestions of QOL things you should do for minigames, they are **not** requirements:
+* Have a 3 second countdown at the start. In the examples, we are using `assets/core/Countdown.wav` for the countdown, and `assets/core/Start.wav` when the minigame starts.
+* In the examples, we are also using `assets/core/Stop.wav` when the minigame ends, and then `assets/core/Winner.wav` when the winner is announced.
+* Allow the minigame to be paused by pressing START, and possibly exit as well
+* It's recommended to keep player colors consistent between games. We set some definitions in `core.h` which you should use. 
+* We have button icons available in `assets/core` (we're missing some, working on it)

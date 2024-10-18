@@ -2,7 +2,7 @@
 #define GAMEJAM2024_CORE_H
 
     /***************************************************************
-                         Public Core Functions
+                         Public Core Constants
     ***************************************************************/
 
     // Use this to standardize player colors
@@ -25,6 +25,11 @@
         DIFF_MEDIUM = 1,
         DIFF_HARD = 2,
     } AiDiff;
+
+
+    /***************************************************************
+                         Public Core Functions
+    ***************************************************************/
 
     /*==============================
         core_get_playercount
