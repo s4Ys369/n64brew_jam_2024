@@ -2,7 +2,7 @@
 
 Welcome to this year's N64brew game jam. This year, we are creating a large collective minigame ROM, and that requires every project to use the same base. Therefore, we are providing this base template for all projects to fork from. Unfortunately, due to time constraints, we were only able to provide a single template for [Libdragon](https://github.com/DragonMinded/libdragon).
 
-Please ensure that you are using the **latest** `preview` branch of Libdragon, that you have [Tiny3D](https://github.com/HailToDodongo/tiny3d) installed, and that you are able to compile this ROM without issues. This template has been tested for both OpenGL and [Tiny3D](https://github.com/HailToDodongo/tiny3d). We also recommend that you fork this repository so that you can then perform a pull request for your final project. 
+Please ensure that you are using the **latest** `preview` branch of Libdragon, that you have [Tiny3D](https://github.com/HailToDodongo/tiny3d) installed, and that you are able to compile this ROM without issues. This template has both an OpenGL and [Tiny3D](https://github.com/HailToDodongo/tiny3d) example game. We also recommend that you fork this repository so that you can then perform a pull request for your final project (although you will lose the ability to make your repository private). 
 
 
 ### Starting a new minigame
@@ -50,17 +50,17 @@ const MinigameDef minigame_def = {
 };
 ```
 
-Please be careful with cleaning up the memory used by your project, use the `sys_get_heap_stats` function provided by Libdragon to compare the head allocations during your minigame initialization and after everything has been cleaned. Libdragon does use `malloc` internally for handling some things, so if you notice that your cleanup function doesn't account for all bytes, try running your minigame two or three more times. The memory usage should stabilize after the first run of the minigame.
+Please be careful with cleaning up the memory used by your project, use the `sys_get_heap_stats` function provided by Libdragon to compare the heap allocations during your minigame initialization and after everything has been cleaned up. Libdragon does use `malloc` internally for handling some things, so if you notice that your cleanup function doesn't account for all bytes, try running your minigame two or three more times. The memory usage should stabilize after the first run of the minigame.
 
 Both the `core.h` and `minigame.h` headers include some public functions which you should be using in your project. Most importantly, you should be using `core_get_playercontroller` to get a specific player's controller port, as there is no guarantee that player 1's controller is plugged into port 1 on the console.
 
-If you are working on multiple minigames, **do not** cross reference files between them. For instance, if you create a function `myfunc` inside of a minigame, do not try to access `myfunc` in a separate minigame's codebase. You can duplicate the function for your other minigame without any problems, because the minigames are loaded at runtime and thus will not interfere with one another.
+If you are working on multiple minigames, **do not** cross reference files between them. For instance, if you create a function `myfunc` inside of a minigame, do not try to access `myfunc` in a separate minigame's codebase. You can duplicate the function for your other minigame without any problems as the minigames are loaded at runtime and thus will not interfere with one another.
 
-Regarding assets, to avoid name conflicts with other projects in the final ROM, you should create a folder for your specific minigame in the `assets` folder. The makefile will handle everything for you.
+Regarding assets, to avoid name conflicts with other projects in the final ROM, you should create a folder for your specific minigame in the `assets` folder. You can then create an `mk` file to list out any assets which you need for your project (as well as allow you to configure things like fonts). Check the `snake3d` or `polyquiz` game for an example of how to add external assets.
 
-When in doubt, refer to how `examplegame` is done.
+When in doubt, refer to how the example games are done.
 
 
 ### Configuration during testing
 
-`config.h` contains some configuration options inside it to help you test your project, and this is the only core file which you should be making any modifications to. You should avoid making **any changes** to the template itself. If you encounter a bug in the template, feel free to open an issue or create a pull request with a fix **so that said fix can be made available to all users**.
+When you boot the ROM, a small menu appears to let you configure the testing environment. Alternatively, you can modify the provided `config.h` file to automatically set a specific configuration (and thus skip the menu). **This is the only core file which you should be making any modifications to,** you should avoid making **any changes** to the template itself. If you encounter a bug in the template, feel free to open an issue or create a pull request with a fix **so that said fix can be made available to all users**.
