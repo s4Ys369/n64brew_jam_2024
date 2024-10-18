@@ -14,6 +14,7 @@ the game jam.
 #define COUNTDOWN_DELAY     3.0f
 #define GO_DELAY            1.0f
 #define WIN_DELAY           5.0f
+#define WIN_SHOW_DELAY      2.0f
 
 #define POINTS_TO_WIN       150
 #define POINTS_PER_PRESS    6
@@ -49,6 +50,11 @@ uint32_t ai_press_timer[MAXPLAYERS];
 float countdown_timer;
 bool is_ending;
 float end_timer;
+
+static wav64_t sfx_start;
+static wav64_t sfx_countdown;
+static wav64_t sfx_stop;
+static wav64_t sfx_winner;
 
 bool has_player_won(PlyNum player)
 {
@@ -94,6 +100,10 @@ void minigame_init()
     }
 
     countdown_timer = COUNTDOWN_DELAY;
+    wav64_open(&sfx_start, "rom:/core/Start.wav64");
+    wav64_open(&sfx_countdown, "rom:/core/Countdown.wav64");
+    wav64_open(&sfx_stop, "rom:/core/Stop.wav64");
+    wav64_open(&sfx_winner, "rom:/core/Winner.wav64");
 }
 
 
@@ -107,14 +117,26 @@ void minigame_init()
 
 void minigame_fixedloop(float deltatime)
 {
-    countdown_timer -= deltatime;
+    bool couldcontrol = can_control();
+    if (countdown_timer > -GO_DELAY)
+    {
+        float prevtime = countdown_timer;
+        countdown_timer -= deltatime;
+        if ((int)prevtime != (int)countdown_timer && countdown_timer >= 0)
+            wav64_play(&sfx_countdown, 0);
+    }
 
     if (is_ending) {
+        float prevendtime = end_timer;
         end_timer += deltatime;
+        if ((int)prevendtime != (int)end_timer && (int)end_timer == WIN_SHOW_DELAY)
+            wav64_play(&sfx_winner, 0);
         if (end_timer > WIN_DELAY) minigame_end();
     }
 
     if (!can_control()) return;
+    if (!couldcontrol && can_control())
+        wav64_play(&sfx_start, 0);
 
     for (size_t i = 0; i < MAXPLAYERS; i++)
     {
@@ -137,6 +159,7 @@ void minigame_fixedloop(float deltatime)
         if (has_player_won(i)) {
             core_set_winner(i);
             is_ending = true;
+            wav64_play(&sfx_stop, 0);
         }
     }
 }
@@ -199,7 +222,7 @@ void minigame_loop(float deltatime)
     } else if (countdown_timer > -GO_DELAY) {
         // For a short time after countdown is over, draw "GO!"
         rdpq_text_print(NULL, FONT_BUILTIN_DEBUG_MONO, 150, 100, "GO!");
-    } else if (is_ending) {
+    } else if (is_ending && end_timer >= WIN_SHOW_DELAY) {
         // Draw winner announcement (There might be multiple winners)
         int ycur = 100;
         for (size_t i = 0; i < MAXPLAYERS; i++)
@@ -220,6 +243,10 @@ void minigame_loop(float deltatime)
 
 void minigame_cleanup()
 {
+    wav64_close(&sfx_start);
+    wav64_close(&sfx_countdown);
+    wav64_close(&sfx_stop);
+    wav64_close(&sfx_winner);
     display_close();
     rdpq_text_unregister_font(FONT_TEXT);
     rdpq_font_free(font);
