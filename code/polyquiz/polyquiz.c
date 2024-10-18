@@ -71,7 +71,7 @@ float state_time;
 
 int cur_bkg = 0;
 float angle = 0.0f;
-float rotationSpeed = 50.0f;
+float rotationSpeed = 40.0f;
 float axisX = 0.0f, axisY = 1.0f, axisZ = 0.0f; 
 float zoom = 1.0f;
 
@@ -286,7 +286,7 @@ float random_gaussian_truncated(float A, float B, float C, float sigma) {
 
 void generate_ai_guesses(void)
 {
-    float stddev[] = { 5.0f, 3.0f, 1.0f };
+    float stddev[] = { 7.0f, 4.5f, 2.0f };
     float times[] = { 15.0f, 10.0f, 5.0f };
 
     AiDiff diff = core_get_aidifficulty();
