@@ -12,8 +12,8 @@
 const MinigameDef minigame_def = {
     .gamename = "Polyquiz",
     .developername = "Rasky",
-    .description = "Can you guess how many faces a polyhedron has?",
-    .instructions = "Be the first to guess the right number of faces, or get close!",
+    .description = "Simple OpenGL game. Can you guess how many faces a polyhedron has?",
+    .instructions = "D-Pad to change your guess, A to confirm",
 };
 
 typedef struct {
@@ -359,7 +359,7 @@ void minigame_loop(float dt)
         rdpq_textparms_t parms = {
             .style_id = player[i].confirmed ? 1 : 0,
         };
-        rdpq_text_printf(&parms, FONT_TEXT, 100+i*100, 460, "%d", player[i].guess);
+        rdpq_text_printf(&parms, FONT_TEXT, 100+i*140, 460, "%d", player[i].guess);
     }
 
     rdpq_detach_show();

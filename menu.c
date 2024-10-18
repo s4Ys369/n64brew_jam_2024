@@ -308,8 +308,21 @@ char* menu(void)
             }
         }
 
+        if (current_screen == SCREEN_MINIGAME) {
+            // Show the description of the selected minigame
+            rdpq_textparms_t parms = {
+                .width = 300, .wrap = WRAP_WORD,
+            };
+
+            Minigame *cur = &global_minigame_list[sorted_indices[select]];
+
+            int y0 = 180;
+            y0 += rdpq_text_printf(&parms, FONT_TEXT, 10, y0, "%s\n\n", cur->definition.description).advance_y;
+            y0 += rdpq_text_printf(&parms, FONT_TEXT, 10, y0, "%s\n", cur->definition.instructions).advance_y;
+        }
+
         if (true) {
-            rdpq_text_printf(NULL, FONT_DEBUG, 320-80, 240-20, 
+            rdpq_text_printf(NULL, FONT_DEBUG, 10, 15, 
                 "Mem: %d KiB", heap_stats.used/1024);
         }
         rdpq_detach_show();
