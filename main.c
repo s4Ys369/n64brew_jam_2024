@@ -98,6 +98,8 @@ int main()
         
         // End the current level
         rspq_wait();
+        for (int i=0; i<32; i++)
+            mixer_ch_stop(i);
         minigame_get_game()->funcPointer_cleanup();
         minigame_cleanup();
     }

@@ -2,7 +2,9 @@
 
 Welcome to this year's N64brew game jam. This year, we are creating a large collective minigame ROM, and that requires every project to use the same base. Therefore, we are providing this base template for all projects to fork from. Unfortunately, due to time constraints, we were only able to provide a single template for [Libdragon](https://github.com/DragonMinded/libdragon).
 
-Please ensure that you are using the **latest** `preview` branch of Libdragon, that you have [Tiny3D](https://github.com/HailToDodongo/tiny3d) installed, and that you are able to compile this ROM without issues. This template has both an OpenGL and [Tiny3D](https://github.com/HailToDodongo/tiny3d) example game. We also recommend that you fork this repository so that you can then perform a pull request for your final project (although you will lose the ability to make your repository private). 
+Please ensure that you are using the **latest** `preview` branch of Libdragon, that you have [Tiny3D](https://github.com/HailToDodongo/tiny3d) installed, and that you are able to compile this ROM without issues. This template has both an OpenGL and [Tiny3D](https://github.com/HailToDodongo/tiny3d) example game. We also recommend that you fork this repository so that you can then perform a pull request for your final project (although you will lose the ability to make your repository private).
+
+Please note that the menu provided by the template **is not final** and will be changed in the final ROM.
 
 
 ### Starting a new minigame
@@ -49,6 +51,8 @@ const MinigameDef minigame_def = {
     .instructions = "Press A to win."
 };
 ```
+
+We have provided a blank minigame template in `code/blank/blank_template` that includes everything you need to get started with a new game. Just rename the `blank_template` file to whatever you want (be sure to add the `.c` extension to the end) and the folder name to match whatever your game is.
 
 Please be careful with cleaning up the memory used by your project, use the `sys_get_heap_stats` function provided by Libdragon to compare the heap allocations during your minigame initialization and after everything has been cleaned up. Libdragon does use `malloc` internally for handling some things, so if you notice that your cleanup function doesn't account for all bytes, try running your minigame two or three more times. The memory usage should stabilize after the first run of the minigame.
 
