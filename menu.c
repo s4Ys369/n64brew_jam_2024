@@ -261,13 +261,9 @@ char* menu(void)
 
         rdpq_set_mode_standard();
         rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
-        rdpq_mode_combiner(RDPQ_COMBINER2(
-            // (1-TEX0)*ENV + (TEX0*PRIM)
-            (1,TEX0,ENV,0),             (0,0,0,TEX0),
-            (TEX0_BUG,0,PRIM,COMBINED), (0,0,0,COMBINED)
-        ));
-        rdpq_set_prim_color(BREWFONT);
-        rdpq_set_env_color(BLACK);
+        rdpq_mode_combiner(RDPQ_COMBINER1((PRIM,ENV,TEX0,ENV), (0,0,0,TEX0)));
+        rdpq_set_prim_color(BREWFONT);  // fill color
+        rdpq_set_env_color(BLACK);      // outline color
         rdpq_sprite_blit(logo, 35, 20, NULL);
 
         rdpq_set_mode_standard();
