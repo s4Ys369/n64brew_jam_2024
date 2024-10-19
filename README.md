@@ -52,7 +52,7 @@ const MinigameDef minigame_def = {
 };
 ```
 
-We have provided a blank minigame template in `code/blank/blank_template` that includes everything you need to get started with a new game. Just rename the `blank_template` file to whatever you want (be sure to add the `.c` extension to the end) and the folder name to match whatever your game is.
+We have provided a blank minigame template in `assets/blank/blank_template.c` that includes everything you need to get started with a new game. Just move this folder over to the `code` folder, and rename the `blank` folder and `blank_template.c` file to whatever you want (ideally something that matches your game).
 
 Please be careful with cleaning up the memory used by your project, use the `sys_get_heap_stats` function provided by Libdragon to compare the heap allocations during your minigame initialization and after everything has been cleaned up. Libdragon does use `malloc` internally for handling some things, so if you notice that your cleanup function doesn't account for all bytes, try running your minigame two or three more times. The memory usage should stabilize after the first run of the minigame.
 
