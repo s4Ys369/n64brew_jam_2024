@@ -31,15 +31,13 @@ void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData* con
 	screen_initGameplayViewport(screen);
 	t3d_init((T3DInitParams){});
 
-	ui_init();
-
 	Camera camera = camera_create();
 
 	//light
 	LightData light = light_create();
 
 	//scenery
-	Scenery room = scenery_create(0, "rom:/game/room.t3dm");
+	Scenery room = scenery_create(0, "rom:/game/testLevel.t3dm");
 
 	Scenery n64logo = scenery_create(0, "rom:/game/n64logo.t3dm");
 
@@ -98,7 +96,7 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
 	actorAnimation_init(&player, &player_animation);
 
 	//scenery
-	Scenery room = scenery_create(0, "rom:/game/room.t3dm");
+	Scenery room = scenery_create(0, "rom:/game/testLevel.t3dm");
 
 	Scenery n64logo = scenery_create(0, "rom:/game/n64logo.t3dm");
 

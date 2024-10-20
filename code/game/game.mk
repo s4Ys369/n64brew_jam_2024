@@ -20,12 +20,13 @@ ASSETS_LIST += \
 	filesystem/game/chunkysans.font64 \
 	filesystem/game/TitanOne-Regular.font64
 
-# Add rule for t3d flags instead of editting core makefile
-$(FILESYSTEM_DIR)/%.t3dm: $(ASSETS_DIR)/%.glb
-	@mkdir -p $(dir $@)
-	@echo "    [T3D-MODEL] $@"
-	$(T3D_GLTF_TO_3D) "$<" $@ --base-scale=1 
-	$(N64_BINDIR)/mkasset -c 2 -o $(dir $@) $@
+# t3d flags
+filesystem/game/capsule.t3dm: GLTF_FLAGS = --base-scale=1
+filesystem/game/n64logo.t3dm: GLTF_FLAGS = --base-scale=1
+filesystem/game/pipo.t3dm: GLTF_FLAGS = --base-scale=1
+filesystem/game/room.t3dm: GLTF_FLAGS = --base-scale=1 --bvh
+filesystem/game/testLevel.t3dm: GLTF_FLAGS = --base-scale=1200 --bvh
+
 
 # Add rule for copying JSONs
 $(FILESYSTEM_DIR)/%.json: $(ASSETS_DIR)/%.json
