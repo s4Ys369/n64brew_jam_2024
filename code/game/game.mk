@@ -27,6 +27,9 @@ filesystem/game/pipo.t3dm: GLTF_FLAGS = --base-scale=1
 filesystem/game/room.t3dm: GLTF_FLAGS = --base-scale=1 --bvh
 filesystem/game/testLevel.t3dm: GLTF_FLAGS = --base-scale=1200 --bvh
 
+# font64 flags
+filesystem/game/chunkysans.font64: MKFONT_FLAGS += --outline 2 --size 12
+filesystem/game/TitanOne-Regular.font64: MKFONT_FLAGS += --outline 1 --size 12
 
 # Add rule for copying JSONs
 $(FILESYSTEM_DIR)/%.json: $(ASSETS_DIR)/%.json

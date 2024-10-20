@@ -48,8 +48,6 @@ void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData* con
 		time_setData(timing);
 		controllerData_getInputs(control);
 
-		ui_poll();
-
 		cameraControl_setOrbitalMovement(&camera, control);
 		camera_getOrbitalPosition(&camera, (Vector3){0, 0, 0}, timing->frame_time_s);
 		camera_set(&camera, screen);
@@ -137,6 +135,8 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
    		t3d_matrix_pop(1);
 
 		syncPoint = rspq_syncpoint_new();
+
+		ui_draw();
 
 		rdpq_detach_show();
 	}
