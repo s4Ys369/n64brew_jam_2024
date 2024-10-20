@@ -1,0 +1,677 @@
+{
+    "gravity": [
+        0.0,
+        0.0,
+        -9.8100004196167
+    ],
+    "rigid_bodys": [
+        {
+            "name": "Cube",
+            "location": {
+                "x": 7.152557373046875e-07,
+                "y": -0.1756623089313507,
+                "z": -11.704180717468262
+            },
+            "quaternion": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -0.0,
+                "w": 1.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "dimensions": {
+                "x": 56.2628288269043,
+                "y": 0.39329785108566284,
+                "z": 79.67118835449219
+            },
+            "static": true,
+            "kinematic": false,
+            "mass": 1.0,
+            "friction": 0.5,
+            "restitution": 0.0,
+            "collision_shape": "BOX",
+            "attachments": [],
+            "use_margin": false,
+            "collision_margin": 0.03999999910593033,
+            "group": 1,
+            "mask": 1
+        },
+        {
+            "name": "Cube.001",
+            "location": {
+                "x": -0.3651626408100128,
+                "y": -1.1039446592330933,
+                "z": 15.878785133361816
+            },
+            "quaternion": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -0.0,
+                "w": 1.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "dimensions": {
+                "x": 57.79998779296875,
+                "y": 7.712035655975342,
+                "z": 14.359682083129883
+            },
+            "static": true,
+            "kinematic": false,
+            "mass": 1.0,
+            "friction": 0.5,
+            "restitution": 0.0,
+            "collision_shape": "BOX",
+            "attachments": [],
+            "use_margin": false,
+            "collision_margin": 0.03999999910593033,
+            "group": 1,
+            "mask": 1
+        },
+        {
+            "name": "Cube.003",
+            "location": {
+                "x": 14.22034740447998,
+                "y": 1.048737645149231,
+                "z": -25.127840042114258
+            },
+            "quaternion": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -0.0,
+                "w": 1.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "dimensions": {
+                "x": 9.675619125366211,
+                "y": 9.675619125366211,
+                "z": 9.675619125366211
+            },
+            "static": true,
+            "kinematic": false,
+            "mass": 1.0,
+            "friction": 0.5,
+            "restitution": 0.0,
+            "collision_shape": "BOX",
+            "attachments": [],
+            "use_margin": false,
+            "collision_margin": 0.03999999910593033,
+            "group": 1,
+            "mask": 1
+        },
+        {
+            "name": "Cube.006",
+            "location": {
+                "x": 0.30568981170654297,
+                "y": 12.29769515991211,
+                "z": -60.657196044921875
+            },
+            "quaternion": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -0.0,
+                "w": 1.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "dimensions": {
+                "x": 96.4276351928711,
+                "y": 24.960647583007812,
+                "z": 21.40768051147461
+            },
+            "static": true,
+            "kinematic": false,
+            "mass": 1.0,
+            "friction": 0.5,
+            "restitution": 0.0,
+            "collision_shape": "BOX",
+            "attachments": [],
+            "use_margin": false,
+            "collision_margin": 0.03999999910593033,
+            "group": 1,
+            "mask": 1
+        },
+        {
+            "name": "Cube.009",
+            "location": {
+                "x": -0.3651626408100128,
+                "y": 3.529629707336426,
+                "z": -39.974300384521484
+            },
+            "quaternion": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -0.0,
+                "w": 1.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "dimensions": {
+                "x": 57.79998779296875,
+                "y": 7.712035655975342,
+                "z": 18.38175392150879
+            },
+            "static": true,
+            "kinematic": false,
+            "mass": 1.0,
+            "friction": 0.5,
+            "restitution": 0.0,
+            "collision_shape": "BOX",
+            "attachments": [],
+            "use_margin": false,
+            "collision_margin": 0.03999999910593033,
+            "group": 1,
+            "mask": 1
+        },
+        {
+            "name": "Cube.007",
+            "location": {
+                "x": 8.788169860839844,
+                "y": -1.1472631692886353,
+                "z": -13.92475700378418
+            },
+            "quaternion": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -0.0,
+                "w": 1.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "dimensions": {
+                "x": 9.675619125366211,
+                "y": 9.675619125366211,
+                "z": 9.675619125366211
+            },
+            "static": true,
+            "kinematic": false,
+            "mass": 1.0,
+            "friction": 0.5,
+            "restitution": 0.0,
+            "collision_shape": "BOX",
+            "attachments": [],
+            "use_margin": false,
+            "collision_margin": 0.03999999910593033,
+            "group": 1,
+            "mask": 1
+        },
+        {
+            "name": "Cube.010",
+            "location": {
+                "x": 7.183018684387207,
+                "y": -2.8979132175445557,
+                "z": -3.284785509109497
+            },
+            "quaternion": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -0.0,
+                "w": 1.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "dimensions": {
+                "x": 9.675619125366211,
+                "y": 9.675619125366211,
+                "z": 9.675619125366211
+            },
+            "static": true,
+            "kinematic": false,
+            "mass": 1.0,
+            "friction": 0.5,
+            "restitution": 0.0,
+            "collision_shape": "BOX",
+            "attachments": [],
+            "use_margin": false,
+            "collision_margin": 0.03999999910593033,
+            "group": 1,
+            "mask": 1
+        },
+        {
+            "name": "Cube.011",
+            "location": {
+                "x": -10.590577125549316,
+                "y": -0.238258957862854,
+                "z": -25.007112503051758
+            },
+            "quaternion": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -0.0,
+                "w": 1.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "dimensions": {
+                "x": 9.675619125366211,
+                "y": 9.675619125366211,
+                "z": 9.675619125366211
+            },
+            "static": true,
+            "kinematic": false,
+            "mass": 1.0,
+            "friction": 0.5,
+            "restitution": 0.0,
+            "collision_shape": "BOX",
+            "attachments": [],
+            "use_margin": false,
+            "collision_margin": 0.03999999910593033,
+            "group": 1,
+            "mask": 1
+        },
+        {
+            "name": "Cube.012",
+            "location": {
+                "x": -5.196698188781738,
+                "y": -1.4058650732040405,
+                "z": -13.972959518432617
+            },
+            "quaternion": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -0.0,
+                "w": 1.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "dimensions": {
+                "x": 9.675619125366211,
+                "y": 9.675619125366211,
+                "z": 9.675619125366211
+            },
+            "static": true,
+            "kinematic": false,
+            "mass": 1.0,
+            "friction": 0.5,
+            "restitution": 0.0,
+            "collision_shape": "BOX",
+            "attachments": [],
+            "use_margin": false,
+            "collision_margin": 0.03999999910593033,
+            "group": 1,
+            "mask": 1
+        },
+        {
+            "name": "Cube.013",
+            "location": {
+                "x": -5.161489963531494,
+                "y": -2.4009461402893066,
+                "z": -2.945218086242676
+            },
+            "quaternion": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -0.0,
+                "w": 1.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "dimensions": {
+                "x": 9.675619125366211,
+                "y": 9.675619125366211,
+                "z": 9.675619125366211
+            },
+            "static": true,
+            "kinematic": false,
+            "mass": 1.0,
+            "friction": 0.5,
+            "restitution": 0.0,
+            "collision_shape": "BOX",
+            "attachments": [],
+            "use_margin": false,
+            "collision_margin": 0.03999999910593033,
+            "group": 1,
+            "mask": 1
+        },
+        {
+            "name": "Cube.014",
+            "location": {
+                "x": 2.103700637817383,
+                "y": 1.06744384765625,
+                "z": -24.199254989624023
+            },
+            "quaternion": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -0.0,
+                "w": 1.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "dimensions": {
+                "x": 9.675619125366211,
+                "y": 9.675619125366211,
+                "z": 9.675619125366211
+            },
+            "static": true,
+            "kinematic": false,
+            "mass": 1.0,
+            "friction": 0.5,
+            "restitution": 0.0,
+            "collision_shape": "BOX",
+            "attachments": [],
+            "use_margin": false,
+            "collision_margin": 0.03999999910593033,
+            "group": 1,
+            "mask": 1
+        },
+        {
+            "name": "Cube.016",
+            "location": {
+                "x": -0.3651626408100128,
+                "y": -1.2934352159500122,
+                "z": 10.11169719696045
+            },
+            "quaternion": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -0.0,
+                "w": 1.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "dimensions": {
+                "x": 21.05792999267578,
+                "y": 7.712035655975342,
+                "z": 14.359682083129883
+            },
+            "static": true,
+            "kinematic": false,
+            "mass": 1.0,
+            "friction": 0.5,
+            "restitution": 0.0,
+            "collision_shape": "BOX",
+            "attachments": [],
+            "use_margin": false,
+            "collision_margin": 0.03999999910593033,
+            "group": 1,
+            "mask": 1
+        },
+        {
+            "name": "Cube.002",
+            "location": {
+                "x": 2.0949578285217285,
+                "y": 7.869586944580078,
+                "z": -41.970848083496094
+            },
+            "quaternion": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.09875084459781647,
+                "w": 0.9951121807098389
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "dimensions": {
+                "x": 54.457763671875,
+                "y": 9.675619125366211,
+                "z": 9.675619125366211
+            },
+            "static": true,
+            "kinematic": false,
+            "mass": 1.0,
+            "friction": 0.5,
+            "restitution": 0.0,
+            "collision_shape": "BOX",
+            "attachments": [],
+            "use_margin": false,
+            "collision_margin": 0.03999999910593033,
+            "group": 1,
+            "mask": 1
+        },
+        {
+            "name": "Cube.004",
+            "location": {
+                "x": 2.0949578285217285,
+                "y": 14.327072143554688,
+                "z": -51.08591842651367
+            },
+            "quaternion": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.09875084459781647,
+                "w": 0.9951121807098389
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "dimensions": {
+                "x": 54.457763671875,
+                "y": 9.675619125366211,
+                "z": 9.675619125366211
+            },
+            "static": true,
+            "kinematic": false,
+            "mass": 1.0,
+            "friction": 0.5,
+            "restitution": 0.0,
+            "collision_shape": "BOX",
+            "attachments": [],
+            "use_margin": false,
+            "collision_margin": 0.03999999910593033,
+            "group": 1,
+            "mask": 1
+        },
+        {
+            "name": "Cube.008",
+            "location": {
+                "x": -0.29698753356933594,
+                "y": 9.675657272338867,
+                "z": -46.022220611572266
+            },
+            "quaternion": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -0.08533591777086258,
+                "w": 0.9963523149490356
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "dimensions": {
+                "x": 54.457763671875,
+                "y": 9.675619125366211,
+                "z": 9.675619125366211
+            },
+            "static": true,
+            "kinematic": false,
+            "mass": 1.0,
+            "friction": 0.5,
+            "restitution": 0.0,
+            "collision_shape": "BOX",
+            "attachments": [],
+            "use_margin": false,
+            "collision_margin": 0.03999999910593033,
+            "group": 1,
+            "mask": 1
+        },
+        {
+            "name": "Cube.015",
+            "location": {
+                "x": -16.503713607788086,
+                "y": 27.88527488708496,
+                "z": -15.667562484741211
+            },
+            "quaternion": {
+                "x": 0.0,
+                "y": 0.7665978074073792,
+                "z": -0.0,
+                "w": 0.6421275734901428
+            },
+            "scale": {
+                "x": 0.9999999403953552,
+                "y": 1.0,
+                "z": 0.9999999403953552
+            },
+            "dimensions": {
+                "x": 90.07502746582031,
+                "y": 56.13581085205078,
+                "z": 0.5606679320335388
+            },
+            "static": true,
+            "kinematic": false,
+            "mass": 1.0,
+            "friction": 0.5,
+            "restitution": 0.0,
+            "collision_shape": "BOX",
+            "attachments": [],
+            "use_margin": false,
+            "collision_margin": 0.03999999910593033,
+            "group": 1,
+            "mask": 1
+        },
+        {
+            "name": "Cube.017",
+            "location": {
+                "x": 20.91707420349121,
+                "y": 27.88527488708496,
+                "z": -22.428966522216797
+            },
+            "quaternion": {
+                "x": 0.0,
+                "y": 0.6123553514480591,
+                "z": -0.0,
+                "w": 0.7905827760696411
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "dimensions": {
+                "x": 90.07503509521484,
+                "y": 56.13581085205078,
+                "z": 0.5606679916381836
+            },
+            "static": true,
+            "kinematic": false,
+            "mass": 1.0,
+            "friction": 0.5,
+            "restitution": 0.0,
+            "collision_shape": "BOX",
+            "attachments": [],
+            "use_margin": false,
+            "collision_margin": 0.03999999910593033,
+            "group": 1,
+            "mask": 1
+        },
+        {
+            "name": "Cube.018",
+            "location": {
+                "x": 0.30568885803222656,
+                "y": 27.88527488708496,
+                "z": 19.07128143310547
+            },
+            "quaternion": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -0.0,
+                "w": 1.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "dimensions": {
+                "x": 55.694732666015625,
+                "y": 56.13581085205078,
+                "z": 0.5606679916381836
+            },
+            "static": true,
+            "kinematic": false,
+            "mass": 1.0,
+            "friction": 0.5,
+            "restitution": 0.0,
+            "collision_shape": "BOX",
+            "attachments": [],
+            "use_margin": false,
+            "collision_margin": 0.03999999910593033,
+            "group": 1,
+            "mask": 1
+        },
+        {
+            "name": "Cube.005",
+            "location": {
+                "x": 3.5086960792541504,
+                "y": 27.88527488708496,
+                "z": -59.49650573730469
+            },
+            "quaternion": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -0.0,
+                "w": 1.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "dimensions": {
+                "x": 85.02057647705078,
+                "y": 56.13581085205078,
+                "z": 0.5606679916381836
+            },
+            "static": true,
+            "kinematic": false,
+            "mass": 1.0,
+            "friction": 0.5,
+            "restitution": 0.0,
+            "collision_shape": "BOX",
+            "attachments": [],
+            "use_margin": false,
+            "collision_margin": 0.03999999910593033,
+            "group": 1,
+            "mask": 1
+        }
+    ],
+    "constraints": [],
+    "convex_hulls": [],
+    "meshes": []
+}
