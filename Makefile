@@ -7,7 +7,7 @@ MINIGAME_DIR = code
 FILESYSTEM_DIR = filesystem
 MINIGAMEDSO_DIR = $(FILESYSTEM_DIR)/minigames
 
-T3D_FLAGS ?=
+GLTF_FLAGS = ''
 
 SRC = main.c core.c minigame.c menu.c
 
@@ -54,7 +54,7 @@ $(FILESYSTEM_DIR)/%.font64: $(ASSETS_DIR)/%.ttf
 $(FILESYSTEM_DIR)/%.t3dm: $(ASSETS_DIR)/%.glb
 	@mkdir -p $(dir $@)
 	@echo "    [T3D-MODEL] $@"
-	$(T3D_GLTF_TO_3D) "$<" $@
+	$(T3D_GLTF_TO_3D) "$<" $@ $(GLTF_FLAGS)
 	$(N64_BINDIR)/mkasset -c 2 -o $(dir $@) $@
 
 $(FILESYSTEM_DIR)/%.wav64: $(ASSETS_DIR)/%.wav
