@@ -66,7 +66,11 @@ $(FILESYSTEM_DIR)/%.xm64: $(ASSETS_DIR)/%.xm
 	$(N64_AUDIOCONV) $(AUDIOCONV_FLAGS) -o $(dir $@) "$<"
 
 define MINIGAME_template
-SRC_$(1) = $$(wildcard $$(MINIGAME_DIR)/$(1)/*.c) $$(wildcard $$(MINIGAME_DIR)/$(1)/*.cpp)
+SRC_$(1) = \
+	$$(wildcard $$(MINIGAME_DIR)/$(1)/*.c) \
+	$$(wildcard $$(MINIGAME_DIR)/$(1)/**/*.c) \
+	$$(wildcard $$(MINIGAME_DIR)/$(1)/*.cpp) \
+	$$(wildcard $$(MINIGAME_DIR)/$(1)/**/*.cpp)
 $$(MINIGAMEDSO_DIR)/$(1).dso: $$(SRC_$(1):%.c=$$(BUILD_DIR)/%.o)
 -include $$(MINIGAME_DIR)/$(1)/$(1).mk
 endef
