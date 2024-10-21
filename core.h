@@ -6,10 +6,10 @@
     ***************************************************************/
 
     // Use this to standardize player colors
-    #define PLAYERCOLOR_1  0xFF0000
-    #define PLAYERCOLOR_2  0x00FF00
-    #define PLAYERCOLOR_3  0x0000FF
-    #define PLAYERCOLOR_4  0xFFFF00
+    #define PLAYERCOLOR_1  RGBA32(255, 0, 0, 255)
+    #define PLAYERCOLOR_2  RGBA32(0, 255, 0, 255)
+    #define PLAYERCOLOR_3  RGBA32(0, 0, 255, 255)
+    #define PLAYERCOLOR_4  RGBA32(255, 255, 0, 255)
 
     // Player number definition
     typedef enum {
