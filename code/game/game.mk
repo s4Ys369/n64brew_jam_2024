@@ -26,11 +26,11 @@ ASSETS_LIST += \
 	filesystem/game/TitanOne-Regular.font64
 
 # t3d flags
-filesystem/game/capsule.t3dm: GLTF_FLAGS = --base-scale=1
-filesystem/game/n64logo.t3dm: GLTF_FLAGS = --base-scale=1
-filesystem/game/pipo.t3dm: GLTF_FLAGS = --base-scale=1
-filesystem/game/room.t3dm: GLTF_FLAGS = --base-scale=1 --bvh
-filesystem/game/testLevel.t3dm: GLTF_FLAGS = --base-scale=1200 --bvh
+filesystem/game/capsule.t3dm: T3DM_FLAGS = --base-scale=1
+filesystem/game/n64logo.t3dm: T3DM_FLAGS = --base-scale=1
+filesystem/game/pipo.t3dm: T3DM_FLAGS = --base-scale=1
+filesystem/game/room.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
+filesystem/game/testLevel.t3dm: T3DM_FLAGS = --base-scale=1200 --bvh
 
 # font64 flags
 filesystem/game/chunkysans.font64: MKFONT_FLAGS += --outline 2 --size 12

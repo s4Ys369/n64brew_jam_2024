@@ -141,10 +141,10 @@ void player_init(player_data *player, color_t color, T3DVec3 position, float rot
 void minigame_init(void)
 {
   const color_t colors[] = {
-    color_from_packed32(PLAYERCOLOR_1<<8),
-    color_from_packed32(PLAYERCOLOR_2<<8),
-    color_from_packed32(PLAYERCOLOR_3<<8),
-    color_from_packed32(PLAYERCOLOR_4<<8),
+    PLAYERCOLOR_1,
+    PLAYERCOLOR_2,
+    PLAYERCOLOR_3,
+    PLAYERCOLOR_4,
   };
 
   display_init(RESOLUTION_320x240, DEPTH_16_BPP, 3, GAMMA_NONE, FILTERS_RESAMPLE_ANTIALIAS);
