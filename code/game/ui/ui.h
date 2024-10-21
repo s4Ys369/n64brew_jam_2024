@@ -109,6 +109,82 @@ rdpq_fontstyle_t txt_game_fontStyle;
 rdpq_fontstyle_t txt_bright_fontStyle;
 rdpq_fontstyle_t txt_green_fontStyle;
 
+
+static sprite_t *sprite_controlStick;
+static sprite_t *sprite_dPadTriggers;
+static sprite_t *sprite_cButtons0;
+static sprite_t *sprite_cButtons1;
+static sprite_t *sprite_faceButtons0;
+static sprite_t *sprite_faceButtons1;
+
+surface_t surf_UIsprites;
+
+static rspq_block_t *dpl_controlStick = NULL;
+static rspq_block_t *dpl_dPadTriggers = NULL;
+static rspq_block_t *dpl_cButtons = NULL;
+static rspq_block_t *dpl_faceButtons = NULL;
+rspq_block_t *dpl_Temp = NULL;
+
+void ui_load_sprites(void)
+{
+    // IA8
+    sprite_controlStick = sprite_load("rom:/game/ui/control_stick.ia8.sprite");
+    sprite_dPadTriggers = sprite_load("rom:/game/ui/d_pad_triggers.ia8.sprite");
+
+    // RGBA32
+    sprite_cButtons0 = sprite_load("rom:/game/ui/c_buttons0.rgba32.sprite");
+    sprite_cButtons1 = sprite_load("rom:/game/ui/c_buttons1.rgba32.sprite");
+    sprite_faceButtons0 = sprite_load("rom:/game/ui/face_buttons0.rgba32.sprite");
+    sprite_faceButtons1 = sprite_load("rom:/game/ui/face_buttons1.rgba32.sprite");
+}
+
+void ui_draw_sprite(sprite_t *sprite, int idx, int posX, int posY){
+    int s = 0, t = 0;
+    int idxCopy = idx;
+    const int width = 16, height = 16;
+
+    if(sprite == sprite_cButtons0 || sprite == sprite_cButtons1)
+        dpl_Temp = dpl_cButtons;
+    if(sprite == sprite_faceButtons0 || sprite == sprite_faceButtons1)
+        dpl_Temp = dpl_faceButtons;
+    if(sprite == sprite_controlStick)
+        dpl_Temp = dpl_controlStick;
+    if(sprite == sprite_dPadTriggers)
+        dpl_Temp = dpl_dPadTriggers;
+
+
+    if(idx > 4)
+    {
+        idx = idx % 4;
+        s = width * idx;
+    } else {
+        s = width * idx;
+    }
+
+    t = (idxCopy / 4) * height;
+
+    debugf("\ns: %d, t: %d\n", s, t);
+        
+
+
+    rspq_block_begin();
+
+        surf_UIsprites = sprite_get_pixels(sprite);
+ 
+        rdpq_tex_upload_sub(TILE0, &surf_UIsprites, NULL, s, t, s+width, t+height);
+        rdpq_texture_rectangle(TILE0, posX, posY, posX+width, posY+height, s, t);
+
+    dpl_Temp = rspq_block_end();
+
+
+    rdpq_sync_pipe();
+    rdpq_set_mode_standard();
+    rdpq_mode_alphacompare(1);
+    rdpq_mode_filter(FILTER_BILINEAR);
+    rdpq_sync_tile();
+    rspq_block_run(dpl_Temp);
+}
+
 void ui_register_fonts(void)
 {
     // Load font64 and register to fonts starting at index 2, 0 reserved by the SDK, 1 should be reserved debug output
@@ -177,6 +253,7 @@ void ui_register_fonts(void)
 void ui_init(void)
 {
     ui_register_fonts();
+    ui_load_sprites();
 }
 
 void ui_fps(void)
@@ -201,8 +278,9 @@ void ui_textbox(void)
 // Step 4/5: call this AFTER your game logic ends each frame
 void ui_update(void)
 {
-    
-}
+    ui_draw_sprite(sprite_faceButtons0, 2, 154, 108);
+    ui_draw_sprite(sprite_cButtons1, 2, 100, 108);
+} 
 
 // Step 5/5: render out the UI at the very end
 void ui_draw(void)

@@ -14,9 +14,14 @@ ASSETS_LIST += \
 	filesystem/game/eye.sprite \
 	filesystem/game/green_tile.sprite \
 	filesystem/game/grey_tile.sprite \
-	filesystem/game/mui.sprite \
 	filesystem/game/red_tile.sprite \
 	filesystem/game/yellow_tile.sprite \
+	filesystem/game/ui/control_stick.ia8.sprite \
+	filesystem/game/ui/d_pad_triggers.ia8.sprite \
+	filesystem/game/ui/c_buttons0.rgba32.sprite \
+	filesystem/game/ui/c_buttons1.rgba32.sprite \
+	filesystem/game/ui/face_buttons0.rgba32.sprite \
+	filesystem/game/ui/face_buttons1.rgba32.sprite \
 	filesystem/game/chunkysans.font64 \
 	filesystem/game/TitanOne-Regular.font64
 
