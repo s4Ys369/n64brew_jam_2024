@@ -58,8 +58,9 @@
     /*==============================
         core_get_subtick
         Gets the current subtick. Use this to help smooth
-        movements in your draw loop
-        @return The current subtick
+        movements in your draw loop. 
+        @return The current subtick, as a 
+                percentage (0.0f to 1.0f)
     ==============================*/
     double core_get_subtick();
 
