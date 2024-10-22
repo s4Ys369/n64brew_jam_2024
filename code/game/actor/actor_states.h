@@ -3,23 +3,17 @@
 
 
 #define STAND_IDLE 1
-#define WALKING 2
 #define RUNNING 3
-#define SPRINTING 4
-#define ROLL 5
 #define JUMP 6
 #define FALLING 7
+#define LANDING 8
 
 
 // function prototypes
 
 void actorState_setIdle (Actor *actor);
-
-void actorState_setWalking (Actor *actor);
             
 void actorState_setRunning (Actor *actor);
-            
-void actorState_setSprinting (Actor *actor);
 
 void actorState_setJump (Actor *actor);
 
@@ -37,28 +31,12 @@ void actorState_setIdle(Actor *actor)
     
 }
 
-void actorState_setWalking(Actor *actor)
-{
-    if (actor->state == WALKING) return;
-    actor->previous_state = actor->state;
-    actor->state = WALKING;
-    actor->locomotion_state = WALKING;
-}
-
 void actorState_setRunning(Actor *actor)
 {
     if (actor->state == RUNNING) return;
     actor->previous_state = actor->state;
     actor->state = RUNNING;
     actor->locomotion_state = RUNNING;
-}
-
-void actorState_setSprinting(Actor *actor)
-{
-    if (actor->state == SPRINTING) return;
-    actor->previous_state = actor->state;
-    actor->state = SPRINTING;
-    actor->locomotion_state = SPRINTING;
 }
 
 void actorState_setJump(Actor *actor) 
@@ -88,19 +66,8 @@ void actor_setState(Actor *actor, uint8_t state)
             actorState_setIdle (actor);
             break;
         }
-        case WALKING: {
-            actorState_setWalking (actor);
-            break;
-        }
         case RUNNING: {
             actorState_setRunning (actor);
-            break;
-        }
-        case SPRINTING: {
-            actorState_setSprinting (actor);
-            break;
-        }
-        case ROLL: {
             break;
         }
         case JUMP: {
