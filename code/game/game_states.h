@@ -97,7 +97,7 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, PlayerData** player
 	}
 
 	//scenery
-	Scenery room = scenery_create(0, "rom:/game/testLevel.t3dm");
+	Scenery room = scenery_create(0, "rom:/game/room.t3dm");
 
 	Scenery n64logo = scenery_create(0, "rom:/game/n64logo.t3dm");
 
