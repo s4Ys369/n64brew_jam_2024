@@ -25,6 +25,8 @@
 #include "actor/actor_control.h"
 #include "actor/actor_animation.h"
 
+#include "players/players.h"
+
 #include "scene/scenery.h"
 
 #include "ui/ui.h"
@@ -42,6 +44,8 @@ Screen screen;
 ControllerData control;
 TimeData timing;
 
+PlayerData *players[MAXPLAYERS];
+
 void minigame_init()
 {
 	debug_init_isviewer();
@@ -57,11 +61,19 @@ void minigame_init()
 
 	time_init(&timing);
 	ui_init();
+
 }
 void minigame_loop(float deltatime)
 {
+	for (size_t p = 0; p < MAXPLAYERS; ++p)
+	{
+    	players[p] = malloc(sizeof(PlayerData));
+    	if (players[p] != NULL) {
+    	    player_init(players[p]); 
+    	}
+	}
 	uint8_t game_state = GAMEPLAY;
-	game_setState(game_state, &screen, &timing, &control);
+	game_setState(game_state, &screen, &timing, &control, players);
 }
 void minigame_cleanup()
 {

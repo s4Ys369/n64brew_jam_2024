@@ -12,11 +12,11 @@
 
 void gameState_setIntro();
 void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData* control);
-void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* control);
+void gameState_setGameplay(Screen* screen, TimeData* timing, PlayerData** player);
 void gameState_setPause();
 void gameState_setGameOver();
 
-void game_setState(uint8_t state, Screen* screen, TimeData* timing, ControllerData* control);
+void game_setState(uint8_t state, Screen* screen, TimeData* timing, ControllerData* control, PlayerData** players);
 
 
 // function implementations
@@ -46,7 +46,7 @@ void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData* con
 		// ======== Update ======== //
 
 		time_setData(timing);
-		controllerData_getInputs(control);
+		controllerData_getInputs(0, control);
 
 		cameraControl_setOrbitalMovement(&camera, control);
 		camera_getOrbitalPosition(&camera, (Vector3){0, 0, 0}, timing->frame_time_s);
@@ -77,7 +77,7 @@ void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData* con
 	}
 }
 
-void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* control)
+void gameState_setGameplay(Screen* screen, TimeData* timing, PlayerData** player)
 {
 	screen_initGameplayViewport(screen);
 	t3d_init((T3DInitParams){});
@@ -89,9 +89,12 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
 	LightData light = light_create();
 
 	//actor
-	Actor player = actor_create(0, "rom:/game/pipo.t3dm");
-	ActorAnimation player_animation = actorAnimation_create(&player);
-	actorAnimation_init(&player, &player_animation);
+	for(size_t p = 0; p < MAXPLAYERS; ++p)
+	{
+		player[p]->actor = actor_create(0, "rom:/game/pipo.t3dm");
+		player[p]->animation = actorAnimation_create(&player[p]->actor);
+		actorAnimation_init(&player[p]->actor, &player[p]->animation);
+	}
 
 	//scenery
 	Scenery room = scenery_create(0, "rom:/game/testLevel.t3dm");
@@ -103,15 +106,17 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
 		// ======== Update ======== //
 
 		time_setData(timing);
-		controllerData_getInputs(control);
-
-		actor_setControlData(&player, control, timing->frame_time_s, camera.angle_around_barycenter, camera.offset_angle);
-		actor_setState(&player, player.state);
-		actor_setMotion(&player, timing->frame_time_s);
-		actor_setAnimation(&player, &player_animation, timing->frame_time_s, &syncPoint);
-
-		cameraControl_setOrbitalMovement(&camera, control);
-		camera_getOrbitalPosition(&camera, player.body.position, timing->frame_time_s);
+	
+		for(size_t p = 0; p < MAXPLAYERS; ++p)
+		{
+			controllerData_getInputs(p, &player[p]->controller);
+			actor_setControlData(&player[p]->actor, &player[p]->controller, timing->frame_time_s, camera.angle_around_barycenter, camera.offset_angle);
+			actor_setState(&player[p]->actor, player[p]->actor.state);
+			actor_setMotion(&player[p]->actor, timing->frame_time_s);
+			actor_setAnimation(&player[p]->actor, &player[p]->animation, timing->frame_time_s, &syncPoint);
+		}
+		cameraControl_setOrbitalMovement(&camera, &player[0]->controller);
+		camera_getOrbitalPosition(&camera, player[0]->actor.body.position, timing->frame_time_s);
 		camera_set(&camera, screen);
 
 		scenery_set(&room);
@@ -130,7 +135,8 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
 		scenery_draw(&n64logo);
 		scenery_draw(&room);
 
-		actor_draw(&player);
+		for(size_t p = 0; p < MAXPLAYERS; ++p)
+			actor_draw(&player[p]->actor);
    
    		t3d_matrix_pop(1);
 
@@ -141,13 +147,15 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
 		rdpq_detach_show();
 	}
 
-	t3d_skeleton_destroy(&player.armature.main);
-	t3d_skeleton_destroy(&player.armature.blend);
-
-	//t3d_anim_destroy(&animIdle);
-	//t3d_anim_destroy(&animWalk);
-
-	t3d_model_free(player.model);
+	for (size_t p = 0; p < MAXPLAYERS; ++p)
+	{
+    	if (player[p] != NULL) {
+    	    t3d_skeleton_destroy(&player[p]->actor.armature.main);
+    	    t3d_skeleton_destroy(&player[p]->actor.armature.blend);
+    	    t3d_model_free(player[p]->actor.model);
+    	    free(player[p]);
+    	}
+	}
 	t3d_model_free(room.model);
 
 	t3d_destroy();
@@ -163,7 +171,7 @@ void gameState_setGameOver()
     // code for the game over state
 }
 
-void game_setState(uint8_t state, Screen* screen, TimeData* timing, ControllerData* control)
+void game_setState(uint8_t state, Screen* screen, TimeData* timing, ControllerData* control, PlayerData** players)
 {
     switch(state)
     {
@@ -176,7 +184,7 @@ void game_setState(uint8_t state, Screen* screen, TimeData* timing, ControllerDa
             break;
 		}
         case GAMEPLAY:{
-            gameState_setGameplay(screen, timing, control);
+            gameState_setGameplay(screen, timing, players);
             break;
 		}
         case PAUSE:{
