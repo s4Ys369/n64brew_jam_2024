@@ -27,6 +27,8 @@
 
 #include "scene/scenery.h"
 
+#include "sound/sound.h"
+
 #include "ui/ui.h"
 
 #include "game_states.h"
@@ -57,6 +59,7 @@ void minigame_init()
 
 	time_init(&timing);
 	ui_init();
+	sound_load();
 }
 void minigame_loop(float deltatime)
 {
@@ -65,5 +68,7 @@ void minigame_loop(float deltatime)
 }
 void minigame_cleanup()
 {
+	t3d_destroy();
+	sound_xm_stop();
 	return;
 }

@@ -114,6 +114,8 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
 		camera_getOrbitalPosition(&camera, player.body.position, timing->frame_time_s);
 		camera_set(&camera, screen);
 
+		sound_update_buffer();
+
 		scenery_set(&room);
 		scenery_set(&n64logo);
 		n64logo.position = (Vector3){200, 200, 0};
@@ -151,6 +153,8 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
 	t3d_model_free(room.model);
 
 	t3d_destroy();
+
+	sound_xm_stop();
 }
 
 void gameState_setPause()
