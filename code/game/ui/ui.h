@@ -290,9 +290,14 @@ void ui_fps(void)
     rdpq_text_printf(&txt_debugParms, ID_DEBUG, fpsPos.v[0], fpsPos.v[1], "FPS %.2f", display_get_fps());
 }
 
-void ui_main_menu(void)
+void ui_main_menu()
 {
-
+    rdpq_sync_pipe();
+    rdpq_set_mode_standard();
+    rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
+    rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
+    rdpq_text_print(&txt_titleParms, ID_TITLE, 128, 96, "TITLE");
+    rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 128, "Subtitle");
 }
 
 void ui_textbox(void)

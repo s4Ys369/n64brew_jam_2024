@@ -33,7 +33,7 @@
 
 const MinigameDef minigame_def = {
     .gamename = "Fall Guys Clone",
-    .developername = "zoncabe, float4, s4ys, kaelin",
+    .developername = "zoncabe, float4, s4ys",
     .description = "This is a game that exist.",
     .instructions = "Press A to win."
 };
@@ -51,7 +51,7 @@ void minigame_init()
 	dfs_init(DFS_DEFAULT_LOCATION);
 	rdpq_init();
 
-	screen_initDisplay(&screen);
+	screen_init(&screen);
 
 	joypad_init();
 
@@ -60,7 +60,7 @@ void minigame_init()
 }
 void minigame_loop(float deltatime)
 {
-	uint8_t game_state = GAMEPLAY;
+	uint8_t game_state = MAIN_MENU;
 	game_setState(game_state, &screen, &timing, &control);
 }
 void minigame_cleanup()

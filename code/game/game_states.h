@@ -28,7 +28,7 @@ void gameState_setIntro()
 
 void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData* control)
 {
-	screen_initT3dViewport(screen);
+	screen_initMainMenuViewport(screen);
 	t3d_init((T3DInitParams){});
 
 	Camera camera = camera_create();
@@ -47,19 +47,17 @@ void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData* con
 
 		time_setData(timing);
 		controllerData_getInputs(control);
-
-		cameraControl_setOrbitalMovement(&camera, control);
 		camera_getOrbitalPosition(&camera, (Vector3){0, 0, 0}, timing->frame_time_s);
 		camera_set(&camera, screen);
 
 		scenery_set(&room);
 		scenery_set(&n64logo);
-		n64logo.position = (Vector3){200, 200, 0};
+		n64logo.position = (Vector3){140, 200, 0};
 
 		// ======== Draw ======== //
 		
-		screen_clearDisplay(screen);
-		screen_clearT3dViewport(screen);
+		screen_clear(screen);
+		screen_clearMainMenuViewport(screen);
 	
 		light_set(&light);
     
@@ -70,7 +68,7 @@ void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData* con
    
    		t3d_matrix_pop(1);
 
-		ui_draw();
+		ui_main_menu();
 
 		rdpq_detach_show();
 		
@@ -79,7 +77,7 @@ void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData* con
 
 void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* control)
 {
-	screen_initT3dViewport(screen);
+	screen_initGameplayViewport(screen);
 	t3d_init((T3DInitParams){});
   	rspq_syncpoint_t syncPoint = 0;
 
@@ -120,8 +118,8 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
 
 		// ======== Draw ======== //
 		
-		screen_clearDisplay(screen);
-		screen_clearT3dViewport(screen);
+		screen_clear(screen);
+		screen_clearGameplayViewport(screen);
 	
 		light_set(&light);
     
