@@ -65,5 +65,7 @@ void minigame_loop(float deltatime)
 }
 void minigame_cleanup()
 {
+	if(dpl_Temp)
+        rspq_block_free(dpl_Temp);
 	return;
 }

@@ -137,6 +137,8 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
 		syncPoint = rspq_syncpoint_new();
 
 		ui_draw();
+		if(control->held.l)
+			ui_input_display(control);
 
 		rdpq_detach_show();
 	}
