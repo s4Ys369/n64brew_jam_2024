@@ -62,16 +62,18 @@ void minigame_init()
 	time_init(&timing);
 	ui_init();
 
+	for (size_t p = 0; p < MAXPLAYERS; ++p)
+    	players[p] = malloc_uncached(sizeof(PlayerData));
+
 }
 void minigame_loop(float deltatime)
 {
-	for (size_t p = 0; p < MAXPLAYERS; ++p)
+	for (uint32_t p = 0; p < core_get_playercount(); ++p)
 	{
-    	players[p] = malloc(sizeof(PlayerData));
-    	if (players[p] != NULL) {
+    	if (players[p] != NULL)
     	    player_init(players[p]); 
-    	}
 	}
+
 	uint8_t game_state = GAMEPLAY;
 	game_setState(game_state, &screen, &timing, &control, players);
 }

@@ -89,7 +89,7 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, PlayerData** player
 	LightData light = light_create();
 
 	//actor
-	for(size_t p = 0; p < MAXPLAYERS; ++p)
+	for(uint32_t p = 0; p < core_get_playercount(); ++p)
 	{
 		player[p]->actor = actor_create(0, "rom:/game/pipo.t3dm");
 		player[p]->animation = actorAnimation_create(&player[p]->actor);
@@ -107,7 +107,7 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, PlayerData** player
 
 		time_setData(timing);
 	
-		for(size_t p = 0; p < MAXPLAYERS; ++p)
+		for(uint32_t p = 0; p < core_get_playercount(); ++p)
 		{
 			controllerData_getInputs(p, &player[p]->controller);
 			actor_setControlData(&player[p]->actor, &player[p]->controller, timing->frame_time_s, camera.angle_around_barycenter, camera.offset_angle);
@@ -135,7 +135,7 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, PlayerData** player
 		scenery_draw(&n64logo);
 		scenery_draw(&room);
 
-		for(size_t p = 0; p < MAXPLAYERS; ++p)
+		for(uint32_t p = 0; p < core_get_playercount(); ++p)
 			actor_draw(&player[p]->actor);
    
    		t3d_matrix_pop(1);
@@ -147,7 +147,7 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, PlayerData** player
 		rdpq_detach_show();
 	}
 
-	for (size_t p = 0; p < MAXPLAYERS; ++p)
+	for (uint32_t p = 0; p < core_get_playercount(); ++p)
 	{
     	if (player[p] != NULL) {
     	    t3d_skeleton_destroy(&player[p]->actor.armature.main);
