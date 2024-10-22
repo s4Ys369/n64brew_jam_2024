@@ -51,7 +51,7 @@ void minigame_init()
 	dfs_init(DFS_DEFAULT_LOCATION);
 	rdpq_init();
 
-	screen_init(&screen);
+	screen_initDisplay(&screen);
 
 	joypad_init();
 
