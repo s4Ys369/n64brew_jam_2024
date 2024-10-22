@@ -74,7 +74,7 @@ void minigame_loop(float deltatime)
 	for(uint32_t p = 0; p < core_get_playercount(); ++p)
 	{
     	if (players[p] != NULL)
-    	    player_init(players[p]); 
+    	    player_init(p, players[p]); 
 	}
 	uint8_t game_state = GAMEPLAY;
 	game_setState(game_state, &screen, &timing, control, players);
