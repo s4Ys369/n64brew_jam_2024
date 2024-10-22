@@ -117,7 +117,24 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData** co
 			actor_setMotion(player[p]->actor, timing->frame_time_s);
 		}
 		cameraControl_setOrbitalMovement(&camera, control[PLAYER_1]);
-		camera_getOrbitalPosition(&camera, player[PLAYER_1]->actor->body.position, timing->frame_time_s);
+
+		// CAM SWITCH TEST
+		static uint8_t camSwitch = 0;
+		static Vector3 camOrbit; 
+		static Vector3 targetPosition;
+
+		if (control[PLAYER_1]->pressed.b)
+		{
+    		camSwitch ^= 1;
+			targetPosition = player[camSwitch]->actor->body.position;
+		} else {
+			targetPosition = player[camSwitch]->actor->body.position;
+		}
+
+		if (camOrbit.x != targetPosition.x || camOrbit.y != targetPosition.y || camOrbit.z != targetPosition.z)
+    		camOrbit = vector3_lerp(&camOrbit, &targetPosition, 0.2f);
+
+		camera_getOrbitalPosition(&camera, camOrbit, timing->frame_time_s);
 		camera_set(&camera, screen);
 
 		scenery_set(&room);
