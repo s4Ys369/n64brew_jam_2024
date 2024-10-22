@@ -58,6 +58,7 @@ bool vector3_equals(const Vector3* v, const Vector3* w);
 bool vector3_notEquals(const Vector3* v, const Vector3* w);
 bool vector3_lessThan(const Vector3* v, const Vector3* w);
 bool vector3_approxEquals(const Vector3* v, const Vector3* w);
+Vector3 vector3_lerp(const Vector3* v1, const Vector3* v2, float t);
 
 
 inline void vector3_init(Vector3 *v) 
@@ -298,6 +299,15 @@ inline float vector3_returnMinValue(const Vector3* v)
 inline float vector3_returnMaxValue(const Vector3* v) 
 {
     return max3(v->x, v->y, v->z);
+}
+
+inline Vector3 vector3_lerp(const Vector3* v1, const Vector3* v2, float t) 
+{
+    Vector3 result;
+    result.x = v1->x + t * (v2->x - v1->x);
+    result.y = v1->y + t * (v2->y - v1->y);
+    result.z = v1->z + t * (v2->z - v1->z);
+    return result;
 }
 
 #endif
