@@ -41,7 +41,7 @@ const MinigameDef minigame_def = {
 };
 
 Screen screen;
-ControllerData control;
+ControllerData *control[MAXPLAYERS];
 TimeData timing;
 
 PlayerData *players[MAXPLAYERS];
@@ -63,19 +63,21 @@ void minigame_init()
 	ui_init();
 
 	for (size_t p = 0; p < MAXPLAYERS; ++p)
-    	players[p] = malloc_uncached(sizeof(PlayerData));
+	{
+		control[p] = malloc(sizeof(ControllerData));
+    	players[p] = malloc(sizeof(PlayerData));
+	}
 
 }
 void minigame_loop(float deltatime)
 {
-	for (uint32_t p = 0; p < core_get_playercount(); ++p)
+	for(uint32_t p = 0; p < core_get_playercount(); ++p)
 	{
     	if (players[p] != NULL)
     	    player_init(players[p]); 
 	}
-
 	uint8_t game_state = GAMEPLAY;
-	game_setState(game_state, &screen, &timing, &control, players);
+	game_setState(game_state, &screen, &timing, control, players);
 }
 void minigame_cleanup()
 {

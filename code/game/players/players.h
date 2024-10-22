@@ -9,9 +9,8 @@
 
 typedef struct {
 
-    ControllerData controller;
-    Actor actor;
-    ActorAnimation animation;
+    Actor* actor;
+    ActorAnimation* animation;
     uint8_t score;
 
 } PlayerData;
@@ -20,9 +19,8 @@ PlayerData* player_init(PlayerData* data);
 
 PlayerData* player_init(PlayerData* data)
 {
-    data->controller = (ControllerData){0};
-    data->actor = (Actor){0};
-    data->animation = (ActorAnimation){0};
+    data->actor = (Actor *)malloc(sizeof(Actor));
+    data->animation = (ActorAnimation *)malloc(sizeof(ActorAnimation));
     data->score = 0;
     return data;
 }
