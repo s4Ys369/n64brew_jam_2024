@@ -301,39 +301,38 @@ void ui_textbox(void)
 }
 
 // Time to crash test the RDP
-void ui_input_display(ControllerData* control)
+void ui_input_display(ControllerData** control)
 {
     int s = 24;
     int t = 164;
-    controllerData_getInputs(control);
     rspq_syncpoint_t syncPoint0 = 0;
 
     // First row: Triggers
     ui_draw_sprite(TILE0, sprite_dPadTriggers, 6, s, t);
-    if(control->pressed.z || control->held.z)
+    if(control[PLAYER_1]->pressed.z || control[PLAYER_1]->held.z)
         ui_draw_sprite(TILE1, sprite_dPadTriggers, 5, s+spriteWidth, t);
-    if(control->pressed.r || control->held.r)
+    if(control[PLAYER_1]->pressed.r || control[PLAYER_1]->held.r)
         ui_draw_sprite(TILE2, sprite_dPadTriggers, 7, s+(spriteWidth*2), t);
 
     if(syncPoint0)rspq_syncpoint_wait(syncPoint0);
     rspq_syncpoint_t syncPoint1 = rspq_syncpoint_new();
 
     // Second row: Face Buttons
-    if(control->pressed.a || control->held.a)
+    if(control[PLAYER_1]->pressed.a || control[PLAYER_1]->held.a)
     {
         ui_draw_sprite(TILE3, sprite_faceButtons1, aHeld, s, t+spriteHeight);
     } else {
         ui_draw_sprite(TILE3, sprite_faceButtons0, aIdle, s, t+spriteHeight);
     }
 
-    if(control->pressed.b || control->held.b)
+    if(control[PLAYER_1]->pressed.b || control[PLAYER_1]->held.b)
     {
         ui_draw_sprite(TILE4, sprite_faceButtons1, bHeld, s+spriteHeight, t+spriteHeight);
     } else {
         ui_draw_sprite(TILE4, sprite_faceButtons1, bIdle, s+spriteHeight, t+spriteHeight);
     }
 
-    if(control->pressed.start || control->held.start)
+    if(control[PLAYER_1]->pressed.start || control[PLAYER_1]->held.start)
     {
         ui_draw_sprite(TILE5, sprite_faceButtons0, 1, s+(spriteHeight*2), t+spriteHeight);
     } else {
@@ -345,17 +344,17 @@ void ui_input_display(ControllerData* control)
 
     // Third row: Sticks
     ui_draw_sprite(TILE6, sprite_controlStick, 0, s, t+(spriteHeight*2));
-    int stickX = s+(control->input.stick_x/15);
-    int stickY = t+(spriteHeight*2)-(control->input.stick_y/15);
+    int stickX = s+(control[PLAYER_1]->input.stick_x/15);
+    int stickY = t+(spriteHeight*2)-(control[PLAYER_1]->input.stick_y/15);
     ui_draw_sprite(TILE6, sprite_controlStick, 1, stickX, stickY);
-    if(control->pressed.c_up || control->held.c_up)
+    if(control[PLAYER_1]->pressed.c_up || control[PLAYER_1]->held.c_up)
     {
         ui_draw_sprite(TILE7, sprite_cButtons1, C_UP, s+(spriteHeight*2), t+(spriteHeight*2));
-    } else if(control->pressed.c_down || control->held.c_down) {
+    } else if(control[PLAYER_1]->pressed.c_down || control[PLAYER_1]->held.c_down) {
         ui_draw_sprite(TILE7, sprite_cButtons1, C_DOWN, s+(spriteHeight*2), t+(spriteHeight*2));
-    } else if(control->pressed.c_left || control->held.c_left) {
+    } else if(control[PLAYER_1]->pressed.c_left || control[PLAYER_1]->held.c_left) {
         ui_draw_sprite(TILE7, sprite_cButtons1, C_LEFT, s+(spriteHeight*2), t+(spriteHeight*2));
-    } else if(control->pressed.c_right || control->held.c_right) {
+    } else if(control[PLAYER_1]->pressed.c_right || control[PLAYER_1]->held.c_right) {
         ui_draw_sprite(TILE7, sprite_cButtons1, C_RIGHT, s+(spriteHeight*2), t+(spriteHeight*2));
     } else {
         ui_draw_sprite(TILE7, sprite_cButtons0, 0, s+(spriteHeight*2), t+(spriteHeight*2));

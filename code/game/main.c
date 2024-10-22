@@ -29,6 +29,8 @@
 
 #include "scene/scenery.h"
 
+#include "sound/sound.h"
+
 #include "ui/ui.h"
 
 #include "game_states.h"
@@ -68,6 +70,7 @@ void minigame_init()
     	players[p] = malloc(sizeof(PlayerData));
 	}
 
+	sound_load();
 }
 void minigame_loop(float deltatime)
 {
@@ -83,5 +86,7 @@ void minigame_cleanup()
 {
 	if(dpl_Temp)
         rspq_block_free(dpl_Temp);
+	t3d_destroy();
+	sound_xm_stop();
 	return;
 }

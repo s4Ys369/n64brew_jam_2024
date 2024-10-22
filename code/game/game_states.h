@@ -137,6 +137,8 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData** co
 		camera_getOrbitalPosition(&camera, camOrbit, timing->frame_time_s);
 		camera_set(&camera, screen);
 
+		sound_update_buffer();
+
 		scenery_set(&room);
 		scenery_set(&n64logo);
 		n64logo.position = (Vector3){200, 200, 0};
@@ -165,7 +167,7 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData** co
 		syncPoint = rspq_syncpoint_new();
 
 		ui_draw();
-		if(control->held.l)
+		if(control[PLAYER_1]->held.l)
 			ui_input_display(control);
 
 		rdpq_detach_show();
@@ -183,6 +185,8 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData** co
 	t3d_model_free(room.model);
 
 	t3d_destroy();
+
+	sound_xm_stop();
 }
 
 void gameState_setPause()
