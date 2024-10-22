@@ -278,8 +278,7 @@ void ui_textbox(void)
 // Step 4/5: call this AFTER your game logic ends each frame
 void ui_update(void)
 {
-    ui_draw_sprite(sprite_faceButtons0, 2, 154, 108);
-    ui_draw_sprite(sprite_cButtons1, 2, 100, 108);
+    
 } 
 
 // Step 5/5: render out the UI at the very end
