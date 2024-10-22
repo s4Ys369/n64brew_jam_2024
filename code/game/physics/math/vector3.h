@@ -9,6 +9,10 @@ typedef struct Vector3 {
     float z;  
 } Vector3;
 
+// Macros to use t3dmath if necessary
+#define T3DVec3_to_Vector3(t3dVec) ((Vector3){(t3dVec).v[0], (t3dVec).v[1], (t3dVec).v[2]})
+#define Vector3_to_T3DVec3(vec) ((T3DVec3){{(vec).x, (vec).y, (vec).z}})
+
 // function prototypes
 
 void vector3_init(Vector3 *v);
