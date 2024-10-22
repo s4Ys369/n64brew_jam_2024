@@ -110,12 +110,31 @@ rdpq_fontstyle_t txt_bright_fontStyle;
 rdpq_fontstyle_t txt_green_fontStyle;
 
 
+#define aPressed 2
+#define aIdle 3
+#define aHeld 2
+
+#define bPressed 0
+#define bIdle 1
+#define bHeld 3
+
+#define cIdle 0
+enum cStates
+{
+    C_UP,
+    C_DOWN,
+    C_LEFT,
+    C_RIGHT
+};
+
+
 static sprite_t *sprite_controlStick;
 static sprite_t *sprite_dPadTriggers;
 static sprite_t *sprite_cButtons0;
 static sprite_t *sprite_cButtons1;
 static sprite_t *sprite_faceButtons0;
 static sprite_t *sprite_faceButtons1;
+const int spriteWidth = 16, spriteHeight = 16;
 
 surface_t surf_UIsprites;
 
@@ -138,10 +157,10 @@ void ui_load_sprites(void)
     sprite_faceButtons1 = sprite_load("rom:/game/ui/face_buttons1.rgba32.sprite");
 }
 
-void ui_draw_sprite(sprite_t *sprite, int idx, int posX, int posY){
+void ui_draw_sprite(rdpq_tile_t tile, sprite_t *sprite, int idx, int posX, int posY){
     int s = 0, t = 0;
     int idxCopy = idx;
-    const int width = 16, height = 16;
+    dpl_Temp = NULL;
 
     if(sprite == sprite_cButtons0 || sprite == sprite_cButtons1)
         dpl_Temp = dpl_cButtons;
@@ -156,33 +175,39 @@ void ui_draw_sprite(sprite_t *sprite, int idx, int posX, int posY){
     if(idx > 4)
     {
         idx = idx % 4;
-        s = width * idx;
+        s = spriteWidth * idx;
     } else {
-        s = width * idx;
+        s = spriteWidth * idx;
     }
 
-    t = (idxCopy / 4) * height;
-
-    debugf("\ns: %d, t: %d\n", s, t);
-        
+    t = (idxCopy / 4) * spriteHeight;
 
 
-    rspq_block_begin();
+    if(!(dpl_Temp))
+    {
+
+        rspq_block_begin();
+
+        rdpq_sync_pipe();
+        rdpq_set_mode_standard();
+        rdpq_mode_alphacompare(1);
+        rdpq_mode_filter(FILTER_BILINEAR);
+        rdpq_sync_tile();
 
         surf_UIsprites = sprite_get_pixels(sprite);
- 
-        rdpq_tex_upload_sub(TILE0, &surf_UIsprites, NULL, s, t, s+width, t+height);
-        rdpq_texture_rectangle(TILE0, posX, posY, posX+width, posY+height, s, t);
 
-    dpl_Temp = rspq_block_end();
+        rdpq_tex_upload_sub(tile, &surf_UIsprites, NULL, s, t, s+spriteWidth, t+spriteHeight);
+        rdpq_texture_rectangle(tile, posX, posY, posX+spriteWidth, posY+spriteHeight, s, t);
 
+        dpl_Temp = rspq_block_end();
+    }
 
-    rdpq_sync_pipe();
-    rdpq_set_mode_standard();
-    rdpq_mode_alphacompare(1);
-    rdpq_mode_filter(FILTER_BILINEAR);
-    rdpq_sync_tile();
-    rspq_block_run(dpl_Temp);
+    if(dpl_Temp)
+    {
+        rspq_highpri_sync();
+        rspq_block_run(dpl_Temp);
+
+    }
 }
 
 void ui_register_fonts(void)
@@ -273,6 +298,71 @@ void ui_main_menu(void)
 void ui_textbox(void)
 {
 
+}
+
+// Time to crash test the RDP
+void ui_input_display(ControllerData* control)
+{
+    int s = 24;
+    int t = 164;
+    controllerData_getInputs(control);
+    rspq_syncpoint_t syncPoint0 = 0;
+
+    // First row: Triggers
+    ui_draw_sprite(TILE0, sprite_dPadTriggers, 6, s, t);
+    if(control->pressed.z || control->held.z)
+        ui_draw_sprite(TILE1, sprite_dPadTriggers, 5, s+spriteWidth, t);
+    if(control->pressed.r || control->held.r)
+        ui_draw_sprite(TILE2, sprite_dPadTriggers, 7, s+(spriteWidth*2), t);
+
+    if(syncPoint0)rspq_syncpoint_wait(syncPoint0);
+    rspq_syncpoint_t syncPoint1 = rspq_syncpoint_new();
+
+    // Second row: Face Buttons
+    if(control->pressed.a || control->held.a)
+    {
+        ui_draw_sprite(TILE3, sprite_faceButtons1, aHeld, s, t+spriteHeight);
+    } else {
+        ui_draw_sprite(TILE3, sprite_faceButtons0, aIdle, s, t+spriteHeight);
+    }
+
+    if(control->pressed.b || control->held.b)
+    {
+        ui_draw_sprite(TILE4, sprite_faceButtons1, bHeld, s+spriteHeight, t+spriteHeight);
+    } else {
+        ui_draw_sprite(TILE4, sprite_faceButtons1, bIdle, s+spriteHeight, t+spriteHeight);
+    }
+
+    if(control->pressed.start || control->held.start)
+    {
+        ui_draw_sprite(TILE5, sprite_faceButtons0, 1, s+(spriteHeight*2), t+spriteHeight);
+    } else {
+        ui_draw_sprite(TILE5, sprite_faceButtons0, 0, s+(spriteHeight*2), t+spriteHeight);
+    }
+
+    if(syncPoint1)rspq_syncpoint_wait(syncPoint1);
+    rspq_syncpoint_t syncPoint2 = rspq_syncpoint_new();
+
+    // Third row: Sticks
+    ui_draw_sprite(TILE6, sprite_controlStick, 0, s, t+(spriteHeight*2));
+    int stickX = s+(control->input.stick_x/15);
+    int stickY = t+(spriteHeight*2)-(control->input.stick_y/15);
+    ui_draw_sprite(TILE6, sprite_controlStick, 1, stickX, stickY);
+    if(control->pressed.c_up || control->held.c_up)
+    {
+        ui_draw_sprite(TILE7, sprite_cButtons1, C_UP, s+(spriteHeight*2), t+(spriteHeight*2));
+    } else if(control->pressed.c_down || control->held.c_down) {
+        ui_draw_sprite(TILE7, sprite_cButtons1, C_DOWN, s+(spriteHeight*2), t+(spriteHeight*2));
+    } else if(control->pressed.c_left || control->held.c_left) {
+        ui_draw_sprite(TILE7, sprite_cButtons1, C_LEFT, s+(spriteHeight*2), t+(spriteHeight*2));
+    } else if(control->pressed.c_right || control->held.c_right) {
+        ui_draw_sprite(TILE7, sprite_cButtons1, C_RIGHT, s+(spriteHeight*2), t+(spriteHeight*2));
+    } else {
+        ui_draw_sprite(TILE7, sprite_cButtons0, 0, s+(spriteHeight*2), t+(spriteHeight*2));
+    }
+
+    if(syncPoint2)rspq_syncpoint_wait(syncPoint2);
+    syncPoint0 = rspq_syncpoint_new();
 }
 
 // Step 4/5: call this AFTER your game logic ends each frame

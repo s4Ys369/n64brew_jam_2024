@@ -5,7 +5,6 @@
 // function prototypes
 
 void actorControl_setJump(Actor* actor, ControllerData *control, float frame_time);
-void actorControl_setRoll(Actor* actor, ControllerData *control);
 void actorControl_moveWithStick(Actor* actor, ControllerData *control, float camera_angle_around, float camera_offset);
 void actor_setControlData(Actor* actor, ControllerData *control, float frame_time, float camera_angle_around, float camera_offset);
 
@@ -14,7 +13,7 @@ void actor_setControlData(Actor* actor, ControllerData *control, float frame_tim
 
 void actorControl_setJump(Actor* actor, ControllerData *control, float frame_time)
 {    
-    if (control->pressed.a && actor->state != ROLL && actor->state != JUMP && actor->state != FALLING) {
+    if (control->pressed.a && actor->state != JUMP && actor->state != FALLING) {
         
         actor->input.jump_hold = true;
         actor->input.jump_released = false;
@@ -32,11 +31,6 @@ void actorControl_setJump(Actor* actor, ControllerData *control, float frame_tim
     }
 }
 
-void actorControl_setRoll(Actor* actor, ControllerData *control)
-{
-
-}
-
 void actorControl_moveWithStick(Actor *actor, ControllerData *control, float camera_angle_around, float camera_offset)
 {
     int deadzone = 6;
@@ -47,25 +41,17 @@ void actorControl_moveWithStick(Actor *actor, ControllerData *control, float cam
         Vector2 stick = {control->input.stick_x, control->input.stick_y};
         
         stick_magnitude = vector2_magnitude(&stick);
-        actor->horizontal_target_speed = stick_magnitude * 6;
+        actor->horizontal_target_speed = stick_magnitude * 4;
         actor->target_yaw = deg(atan2(control->input.stick_x, -control->input.stick_y) - rad(camera_angle_around - (0.5 * camera_offset)));
     }
 
     
-    if (stick_magnitude == 0 && actor->state != ROLL && actor->state != JUMP && actor->state != FALLING){
-        actor_setState(actor, STAND_IDLE);
+    if (stick_magnitude == 0 && actor->state != JUMP && actor->state != FALLING){
+        actor->state = STAND_IDLE;
     }
 
-    else if (stick_magnitude > 0 && stick_magnitude <= 80 && actor->state != ROLL && actor->state != JUMP && actor->state != FALLING){
-        actor_setState(actor, WALKING);
-    }
-
-    else if (control->held.r && stick_magnitude > 80 && actor->state != ROLL && actor->state != JUMP && actor->state != FALLING){
-        actor_setState(actor, SPRINTING);
-    }
-
-    else if (stick_magnitude > 80 && actor->state != ROLL && actor->state != JUMP && actor->state != FALLING){
-        actor_setState(actor, RUNNING);
+    else if (stick_magnitude > 0 && actor->state != JUMP && actor->state != FALLING){
+        actor->state = RUNNING;
     }
 }
 

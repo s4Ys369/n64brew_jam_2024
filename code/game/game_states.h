@@ -28,7 +28,7 @@ void gameState_setIntro()
 
 void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData** control)
 {
-	screen_initGameplayViewport(screen);
+	screen_initT3dViewport(screen);
 	t3d_init((T3DInitParams){});
 
 	Camera camera = camera_create();
@@ -58,8 +58,8 @@ void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData** co
 
 		// ======== Draw ======== //
 		
-		screen_clear(screen);
-		screen_clearGameplayViewport(screen);
+		screen_clearDisplay(screen);
+		screen_clearT3dViewport(screen);
 	
 		light_set(&light);
     
@@ -79,7 +79,7 @@ void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData** co
 
 void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData** control, PlayerData** player)
 {
-	screen_initGameplayViewport(screen);
+	screen_initT3dViewport(screen);
 	t3d_init((T3DInitParams){});
   	rspq_syncpoint_t syncPoint = 0;
 
@@ -143,8 +143,8 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData** co
 
 		// ======== Draw ======== //
 		
-		screen_clear(screen);
-		screen_clearGameplayViewport(screen);
+		screen_clearDisplay(screen);
+		screen_clearT3dViewport(screen);
 	
 		light_set(&light);
     
@@ -165,6 +165,8 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData** co
 		syncPoint = rspq_syncpoint_new();
 
 		ui_draw();
+		if(control->held.l)
+			ui_input_display(control);
 
 		rdpq_detach_show();
 	}
