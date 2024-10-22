@@ -34,7 +34,7 @@ FONT_FILES := $(ASSETS)/chunkysans.font64 \
               $(ASSETS)/TitanOne-Regular.font64
 
 # Final assets list
-ASSETS_LIST := $(JSON_FILES) $(T3DM_FILES) $(SPRITE_FILES) $(UI_SPRITE_FILES) $(FONT_FILES)
+ASSETS_LIST += $(JSON_FILES) $(T3DM_FILES) $(SPRITE_FILES) $(UI_SPRITE_FILES) $(FONT_FILES)
 
 # t3d flags
 filesystem/game/capsule.t3dm: T3DM_FLAGS = --base-scale=1
