@@ -37,15 +37,15 @@ FONT_FILES := $(ASSETS)/chunkysans.font64 \
 ASSETS_LIST += $(JSON_FILES) $(T3DM_FILES) $(SPRITE_FILES) $(UI_SPRITE_FILES) $(FONT_FILES)
 
 # t3d flags
-filesystem/game/capsule.t3dm: T3DM_FLAGS = --base-scale=1
-filesystem/game/n64logo.t3dm: T3DM_FLAGS = --base-scale=1
-filesystem/game/pipo.t3dm: T3DM_FLAGS = --base-scale=1
-filesystem/game/room.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
-filesystem/game/testLevel.t3dm: T3DM_FLAGS = --base-scale=1200 --bvh
+$(ASSETS)/capsule.t3dm: T3DM_FLAGS = --base-scale=1
+$(ASSETS)/n64logo.t3dm: T3DM_FLAGS = --base-scale=1
+$(ASSETS)/pipo.t3dm: T3DM_FLAGS = --base-scale=1
+$(ASSETS)/room.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
+$(ASSETS)/testLevel.t3dm: T3DM_FLAGS = --base-scale=1200 --bvh
 
 # font64 flags
-filesystem/game/chunkysans.font64: MKFONT_FLAGS += --outline 2 --size 12
-filesystem/game/TitanOne-Regular.font64: MKFONT_FLAGS += --outline 1 --size 12
+$(ASSETS)/chunkysans.font64: MKFONT_FLAGS += --outline 2 --size 12
+$(ASSETS)/TitanOne-Regular.font64: MKFONT_FLAGS += --outline 1 --size 12
 
 # Add rule for copying JSONs
 $(FILESYSTEM_DIR)/%.json: $(ASSETS_DIR)/%.json
