@@ -7,6 +7,8 @@
 #define PAUSE 3
 #define GAME_OVER 4
 
+// Core variable accumulators
+static uint32_t playerCount;
 
 // function prototypes
 
@@ -89,7 +91,8 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData** co
 	LightData light = light_create();
 
 	//actor
-	for(uint32_t p = 0; p < core_get_playercount(); ++p)
+	playerCount = core_get_playercount();
+	for(uint32_t p = 0; p < playerCount; ++p)
 	{
 		if (player[p] != NULL)
 		{
@@ -110,11 +113,14 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData** co
 
 		time_setData(timing);
 	
-		for(uint32_t p = 0; p < core_get_playercount(); ++p)
+		for(uint32_t p = 0; p < playerCount; ++p)
 		{
-			controllerData_getInputs(p, control[p]);
-			actor_setControlData(player[p]->actor, control[p], timing->frame_time_s, camera.angle_around_barycenter, camera.offset_angle);
-			actor_setMotion(player[p]->actor, timing->frame_time_s);
+			if (player[p] != NULL && player[p]->actor != NULL)
+			{
+				controllerData_getInputs(player[p]->port, control[p]);
+				actor_setControlData(player[p]->actor, control[p], timing->frame_time_s, camera.angle_around_barycenter, camera.offset_angle);
+				actor_setMotion(player[p]->actor, timing->frame_time_s);
+			}
 		}
 		cameraControl_setOrbitalMovement(&camera, control[PLAYER_1]);
 
@@ -123,7 +129,7 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData** co
 		static Vector3 camOrbit; 
 		static Vector3 targetPosition;
 
-		if (control[PLAYER_1]->pressed.b)
+		if (control[PLAYER_1]->pressed.b && playerCount > PLAYER_2)
 		{
     		camSwitch ^= 1;
 			targetPosition = player[camSwitch]->actor->body.position;
@@ -155,11 +161,14 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData** co
 		scenery_draw(&n64logo);
 		scenery_draw(&room);
 
-		for(uint32_t p = 0; p < core_get_playercount(); ++p)
+		for(uint32_t p = 0; p < playerCount; ++p)
 		{
-			actor_setState(player[p]->actor, player[p]->actor->state);
-			actor_setAnimation(player[p]->actor, player[p]->animation, timing->frame_time_s, &syncPoint);
-			actor_draw(player[p]->actor);
+			if (player[p] != NULL && player[p]->actor != NULL)
+			{
+				actor_setState(player[p]->actor, player[p]->actor->state);
+				actor_setAnimation(player[p]->actor, player[p]->animation, timing->frame_time_s, &syncPoint);
+				actor_draw(player[p]->actor);
+			}
 		}
 
 		t3d_matrix_pop(1);
