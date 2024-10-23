@@ -68,7 +68,7 @@ void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData* con
    
    		t3d_matrix_pop(1);
 
-		ui_main_menu();
+		ui_main_menu(control);
 
 		rdpq_detach_show();
 		

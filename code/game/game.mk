@@ -23,12 +23,20 @@ SPRITE_FILES := $(ASSETS)/black_filled_tile.sprite \
                 $(ASSETS)/red_tile.sprite \
                 $(ASSETS)/yellow_tile.sprite
 
-UI_SPRITE_FILES := $(UI_DIR)/control_stick.ia8.sprite \
-                   $(UI_DIR)/d_pad_triggers.ia8.sprite \
-                   $(UI_DIR)/c_buttons0.rgba32.sprite \
-                   $(UI_DIR)/c_buttons1.rgba32.sprite \
-                   $(UI_DIR)/face_buttons0.rgba32.sprite \
-                   $(UI_DIR)/face_buttons1.rgba32.sprite
+UI_SPRITE_FILES := $(UI_DIR)/buttons/control_stick.ia8.sprite \
+                   $(UI_DIR)/buttons/d_pad_triggers.ia8.sprite \
+                   $(UI_DIR)/buttons/c_buttons0.rgba32.sprite \
+                   $(UI_DIR)/buttons/c_buttons1.rgba32.sprite \
+                   $(UI_DIR)/buttons/face_buttons0.rgba32.sprite \
+                   $(UI_DIR)/buttons/face_buttons1.rgba32.sprite \
+                   $(UI_DIR)/panels/border.ia4.sprite \
+                   $(UI_DIR)/panels/border.ia8.sprite \
+                   $(UI_DIR)/panels/gloss.ia4.sprite \
+                   $(UI_DIR)/panels/gloss.ia8.sprite \
+                   $(UI_DIR)/panels/gradient.ia4.sprite \
+                   $(UI_DIR)/panels/pattern_bubble_grid.ia4.sprite \
+                   $(UI_DIR)/panels/pattern_tessalate.ia4.sprite \
+                   $(UI_DIR)/panels/star.ia8.sprite
 
 FONT_FILES := $(ASSETS)/chunkysans.font64 \
               $(ASSETS)/TitanOne-Regular.font64
@@ -46,6 +54,23 @@ $(ASSETS)/testLevel.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
 # font64 flags
 $(ASSETS)/chunkysans.font64: MKFONT_FLAGS += --outline 2 --size 12
 $(ASSETS)/TitanOne-Regular.font64: MKFONT_FLAGS += --outline 1 --size 12
+
+ifeq ($(DEBUG),1)
+  N64_CFLAGS += -ggdb
+  N64_LDFLAGS += -ggdb
+endif
+
+N64_CFLAGS += -std=gnu2x \
+	-mno-check-zero-division \
+	-funsafe-math-optimizations \
+	-fsingle-precision-constant \
+	-fno-unroll-loops \
+	-fno-peel-loops \
+	-falign-functions=32 \
+	-fno-merge-constants \
+    -fno-strict-aliasing \
+	-ffast-math \
+    -mips3 \
 
 # Add rule for copying JSONs
 $(FILESYSTEM_DIR)/%.json: $(ASSETS_DIR)/%.json
