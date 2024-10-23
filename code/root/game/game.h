@@ -1,9 +1,10 @@
 #ifndef GAME_H
 #define GAME_H
 
+typedef struct Game Game;
 typedef void (*LoopCallback)(Game *game);
 
-typedef struct
+struct Game
 {
     uint8_t state;
     Screen screen;
@@ -21,12 +22,15 @@ typedef struct
 
     LoopCallback fixedLoopCallback;  // Fixed loop callback
     LoopCallback loopCallback;       // Main loop callback
-} Game;
+};
+
+rspq_syncpoint_t syncPoint;
 
 void game_init(Game *game, uint8_t initialState);
 void game_loop(Game *game, float deltaTime);
 void game_fixedUpdate(Game *game, float fixedDeltaTime);
 void game_cleanup(Game *game);
+
 
 void game_init(Game *game, uint8_t initialState)
 {
@@ -36,7 +40,7 @@ void game_init(Game *game, uint8_t initialState)
     screen_initDisplay(&game->screen);
 	screen_initT3dViewport(&game->screen);
 
-    game_setControlData(game);
+    controllerData_getInputs(&game->control);
 
 	time_init(&game->timing);
 
@@ -55,6 +59,8 @@ void game_init(Game *game, uint8_t initialState)
     // Assign callback functions
     game->fixedLoopCallback = NULL;
     game->loopCallback = NULL;
+
+	syncPoint = 0;
 }
 
 void game_loop(Game *game, float deltaTime)
@@ -69,8 +75,8 @@ void game_loop(Game *game, float deltaTime)
     // Update actor motions and animations
     for(size_t a = 0; a < game->actor_count; ++a)
     {
-        actor_setMotion(game->actors[a], deltaTime);
-        actor_setAnimation(game->actors[a], game->animations[a], deltaTime, &syncPoint);
+        actor_setMotion(&game->actors[a], deltaTime);
+        actor_setAnimation(&game->actors[a], &game->animations[a], deltaTime, &syncPoint);
     }
     // Update camera position and set camera to screen
     cameraControl_setOrbitalMovement(&game->camera, &game->control);
@@ -87,9 +93,9 @@ void game_loop(Game *game, float deltaTime)
     // Render the scene (scenery and actors)
     t3d_matrix_push_pos(1);
     for (size_t i = 0; i < game->scenery_count; i++)
-        scenery_draw(game->sceneries[i]);
+        scenery_draw(&game->sceneries[i]);
     for (size_t i = 0; i < game->actor_count; i++)
-        actor_draw(game->actors[i]);
+        actor_draw(&game->actors[i]);
     t3d_matrix_pop(1);
 
     // Sync the RSP and draw the UI
@@ -108,12 +114,12 @@ void game_fixedUpdate(Game *game, float fixedDeltaTime)
     controllerData_getInputs(&game->control);
 
     // Update player controls, state, and apply physics
-    actor_setControlData(game->actors[0], &game->control, fixedDeltaTime, game->camera.angle_around_barycenter, game->camera.offset_angle);
-    actor_setState(game->actors[0], game->actors[0].state);
+    actor_setControlData(&game->actors[0], &game->control, fixedDeltaTime, game->camera.angle_around_barycenter, game->camera.offset_angle);
+    actor_setState(&game->actors[0], game->actors[0].state);
 
     // Update scenery state
     for (size_t i = 0; i < game->scenery_count; i++)
-        scenery_set(game->sceneries[i]);
+        scenery_set(&game->sceneries[i]);
 }
 
 void game_cleanup(Game *game)
@@ -121,8 +127,8 @@ void game_cleanup(Game *game)
     // Destroy armatures
     for (size_t i = 0; i < game->actor_count; i++)
     {
-        t3d_skeleton_destroy(game->actors[i].armature.main);
-        t3d_skeleton_destroy(game->actors[i].armature.blend);
+        t3d_skeleton_destroy(&game->actors[i].armature.main);
+        t3d_skeleton_destroy(&game->actors[i].armature.blend);
     }
 
     // Free models and scenery
@@ -130,9 +136,6 @@ void game_cleanup(Game *game)
         t3d_model_free(game->sceneries[i].model);
     for (size_t i = 0; i < game->actor_count; i++)
         t3d_model_free(game->actors[i].model);
-
-    // Destroy other T3D resources
-    t3d_destroy();
 
 	// Free dynamically allocated memory
     if (game->actors)
@@ -156,3 +159,5 @@ void game_cleanup(Game *game)
 	// Reset syncPoint
     syncPoint = 0;
 }
+
+#endif // GAME_H
