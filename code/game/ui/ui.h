@@ -136,40 +136,39 @@ static sprite_t *sprite_faceButtons0;
 static sprite_t *sprite_faceButtons1;
 const int spriteWidth = 16, spriteHeight = 16;
 
-surface_t surf_UIsprites;
+static sprite_t *sprite_border;
+static sprite_t *sprite_gloss;
+static sprite_t *sprite_gradient;
+static sprite_t *sprite_bubbleGrid;
+static sprite_t *sprite_tessalate;
+static sprite_t *sprite_star;
 
-static rspq_block_t *dpl_controlStick = NULL;
-static rspq_block_t *dpl_dPadTriggers = NULL;
-static rspq_block_t *dpl_cButtons = NULL;
-static rspq_block_t *dpl_faceButtons = NULL;
-rspq_block_t *dpl_Temp = NULL;
+surface_t surf_UIpanels;
+surface_t surf_UIsprites;
 
 void ui_load_sprites(void)
 {
-    // IA8
-    sprite_controlStick = sprite_load("rom:/game/ui/control_stick.ia8.sprite");
-    sprite_dPadTriggers = sprite_load("rom:/game/ui/d_pad_triggers.ia8.sprite");
+    // IA
+    sprite_border = sprite_load("rom:/game/ui/panels/border.ia4.sprite");
+    sprite_gloss = sprite_load("rom:/game/ui/panels/gloss.ia4.sprite");
+    sprite_gradient = sprite_load("rom:/game/ui/panels/gradient.ia4.sprite");
+    sprite_bubbleGrid = sprite_load("rom:/game/ui/panels/pattern_bubble_grid.ia4.sprite");
+    sprite_tessalate = sprite_load("rom:/game/ui/panels/pattern_tessalate.ia4.sprite");
+    sprite_star = sprite_load("rom:/game/ui/panels/star.ia8.sprite");
+    sprite_controlStick = sprite_load("rom:/game/ui/buttons/control_stick.ia8.sprite");
+    sprite_dPadTriggers = sprite_load("rom:/game/ui/buttons/d_pad_triggers.ia8.sprite");
 
     // RGBA32
-    sprite_cButtons0 = sprite_load("rom:/game/ui/c_buttons0.rgba32.sprite");
-    sprite_cButtons1 = sprite_load("rom:/game/ui/c_buttons1.rgba32.sprite");
-    sprite_faceButtons0 = sprite_load("rom:/game/ui/face_buttons0.rgba32.sprite");
-    sprite_faceButtons1 = sprite_load("rom:/game/ui/face_buttons1.rgba32.sprite");
+    sprite_cButtons0 = sprite_load("rom:/game/ui/buttons/c_buttons0.rgba32.sprite");
+    sprite_cButtons1 = sprite_load("rom:/game/ui/buttons/c_buttons1.rgba32.sprite");
+    sprite_faceButtons0 = sprite_load("rom:/game/ui/buttons/face_buttons0.rgba32.sprite");
+    sprite_faceButtons1 = sprite_load("rom:/game/ui/buttons/face_buttons1.rgba32.sprite");
 }
 
-void ui_draw_sprite(rdpq_tile_t tile, sprite_t *sprite, int idx, int posX, int posY){
+void ui_draw_sprite(rdpq_tile_t tile, sprite_t *sprite, int idx, int posX, int posY)
+{
     int s = 0, t = 0;
     int idxCopy = idx;
-    dpl_Temp = NULL;
-
-    if(sprite == sprite_cButtons0 || sprite == sprite_cButtons1)
-        dpl_Temp = dpl_cButtons;
-    if(sprite == sprite_faceButtons0 || sprite == sprite_faceButtons1)
-        dpl_Temp = dpl_faceButtons;
-    if(sprite == sprite_controlStick)
-        dpl_Temp = dpl_controlStick;
-    if(sprite == sprite_dPadTriggers)
-        dpl_Temp = dpl_dPadTriggers;
 
 
     if(idx > 4)
@@ -182,32 +181,31 @@ void ui_draw_sprite(rdpq_tile_t tile, sprite_t *sprite, int idx, int posX, int p
 
     t = (idxCopy / 4) * spriteHeight;
 
+    rdpq_sync_pipe();
+    rdpq_set_mode_standard();
+    rdpq_mode_alphacompare(1);
+    rdpq_mode_filter(FILTER_BILINEAR);
+    rdpq_sync_tile();
 
-    if(!(dpl_Temp))
-    {
+    surf_UIsprites = sprite_get_pixels(sprite);
 
-        rspq_block_begin();
+    rdpq_tex_upload_sub(tile, &surf_UIsprites, NULL, s, t, s+spriteWidth, t+spriteHeight);
+    rdpq_texture_rectangle(tile, posX, posY, posX+spriteWidth, posY+spriteHeight, s, t);
+}
 
-        rdpq_sync_pipe();
-        rdpq_set_mode_standard();
-        rdpq_mode_alphacompare(1);
-        rdpq_mode_filter(FILTER_BILINEAR);
-        rdpq_sync_tile();
+void ui_draw_panel(rdpq_tile_t tile, sprite_t *sprite, int color, int x0, int y0, int x1, int y1, int s, int t, int s1, int t1)
+{
+    rdpq_sync_pipe();
+    rdpq_set_mode_standard();
+    rdpq_mode_combiner(RDPQ_COMBINER_TEX_FLAT);
+    rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
+    rdpq_set_prim_color(color_from_packed32(COLORS[color]));
+    rdpq_sync_tile();
 
-        surf_UIsprites = sprite_get_pixels(sprite);
+    surf_UIpanels = sprite_get_pixels(sprite);
 
-        rdpq_tex_upload_sub(tile, &surf_UIsprites, NULL, s, t, s+spriteWidth, t+spriteHeight);
-        rdpq_texture_rectangle(tile, posX, posY, posX+spriteWidth, posY+spriteHeight, s, t);
-
-        dpl_Temp = rspq_block_end();
-    }
-
-    if(dpl_Temp)
-    {
-        rspq_highpri_sync();
-        rspq_block_run(dpl_Temp);
-
-    }
+    rdpq_tex_upload(tile, &surf_UIpanels, NULL);
+    rdpq_texture_rectangle_scaled(tile, x0, y0, x1, y1, s, t, s1, t1);
 }
 
 void ui_register_fonts(void)
@@ -290,9 +288,24 @@ void ui_fps(void)
     rdpq_text_printf(&txt_debugParms, ID_DEBUG, fpsPos.v[0], fpsPos.v[1], "FPS %.2f", display_get_fps());
 }
 
-void ui_main_menu(void)
+void ui_main_menu(ControllerData* control)
 {
-
+    ui_draw_panel(TILE1, sprite_gradient, T_RED, 96, 64, 224, 140, 0, 0, 128, 64);
+    ui_draw_panel(TILE2, sprite_tessalate, T_BLACK, 112, 74, 208, 131, 0, 0, 64, 64);
+    rdpq_sync_pipe();
+    rdpq_set_mode_standard();
+    rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
+    rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
+    rdpq_text_print(&txt_titleParms, ID_TITLE, 136, 96, "TITLE");
+    rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 120, "Press");
+    ui_draw_panel(TILE4, sprite_star, YELLOW, 100, 74, 132, 106, 0, 0, 64, 64);
+    ui_draw_panel(TILE4, sprite_star, YELLOW, 187, 74, 219, 106, 0, 0, 64, 64);
+    if(control->pressed.a || control->held.a)
+    {
+        ui_draw_sprite(TILE3, sprite_faceButtons1, aHeld, 170, 108);
+    } else {
+        ui_draw_sprite(TILE3, sprite_faceButtons0, aIdle, 170, 108);
+    }
 }
 
 void ui_textbox(void)
