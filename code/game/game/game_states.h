@@ -28,8 +28,6 @@ void gameState_setIntro()
 
 void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData* control)
 {
-	screen_initT3dViewport(screen);
-	t3d_init((T3DInitParams){});
 
 	Camera camera = camera_create();
 
@@ -79,8 +77,6 @@ void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData* con
 
 void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* control)
 {
-	screen_initT3dViewport(screen);
-	t3d_init((T3DInitParams){});
   	rspq_syncpoint_t syncPoint = 0;
 
 	Camera camera = camera_create();
@@ -111,7 +107,7 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
 		actor_setAnimation(&player, &player_animation, timing->frame_time_s, &syncPoint);
 
 		cameraControl_setOrbitalMovement(&camera, control);
-		camera_getOrbitalPosition(&camera, player.body.position, timing->frame_time_s);
+		camera_getMinigamePosition(&camera, player.body.position, timing->frame_time_s);
 		camera_set(&camera, screen);
 
 		scenery_set(&room);
@@ -143,9 +139,6 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
 
 	t3d_skeleton_destroy(&player.armature.main);
 	t3d_skeleton_destroy(&player.armature.blend);
-
-	//t3d_anim_destroy(&animIdle);
-	//t3d_anim_destroy(&animWalk);
 
 	t3d_model_free(player.model);
 	t3d_model_free(room.model);
