@@ -5,13 +5,13 @@ void gameControl_setPause(Game *game)
 {
     if (game->control.pressed.start && (game->state == GAMEPLAY)) {
         
-        game->state = MAIN_MENU;
+        game->state = PAUSE;
     }
 }
 
 void gameControl_setGameplay(Game *game)
 {
-    if (game->control.pressed.start && (game->state == MAIN_MENU)) {
+    if (game->control.pressed.start && (game->state == PAUSE)) {
         
         game->state = GAMEPLAY;
     }

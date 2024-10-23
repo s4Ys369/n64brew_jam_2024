@@ -5,9 +5,11 @@
 // function prototypes
 
 void gameState_setIntro();
-void gameState_setMainMenu(Game* game, Scenery* scenery);
+void gameState_setMainMenu();
+
 void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery);
-void gameState_setPause();
+void gameState_setPause(Game* game, Actor* actors, Scenery* scenery);
+
 void gameState_setGameOver();
 
 void game_play(Game* game, Actor* actors, Scenery* scenery);
@@ -19,38 +21,11 @@ void gameState_setIntro()
 {
     // code for the intro state
 }
-
-void gameState_setMainMenu(Game* game, Scenery* scenery)
+void gameState_setMainMenu()
 {
-	// ======== Update ======== //
-
-	time_setData(&game->timing);
-	controllerData_getInputs(&game->control);
-
-	cameraControl_setOrbitalMovement(&game->scene.camera, &game->control);
-	camera_getOrbitalPosition(&game->scene.camera, (Vector3){0, 0, 0}, game->timing.frame_time_s);
-	camera_set(&game->scene.camera, &game->screen);
-
-	// ======== Draw ======== //
-	
-	screen_clearDisplay(&game->screen);
-	screen_clearT3dViewport(&game->screen);
-
-	light_set(&game->scene.light);
-
-	t3d_matrix_push_pos(1);
-
-	for (int i = 0; i < SCENERY_COUNT; i++) {
-
-		scenery_draw(&scenery[i]);
-	}
-
-	t3d_matrix_pop(1);
-
-	ui_draw();
-
-	rdpq_detach_show();
+    // code for the game over state
 }
+
 
 void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery)
 {
@@ -98,10 +73,41 @@ void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery)
 	rdpq_detach_show();
 }
 
-void gameState_setPause()
+
+void gameState_setPause(Game* game, Actor* actors, Scenery* scenery)
 {
-    // code for the pause state
+	// ======== Update ======== //
+
+	time_setData(&game->timing);
+	controllerData_getInputs(&game->control);
+
+	cameraControl_setOrbitalMovement(&game->scene.camera, &game->control);
+	camera_getMinigamePosition(&game->scene.camera, actors[0].body.position, game->timing.frame_time_s);
+	camera_set(&game->scene.camera, &game->screen);
+
+	// ======== Draw ======== //
+	
+	screen_clearDisplay(&game->screen);
+	screen_clearT3dViewport(&game->screen);
+
+	light_set(&game->scene.light);
+
+	t3d_matrix_push_pos(1);
+
+	for (int i = 0; i < SCENERY_COUNT; i++) {
+
+		scenery_draw(&scenery[i]);
+	}
+
+	t3d_matrix_pop(1);
+
+	game->syncPoint = rspq_syncpoint_new();
+
+	ui_draw();
+
+	rdpq_detach_show();
 }
+
 
 void gameState_setGameOver()
 {
@@ -110,9 +116,9 @@ void gameState_setGameOver()
 
 void game_play(Game* game, Actor* actors, Scenery* scenery)
 {
-
 	for(;;)
 	{
+		game_setControlData(game);
 		switch(game->state)
 		{
 			case INTRO:{
@@ -120,8 +126,7 @@ void game_play(Game* game, Actor* actors, Scenery* scenery)
 				break;
 			}
 			case MAIN_MENU:{
-				gameState_setMainMenu(game, scenery);
-				game->state = MAIN_MENU;
+				gameState_setMainMenu();
 				break;
 			}
 			case GAMEPLAY:{
@@ -130,7 +135,8 @@ void game_play(Game* game, Actor* actors, Scenery* scenery)
 				break;
 			}
 			case PAUSE:{
-				gameState_setPause();
+				gameState_setPause(game, actors, scenery);
+				game->state = PAUSE;
 				break;
 			}
 			case GAME_OVER:{
@@ -139,7 +145,6 @@ void game_play(Game* game, Actor* actors, Scenery* scenery)
 			}
 		}
 		
-		game_setControlData(game);
 	}
 }
 

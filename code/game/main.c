@@ -49,40 +49,42 @@ Game minigame;
 
 Actor actors[ACTOR_COUNT];
 
-Scenery level[SCENERY_COUNT];
+Scenery scenery[SCENERY_COUNT];
 
 
 void minigame_init()
 {      
 	game_init(&minigame);
 
+    // actors
     actors[0] = actor_create(0, "rom:/game/pipo.t3dm");
-
-    level[0] = scenery_create(0, "rom:/game/testLevel.t3dm");
-    level[1] = scenery_create(0, "rom:/game/n64logo.t3dm");
-    level[1].position = (Vector3){200, 200, 0};
 
     for (int i = 0; i < ACTOR_COUNT; i++) {
 
         actor_init(&actors[i]);
     }
+    
+     // scenery
+    scenery[0] = scenery_create(0, "rom:/game/testLevel.t3dm");
+    scenery[1] = scenery_create(1, "rom:/game/n64logo.t3dm");
+    scenery[1].position = (Vector3){200, 200, 0};
 
     for (int i = 0; i < SCENERY_COUNT; i++) {
 
-        scenery_set(&level[i]);
+        scenery_set(&scenery[i]);
     }
 }
 
 void minigame_loop()
 {	
-	game_play(&minigame, actors, level);
+	game_play(&minigame, actors, scenery);
 }
 
 void minigame_cleanup()
 {
 	for (int i = 0; i < SCENERY_COUNT; i++) {
 
-		scenery_delete(&level[i]);
+		scenery_delete(&scenery[i]);
 	};
 
 	for (int i = 0; i < ACTOR_COUNT; i++) {
