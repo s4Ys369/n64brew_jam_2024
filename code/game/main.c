@@ -25,7 +25,9 @@
 #include "actor/actor_control.h"
 #include "actor/actor_animation.h"
 
+#include "scene/scene.h"
 #include "scene/scenery.h"
+//#include "scene/assets.h"
 
 #include "ui/ui.h"
 
@@ -41,35 +43,35 @@ const MinigameDef minigame_def = {
     .instructions = "Press A to win."
 };
 
-Game minigame = {
-	.state = GAMEPLAY
-};
+Game minigame;
+
+
+// this variables need to be declared here or in an assets.h header
+// or loaded in a different way
+// they probably need to be arranged and passed as arguments to the game_setState function
+
+/*
+//actor
+Actor player = actor_create(0, "rom:/game/pipo.t3dm");
+ActorAnimation player_animation = actorAnimation_create(&player);
+actorAnimation_init(&player, &player_animation);
+
+//scenery
+Scenery room = scenery_create(0, "rom:/game/testLevel.t3dm");
+
+Scenery n64logo = scenery_create(0, "rom:/game/n64logo.t3dm");
+*/
+
 
 void minigame_init()
 {
-	debug_init_isviewer();
-	debug_init_usblog();
-	asset_init_compression(2);
-
-	dfs_init(DFS_DEFAULT_LOCATION);
-	rdpq_init();
-
-	screen_initDisplay(&minigame.screen);
-
-	screen_initT3dViewport(&minigame.screen);
-	t3d_init((T3DInitParams){});
-
-	joypad_init();
-
-	time_init(&minigame.timing);
-	ui_init();
-
+	game_init(&minigame);
 }
 
 void minigame_loop()
 {	
-	game_setState(minigame.state, &minigame.screen, &minigame.timing, &minigame.control);
 	game_setControlData(&minigame);
+	game_setState(&minigame);
 }
 
 void minigame_cleanup()

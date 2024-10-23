@@ -1,22 +1,16 @@
 #ifndef GAME_STATES_H
 #define GAME_STATES_H
 
-#define INTRO 0
-#define MAIN_MENU 1
-#define GAMEPLAY 2
-#define PAUSE 3
-#define GAME_OVER 4
-
 
 // function prototypes
 
 void gameState_setIntro();
-void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData* control);
-void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* control);
+void gameState_setMainMenu(Game* game);
+void gameState_setGameplay(Game* game);
 void gameState_setPause();
 void gameState_setGameOver();
 
-void game_setState(uint8_t state, Screen* screen, TimeData* timing, ControllerData* control);
+void game_setState(Game* game);
 
 
 // function implementations
@@ -26,13 +20,8 @@ void gameState_setIntro()
     // code for the intro state
 }
 
-void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData* control)
+void gameState_setMainMenu(Game* game)
 {
-
-	Camera camera = camera_create();
-
-	//light
-	LightData light = light_create();
 
 	//scenery
 	Scenery room = scenery_create(0, "rom:/game/testLevel.t3dm");
@@ -43,12 +32,12 @@ void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData* con
 	{
 		// ======== Update ======== //
 
-		time_setData(timing);
-		controllerData_getInputs(control);
+		time_setData(&game->timing);
+		controllerData_getInputs(&game->control);
 
-		cameraControl_setOrbitalMovement(&camera, control);
-		camera_getOrbitalPosition(&camera, (Vector3){0, 0, 0}, timing->frame_time_s);
-		camera_set(&camera, screen);
+		cameraControl_setOrbitalMovement(&game->scene.camera, &game->control);
+		camera_getOrbitalPosition(&game->scene.camera, (Vector3){0, 0, 0}, game->timing.frame_time_s);
+		camera_set(&game->scene.camera, &game->screen);
 
 		scenery_set(&room);
 		scenery_set(&n64logo);
@@ -56,10 +45,10 @@ void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData* con
 
 		// ======== Draw ======== //
 		
-		screen_clearDisplay(screen);
-		screen_clearT3dViewport(screen);
+		screen_clearDisplay(&game->screen);
+		screen_clearT3dViewport(&game->screen);
 	
-		light_set(&light);
+		light_set(&game->scene.light);
     
 		t3d_matrix_push_pos(1);
 
@@ -75,14 +64,8 @@ void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData* con
 	}
 }
 
-void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* control)
+void gameState_setGameplay(Game* game)
 {
-  	rspq_syncpoint_t syncPoint = 0;
-
-	Camera camera = camera_create();
-
-	//light
-	LightData light = light_create();
 
 	//actor
 	Actor player = actor_create(0, "rom:/game/pipo.t3dm");
@@ -98,17 +81,17 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
 	{
 		// ======== Update ======== //
 
-		time_setData(timing);
-		controllerData_getInputs(control);
+		time_setData(&game->timing);
+		controllerData_getInputs(&game->control);
 
-		actor_setControlData(&player, control, timing->frame_time_s, camera.angle_around_barycenter, camera.offset_angle);
+		actor_setControlData(&player, &game->control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle);
 		actor_setState(&player, player.state);
-		actor_setMotion(&player, timing->frame_time_s);
-		actor_setAnimation(&player, &player_animation, timing->frame_time_s, &syncPoint);
+		actor_setMotion(&player, game->timing.frame_time_s);
+		actor_setAnimation(&player, &player_animation, game->timing.frame_time_s, &game->syncPoint);
 
-		cameraControl_setOrbitalMovement(&camera, control);
-		camera_getMinigamePosition(&camera, player.body.position, timing->frame_time_s);
-		camera_set(&camera, screen);
+		cameraControl_setOrbitalMovement(&game->scene.camera, &game->control);
+		camera_getMinigamePosition(&game->scene.camera, player.body.position, game->timing.frame_time_s);
+		camera_set(&game->scene.camera, &game->screen);
 
 		scenery_set(&room);
 		scenery_set(&n64logo);
@@ -116,10 +99,10 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
 
 		// ======== Draw ======== //
 		
-		screen_clearDisplay(screen);
-		screen_clearT3dViewport(screen);
+		screen_clearDisplay(&game->screen);
+		screen_clearT3dViewport(&game->screen);
 	
-		light_set(&light);
+		light_set(&game->scene.light);
     
 		t3d_matrix_push_pos(1);
 
@@ -130,7 +113,7 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
    
    		t3d_matrix_pop(1);
 
-		syncPoint = rspq_syncpoint_new();
+		game->syncPoint = rspq_syncpoint_new();
 
 		ui_draw();
 
@@ -156,20 +139,20 @@ void gameState_setGameOver()
     // code for the game over state
 }
 
-void game_setState(uint8_t state, Screen* screen, TimeData* timing, ControllerData* control)
+void game_setState(Game* game)
 {
-    switch(state)
+    switch(game->state)
     {
         case INTRO:{
             gameState_setIntro();
             break;
 		}
         case MAIN_MENU:{
-            gameState_setMainMenu(screen, timing, control);
+            gameState_setMainMenu(game);
             break;
 		}
         case GAMEPLAY:{
-            gameState_setGameplay(screen, timing, control);
+            gameState_setGameplay(game);
             break;
 		}
         case PAUSE:{
