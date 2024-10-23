@@ -131,12 +131,10 @@ void game_play(Game* game, Actor* actors, Scenery* scenery)
 			}
 			case GAMEPLAY:{
 				gameState_setGameplay(game, actors, scenery);
-				game->state = GAMEPLAY;
 				break;
 			}
 			case PAUSE:{
 				gameState_setPause(game, actors, scenery);
-				game->state = PAUSE;
 				break;
 			}
 			case GAME_OVER:{
