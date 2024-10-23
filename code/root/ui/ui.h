@@ -301,13 +301,14 @@ void ui_fps(void)
 
 void ui_printf(const char *txt, ...)
 {
-    va_list args;
-    va_start(args, txt);
     rdpq_sync_pipe();
     rdpq_set_mode_standard();
     rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
     rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
-    rdpq_text_printf(&txt_debugParms, ID_DEBUG, fpsPos.v[0], fpsPos.v[1] + 20, txt, args);
+
+    va_list args;
+    va_start(args, txt);
+    rdpq_text_vprintf(&txt_debugParms, ID_DEBUG, fpsPos.v[0], fpsPos.v[1] + 20, txt, args);
 }
 
 void ui_main_menu(ControllerData* control)
@@ -410,7 +411,6 @@ void ui_update(void)
 void ui_draw(void)
 {
     ui_fps();
-    ui_update();
 }
 
 #ifdef __cplusplus

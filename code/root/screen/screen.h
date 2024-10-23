@@ -44,17 +44,15 @@ void screen_clearDisplay(Screen* screen)
 	t3d_screen_clear_depth();
 }
 
-void screen_initT3dViewport(T3DViewport vp, uint8_t scissorIdx)
+void screen_initT3dViewport(Screen* screen)
 {
-	vp = t3d_viewport_create();
-	Scissor sx = scissors[scissorIdx];
-	t3d_viewport_set_area(&vp, sx.v[0], sx.v[1], sx.v[2], sx.v[3]);
+	screen->gameplay_viewport = t3d_viewport_create();
 }	
 
-void screen_clearT3dViewport(T3DViewport vp)
+void screen_clearT3dViewport(Screen* screen)
 {
 	t3d_frame_start();
-	t3d_viewport_attach(&vp);
+	t3d_viewport_attach(&screen->gameplay_viewport);
 }
 
 

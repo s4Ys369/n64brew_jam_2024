@@ -8,7 +8,7 @@ struct Game
 {
     uint8_t state;
     Screen screen;
-    ControllerData control;
+    ControllerData *control;
     TimeData timing;
     Camera camera;
     LightData light;
@@ -26,22 +26,18 @@ struct Game
 
 rspq_syncpoint_t syncPoint;
 
-void game_init(Game *game, uint8_t initialState);
+void game_init(Game *game);
 void game_loop(Game *game, float deltaTime);
 void game_fixedUpdate(Game *game, float fixedDeltaTime);
 void game_cleanup(Game *game);
 
 
-void game_init(Game *game, uint8_t initialState)
+void game_init(Game *game)
 {
     // Initialize fields
-    game->state = initialState;
-
     screen_initDisplay(&game->screen);
-	screen_initT3dViewport(game->screen.gameplay_viewport, SCISSOR_DEFAULT);
-    screen_initT3dViewport(game->screen.main_menu_viewport, SCISSOR_MAIN_MENU);
-    screen_initT3dViewport(game->screen.current_viewport, SCISSOR_MAIN_MENU);
-    controllerData_getInputs(&game->control);
+	screen_initT3dViewport(&game->screen);
+    game->control = (ControllerData *)malloc(sizeof(ControllerData));
 
 	time_init(&game->timing);
 
@@ -74,21 +70,27 @@ void game_loop(Game *game, float deltaTime)
 
     // Update time data
     time_setData(&game->timing);
+
+    // Get input data
+    controllerData_getInputs(game->control);
     
     // Update actor motions and animations
     for(size_t a = 0; a < game->actor_count; ++a)
     {
+        // Update player controls
+        actor_setControlData(&game->actors[a], game->control, deltaTime, game->camera.angle_around_barycenter, game->camera.offset_angle);
+        actor_setState(&game->actors[0], game->actors[0].state);
         actor_setMotion(&game->actors[a], deltaTime);
         actor_setAnimation(&game->actors[a], &game->animations[a], deltaTime, &syncPoint);
     }
     // Update camera position and set camera to screen
-    cameraControl_setOrbitalMovement(&game->camera, &game->control);
-    camera_getOrbitalPosition(&game->camera, (Vector3){0,0,0}, deltaTime);
+    cameraControl_setOrbitalMovement(&game->camera, game->control);
+    camera_getOrbitalPosition(&game->camera, game->actors[0].body.position, deltaTime);
     camera_set(&game->camera, &game->screen);
 
     // Clear and prepare the screen for rendering
     screen_clearDisplay(&game->screen);
-    screen_clearT3dViewport(game->screen.current_viewport);
+    screen_clearT3dViewport(&game->screen);
 
     // Set lighting
     light_set(&game->light);
@@ -103,8 +105,13 @@ void game_loop(Game *game, float deltaTime)
 
     // Sync the RSP and draw the UI
     syncPoint = rspq_syncpoint_new();
+    ui_input_display(game->control);
+    if(game->state == 1)
+        ui_main_menu(game->control);
     ui_fps();
-    ui_printf("STATE %d", game->state);
+	ui_printf("STATE %u", game->state);
+
+    rdpq_detach_show();
 }
 
 void game_fixedUpdate(Game *game, float fixedDeltaTime)
@@ -113,13 +120,7 @@ void game_fixedUpdate(Game *game, float fixedDeltaTime)
 	if (game->fixedLoopCallback)
         game->fixedLoopCallback(game);
 
-    // Get input data
-    controllerData_getInputs(&game->control);
-    ui_input_display(&game->control);
-
-    // Update player controls, state, and apply physics
-    actor_setControlData(&game->actors[0], &game->control, fixedDeltaTime, game->camera.angle_around_barycenter, game->camera.offset_angle);
-    actor_setState(&game->actors[0], game->actors[0].state);
+    // Update Actor state and apply physics
 
     // Update scenery state
     for (size_t i = 0; i < game->scenery_count; i++)

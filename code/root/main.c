@@ -41,7 +41,7 @@ const MinigameDef minigame_def = {
 };
 
 Game minigame = {
-	.state = GAMEPLAY
+	.state = MAIN_MENU,
 };
 
 void minigame_init()
@@ -60,21 +60,20 @@ void minigame_init()
 	time_init(&minigame.timing);
 	ui_init();
 
-	game_init(&minigame, MAIN_MENU);
-	gameState_set(&minigame, MAIN_MENU, core_get_playercount(), 2, NULL, NULL);
+	game_init(&minigame);
+	gameState_set(&minigame, minigame.state, core_get_playercount(), 2, NULL, NULL);
 
 }
 
 void minigame_fixedloop(float deltaTime)
 {
-    gameState_setPaused(&minigame);
 	game_fixedUpdate(&minigame, deltaTime);
 }
 
 void minigame_loop(float deltaTime)
 {	
-	game_loop(&minigame, deltaTime);	
-	rdpq_detach_show();
+	game_loop(&minigame, deltaTime);
+	gameState_setPaused(&minigame);
 }
 
 void minigame_cleanup()

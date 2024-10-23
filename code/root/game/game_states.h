@@ -52,6 +52,12 @@ void gameState_setGameOver()
 void gameState_init(Game *game, uint8_t state, size_t max_actors, size_t max_sceneries, LoopCallback fixedLoopCallback, LoopCallback loopCallback)
 {
 
+    syncPoint = 0;
+
+    // Initialize camera and light
+    game->camera = camera_create();
+    game->light = light_create();
+
     // Allocate dynamic arrays for actors and sceneries
     game->actors = (Actor*)malloc(max_actors * sizeof(Actor));
     game->animations = (ActorAnimation*)malloc(max_actors * sizeof(ActorAnimation));
@@ -91,9 +97,6 @@ void gameState_init(Game *game, uint8_t state, size_t max_actors, size_t max_sce
         default:
             break;
     }
-
-    // Set the game's state
-    game->state = state;
 }
 
 void gameState_set(Game *game, uint8_t state, size_t maxActors, size_t maxSceneries, LoopCallback fixedLoopCallback, LoopCallback loopCallback)
@@ -102,23 +105,17 @@ void gameState_set(Game *game, uint8_t state, size_t maxActors, size_t maxScener
     game_cleanup(game);
 
     gameState_init(game, state, maxActors, maxSceneries, fixedLoopCallback, loopCallback);
-
-    // Set the new state
-    game->state = state;
 }
 
 void gameState_setPaused(Game *game)
 {
     static uint8_t isPaused = 0;
-    static uint8_t lastState = GAMEPLAY;
+    static uint8_t lastState = MAIN_MENU;
 
     // Check if the start button is pressed
-    if (game->control.released.start)
+    if (game->control->released.start)
     {
-        if (isPaused == 0)
-            isPaused = 1;
-        else
-            isPaused = 0;
+        isPaused ^= 1;
     }
 
     // Determine the new state based on the pause status
@@ -128,10 +125,12 @@ void gameState_setPaused(Game *game)
     if (newState != lastState)
     {
         // Clean up the current state to free any allocated resources
-        gameState_set(game, newState, newState == MAIN_MENU ? 1 : core_get_playercount(), 2, NULL, NULL);
+        gameState_set(game, newState, core_get_playercount(), 2, NULL, NULL);
+
     }
 
     lastState = newState;  // Update the last state to the new state
+
 }
 
 #endif
