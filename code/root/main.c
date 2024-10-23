@@ -39,9 +39,11 @@ const MinigameDef minigame_def = {
     .instructions = "Press A to win."
 };
 
-typedef void (*LoopCallback)(void *game);
 
-typedef struct
+typedef struct Game Game;
+typedef void (*LoopCallback)(Game *game);
+
+struct Game
 {
     uint8_t state;
     Screen screen;
@@ -59,7 +61,7 @@ typedef struct
 
     LoopCallback fixedLoopCallback;  // Fixed loop callback
     LoopCallback loopCallback;       // Main loop callback
-} Game;
+};
 
 rspq_syncpoint_t syncPoint;
 
@@ -71,7 +73,7 @@ void game_init(Game *game, uint8_t initialState)
     screen_initDisplay(&game->screen);
 	screen_initT3dViewport(&game->screen);
 
-    game_setControlData(game);
+    controllerData_getInputs(&game->control);
 
 	time_init(&game->timing);
 
@@ -252,27 +254,27 @@ void gameState_set(Game *game, uint8_t state, size_t maxActors, size_t maxScener
     game->state = state;
 }
 
-void gameControl_setPause(Game *game)
+static uint8_t isPaused = 0;
+static uint8_t lastState = GAMEPLAY;
+
+void game_setPaused(Game *game)
 {
-    if (game->control.pressed.start && (game->state == GAMEPLAY)) {
-        
-        game->state = MAIN_MENU;
+    // Check if the start button is pressed
+    if (game->control.pressed.start)
+    {
+        isPaused ^= 1;  // Toggle the paused state
     }
-}
 
-void gameControl_setGameplay(Game *game)
-{
-    if (game->control.pressed.start && (game->state == MAIN_MENU)) {
-        
-        game->state = GAMEPLAY;
+    // Determine the new state based on the pause status
+    uint8_t newState = isPaused ? MAIN_MENU : GAMEPLAY;
+
+    // Only switch states if the new state is different from the last state
+    if (newState != lastState)
+    {
+        // Clean up the current state to free any allocated resources
+        gameState_set(game, newState, newState == MAIN_MENU ? 1 : core_get_playercount(), 2, NULL, NULL);
+        lastState = newState;  // Update the last state to the new state
     }
-}
-
-
-void game_setControlData(Game *game)
-{
-    gameControl_setGameplay(game);
-    gameControl_setPause(game);
 }
 
 /// actual main.c
@@ -305,7 +307,7 @@ void minigame_init()
 void minigame_fixedloop(float deltaTime)
 {
 	game_fixedUpdate(&minigame, deltaTime);
-	game_setControlData(&minigame);
+	game_setPaused(&minigame);
 }
 
 void minigame_loop(float deltaTime)
