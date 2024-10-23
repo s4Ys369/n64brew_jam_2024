@@ -125,17 +125,29 @@ static rspq_block_t *dpl_cButtons = NULL;
 static rspq_block_t *dpl_faceButtons = NULL;
 rspq_block_t *dpl_Temp = NULL;
 
+// Define the base path
+const char* basePath = "rom:/root/ui/";
+char fullPath[256];
+
+const char* ui_get_file(const char* fn)
+{
+    
+    sprintf(fullPath, "%s%s", basePath, fn);
+
+    return fullPath;
+}
+
 void ui_load_sprites(void)
 {
     // IA8
-    sprite_controlStick = sprite_load("rom:/game/ui/control_stick.ia8.sprite");
-    sprite_dPadTriggers = sprite_load("rom:/game/ui/d_pad_triggers.ia8.sprite");
+    sprite_controlStick = sprite_load(ui_get_file("control_stick.ia8.sprite"));
+    sprite_dPadTriggers = sprite_load(ui_get_file("d_pad_triggers.ia8.sprite"));
 
     // RGBA32
-    sprite_cButtons0 = sprite_load("rom:/game/ui/c_buttons0.rgba32.sprite");
-    sprite_cButtons1 = sprite_load("rom:/game/ui/c_buttons1.rgba32.sprite");
-    sprite_faceButtons0 = sprite_load("rom:/game/ui/face_buttons0.rgba32.sprite");
-    sprite_faceButtons1 = sprite_load("rom:/game/ui/face_buttons1.rgba32.sprite");
+    sprite_cButtons0 = sprite_load(ui_get_file("c_buttons0.rgba32.sprite"));
+    sprite_cButtons1 = sprite_load(ui_get_file("c_buttons1.rgba32.sprite"));
+    sprite_faceButtons0 = sprite_load(ui_get_file("face_buttons0.rgba32.sprite"));
+    sprite_faceButtons1 = sprite_load(ui_get_file("face_buttons1.rgba32.sprite"));
 }
 
 void ui_draw_sprite(sprite_t *sprite, int idx, int posX, int posY){
@@ -190,8 +202,8 @@ void ui_register_fonts(void)
     // Load font64 and register to fonts starting at index 2, 0 reserved by the SDK, 1 should be reserved debug output
     rdpq_font_t *font[ID_COUNT];
     font[ID_DEBUG] = rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_VAR);;
-    font[ID_DEFAULT] = rdpq_font_load("rom:/game/TitanOne-Regular.font64");
-    font[ID_TITLE] = rdpq_font_load("rom:/game/chunkysans.font64");
+    font[ID_DEFAULT] = rdpq_font_load(ui_get_file("fonts/TitanOne-Regular.font64"));
+    font[ID_TITLE] = rdpq_font_load(ui_get_file("fonts/chunkysans.font64"));
 
     // Create and register font styles
     txt_debug_fontStyle.color = color_from_packed32(COLORS[YELLOW]);
