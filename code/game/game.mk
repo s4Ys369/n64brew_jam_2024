@@ -1,6 +1,5 @@
 # Project-specific assets
-GAME_NAME = root
-ASSETS = filesystem/$(GAME_NAME)
+ASSETS = filesystem/game
 DIALOG_DIR = $(ASSETS)/dialogs
 LEVEL_DIR = $(ASSETS)/levels
 UI_DIR = $(ASSETS)/ui
@@ -39,8 +38,8 @@ UI_SPRITE_FILES := $(UI_DIR)/buttons/control_stick.ia8.sprite \
                    $(UI_DIR)/panels/pattern_tessalate.ia4.sprite \
                    $(UI_DIR)/panels/star.ia8.sprite
 
-FONT_FILES := $(UI_DIR)/fonts/chunkysans.font64 \
-              $(UI_DIR)/fonts/TitanOne-Regular.font64
+FONT_FILES := $(ASSETS)/chunkysans.font64 \
+              $(ASSETS)/TitanOne-Regular.font64
 
 # Final assets list
 ASSETS_LIST += $(JSON_FILES) $(T3DM_FILES) $(SPRITE_FILES) $(UI_SPRITE_FILES) $(FONT_FILES)
@@ -53,8 +52,25 @@ $(ASSETS)/room.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
 $(ASSETS)/testLevel.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
 
 # font64 flags
-$(UI_DIR)/fonts/chunkysans.font64: MKFONT_FLAGS += --outline 2 --size 12
-$(UI_DIR)/fonts/TitanOne-Regular.font64: MKFONT_FLAGS += --outline 1 --size 12
+$(ASSETS)/chunkysans.font64: MKFONT_FLAGS += --outline 2 --size 12
+$(ASSETS)/TitanOne-Regular.font64: MKFONT_FLAGS += --outline 1 --size 12
+
+ifeq ($(DEBUG),1)
+  N64_CFLAGS += -ggdb
+  N64_LDFLAGS += -ggdb
+endif
+
+N64_CFLAGS += -std=gnu2x \
+	-mno-check-zero-division \
+	-funsafe-math-optimizations \
+	-fsingle-precision-constant \
+	-fno-unroll-loops \
+	-fno-peel-loops \
+	-falign-functions=32 \
+	-fno-merge-constants \
+    -fno-strict-aliasing \
+	-ffast-math \
+    -mips3 \
 
 # Add rule for copying JSONs
 $(FILESYSTEM_DIR)/%.json: $(ASSETS_DIR)/%.json

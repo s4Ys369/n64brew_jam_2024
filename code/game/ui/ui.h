@@ -146,34 +146,23 @@ static sprite_t *sprite_star;
 surface_t surf_UIpanels;
 surface_t surf_UIsprites;
 
-const char* basePath = "rom:/root/ui/";
-char fullPath[256];
-
-const char* ui_get_file(const char* fn)
-{
-    
-    sprintf(fullPath, "%s%s", basePath, fn);
-
-    return fullPath;
-}
-
 void ui_load_sprites(void)
 {
     // IA
-    sprite_border = sprite_load(ui_get_file("panels/border.ia4.sprite"));
-    sprite_gloss = sprite_load(ui_get_file("panels/gloss.ia4.sprite"));
-    sprite_gradient = sprite_load(ui_get_file("panels/gradient.ia4.sprite"));
-    sprite_bubbleGrid = sprite_load(ui_get_file("panels/pattern_bubble_grid.ia4.sprite"));
-    sprite_tessalate = sprite_load(ui_get_file("panels/pattern_tessalate.ia4.sprite"));
-    sprite_star = sprite_load(ui_get_file("panels/star.ia8.sprite"));
-    sprite_controlStick = sprite_load(ui_get_file("buttons/control_stick.ia8.sprite"));
-    sprite_dPadTriggers = sprite_load(ui_get_file("buttons/d_pad_triggers.ia8.sprite"));
+    sprite_border = sprite_load("rom:/game/ui/panels/border.ia4.sprite");
+    sprite_gloss = sprite_load("rom:/game/ui/panels/gloss.ia4.sprite");
+    sprite_gradient = sprite_load("rom:/game/ui/panels/gradient.ia4.sprite");
+    sprite_bubbleGrid = sprite_load("rom:/game/ui/panels/pattern_bubble_grid.ia4.sprite");
+    sprite_tessalate = sprite_load("rom:/game/ui/panels/pattern_tessalate.ia4.sprite");
+    sprite_star = sprite_load("rom:/game/ui/panels/star.ia8.sprite");
+    sprite_controlStick = sprite_load("rom:/game/ui/buttons/control_stick.ia8.sprite");
+    sprite_dPadTriggers = sprite_load("rom:/game/ui/buttons/d_pad_triggers.ia8.sprite");
 
     // RGBA32
-    sprite_cButtons0 = sprite_load(ui_get_file("buttons/c_buttons0.rgba32.sprite"));
-    sprite_cButtons1 = sprite_load(ui_get_file("buttons/c_buttons1.rgba32.sprite"));
-    sprite_faceButtons0 = sprite_load(ui_get_file("buttons/face_buttons0.rgba32.sprite"));
-    sprite_faceButtons1 = sprite_load(ui_get_file("buttons/face_buttons1.rgba32.sprite"));
+    sprite_cButtons0 = sprite_load("rom:/game/ui/buttons/c_buttons0.rgba32.sprite");
+    sprite_cButtons1 = sprite_load("rom:/game/ui/buttons/c_buttons1.rgba32.sprite");
+    sprite_faceButtons0 = sprite_load("rom:/game/ui/buttons/face_buttons0.rgba32.sprite");
+    sprite_faceButtons1 = sprite_load("rom:/game/ui/buttons/face_buttons1.rgba32.sprite");
 }
 
 void ui_draw_sprite(rdpq_tile_t tile, sprite_t *sprite, int idx, int posX, int posY)
@@ -224,8 +213,8 @@ void ui_register_fonts(void)
     // Load font64 and register to fonts starting at index 2, 0 reserved by the SDK, 1 should be reserved debug output
     rdpq_font_t *font[ID_COUNT];
     font[ID_DEBUG] = rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_VAR);;
-    font[ID_DEFAULT] = rdpq_font_load(ui_get_file("fonts/TitanOne-Regular.font64"));
-    font[ID_TITLE] = rdpq_font_load(ui_get_file("fonts/chunkysans.font64"));
+    font[ID_DEFAULT] = rdpq_font_load("rom:/game/TitanOne-Regular.font64");
+    font[ID_TITLE] = rdpq_font_load("rom:/game/chunkysans.font64");
 
     // Create and register font styles
     txt_debug_fontStyle.color = color_from_packed32(COLORS[YELLOW]);
@@ -297,17 +286,6 @@ void ui_fps(void)
     rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
     rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
     rdpq_text_printf(&txt_debugParms, ID_DEBUG, fpsPos.v[0], fpsPos.v[1], "FPS %.2f", display_get_fps());
-}
-
-void ui_printf(const char *txt, ...)
-{
-    va_list args;
-    va_start(args, txt);
-    rdpq_sync_pipe();
-    rdpq_set_mode_standard();
-    rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
-    rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
-    rdpq_text_printf(&txt_debugParms, ID_DEBUG, fpsPos.v[0], fpsPos.v[1] + 20, txt, args);
 }
 
 void ui_main_menu(ControllerData* control)
