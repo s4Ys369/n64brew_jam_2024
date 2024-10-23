@@ -29,18 +29,20 @@
 
 #include "ui/ui.h"
 
-#include "game_states.h"
+#include "game/game.h"
+#include "game/game_states.h"
+
 
 const MinigameDef minigame_def = {
     .gamename = "Fall Guys Clone",
-    .developername = "zoncabe, float4, s4ys",
+    .developername = "zoncabe, float4, s4ys, kaelin",
     .description = "This is a game that exist.",
     .instructions = "Press A to win."
 };
 
-Screen screen;
-ControllerData control;
-TimeData timing;
+Game minigame = {
+	.state = GAMEPLAY
+};
 
 void minigame_init()
 {
@@ -50,20 +52,35 @@ void minigame_init()
 
 	dfs_init(DFS_DEFAULT_LOCATION);
 	rdpq_init();
-
-	screen_init(&screen);
+	joypad_init();
+	t3d_init((T3DInitParams){});
 
 	joypad_init();
 
-	time_init(&timing);
+	time_init(&minigame.timing);
 	ui_init();
+
+	game_init(&minigame, MAIN_MENU);
+	gameState_set(&minigame, MAIN_MENU, core_get_playercount(), 2, NULL, NULL);
+
 }
-void minigame_loop(float deltatime)
+
+void minigame_fixedloop(float deltaTime)
 {
-	uint8_t game_state = MAIN_MENU;
-	game_setState(game_state, &screen, &timing, &control);
+    gameState_setPaused(&minigame);
+	game_fixedUpdate(&minigame, deltaTime);
 }
+
+void minigame_loop(float deltaTime)
+{	
+	game_loop(&minigame, deltaTime);	
+	rdpq_detach_show();
+}
+
 void minigame_cleanup()
 {
-	return;
+	game_cleanup(&minigame);
+	t3d_destroy();
+	// TODO: find and free everything dangling
+	display_close();
 }

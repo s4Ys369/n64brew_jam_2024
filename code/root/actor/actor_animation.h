@@ -6,7 +6,7 @@
 
 typedef struct {
 
-	T3DAnim idle_left;
+	T3DAnim breathing_idle;
 	T3DAnim running_left;
 	T3DAnim jump_left;
 	T3DAnim falling_left;
@@ -44,8 +44,8 @@ ActorAnimation actorAnimation_create(const Actor* actor)
 
 void animationSet_init(const Actor* actor, AnimationSet* set)
 {
-	set->idle_left = t3d_anim_create(actor->model, "idle-breathing-left");
-	set->running_left = t3d_anim_create(actor->model, "running-10-left");
+	set->breathing_idle = t3d_anim_create(actor->model, "breathing-idle");
+	set->running_left = t3d_anim_create(actor->model, "running-left");
 	//set->jump_left = t3d_anim_create(actor->model, "jump-left");
 	//set->falling_left = t3d_anim_create(actor->model, "falling-idle-left");
 	//set->landing_left = t3d_anim_create(actor->model, "landing-left");
@@ -56,7 +56,7 @@ void actorAnimation_init(const Actor* actor, ActorAnimation* animation)
 	animationSet_init(actor, &animation->main);
 	animationSet_init(actor, &animation->blend);
 	// attach main
-	t3d_anim_attach(&animation->main.idle_left, &actor->armature.main);
+	t3d_anim_attach(&animation->main.breathing_idle, &actor->armature.main);
 
 	// attach blend
 	t3d_anim_attach(&animation->blend.running_left, &actor->armature.blend);
@@ -68,14 +68,14 @@ void actorAnimation_setStandIdle(Actor* actor, ActorAnimation* animation, const 
 {
 	if (animation->previous == RUNNING || animation->current == RUNNING) {
 
-		animation->blending_ratio = actor->horizontal_speed / actor->settings.run_target_speed;
+		animation->blending_ratio = actor->horizontal_speed / 320;
 		if(animation->blending_ratio > 1.0f) animation->blending_ratio = 1.0f;
 
-		t3d_anim_update(&animation->main.idle_left, frame_time);
+		t3d_anim_update(&animation->main.breathing_idle, frame_time);
 		t3d_anim_update(&animation->blend.running_left, frame_time);
 		t3d_skeleton_blend(&actor->armature.main, &actor->armature.main, &actor->armature.blend, animation->blending_ratio);
 	}
-	else t3d_anim_update(&animation->main.idle_left, frame_time);
+	else t3d_anim_update(&animation->main.breathing_idle, frame_time);
 }
 
 void actorAnimation_setRunning(Actor* actor, ActorAnimation* animation, const float frame_time, rspq_syncpoint_t* syncpoint)
@@ -86,7 +86,7 @@ void actorAnimation_setRunning(Actor* actor, ActorAnimation* animation, const fl
 		if (animation->blending_ratio > 1.0f) animation->blending_ratio = 1.0f;
 		if (animation->current == STAND_IDLE) t3d_anim_set_time(&animation->blend.running_left, 0.0f);
 
-		t3d_anim_update(&animation->main.idle_left, frame_time);
+		t3d_anim_update(&animation->main.breathing_idle, frame_time);
 
 		t3d_anim_set_speed(&animation->blend.running_left, animation->blending_ratio);
 		t3d_anim_update(&animation->blend.running_left, frame_time);
@@ -97,28 +97,9 @@ void actorAnimation_setRunning(Actor* actor, ActorAnimation* animation, const fl
 		t3d_anim_update(&animation->main.running_left, frame_time);
 }
 
-void actorAnimation_setCurrent(Actor* actor, ActorAnimation* animation, const uint8_t state, const float frame_time, rspq_syncpoint_t* syncpoint)
+void actorAnimation_setJump(Actor* actor, ActorAnimation* animation, const float frame_time, rspq_syncpoint_t* syncpoint)
 {
-	switch(animation->current) {
-
-		case STAND_IDLE: {
-			actorAnimation_setStandIdle(actor, animation, frame_time, syncpoint);
-			break;
-		}
-		case RUNNING: {
-			actorAnimation_setRunning(actor, animation, frame_time, syncpoint);
-			break;
-		}
-		case JUMP: {
-			break;
-		}
-		case FALLING: {
-			break;
-		}
-		case LANDING: {
-			break;
-		}
-	}
+	t3d_anim_update(&animation->main.jump_left, frame_time);
 }
 
 void actor_setAnimation(Actor* actor, ActorAnimation* animation, const float frame_time, rspq_syncpoint_t* syncpoint)
