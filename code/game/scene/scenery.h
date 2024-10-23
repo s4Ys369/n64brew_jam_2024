@@ -67,6 +67,7 @@ void scenery_draw(Scenery *scenery)
 void scenery_delete(Scenery *scenery)
 {
     free_uncached(scenery->modelMat);
+	t3d_model_free(scenery->model);
 }
 
 

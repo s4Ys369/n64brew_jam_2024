@@ -6,6 +6,9 @@
 #include <t3d/t3danim.h>
 #include <t3d/t3ddebug.h>
 
+#define ACTOR_COUNT 1
+#define SCENERY_COUNT 2
+
 #include "../../core.h"
 #include "../../minigame.h"
 
@@ -27,13 +30,12 @@
 
 #include "scene/scene.h"
 #include "scene/scenery.h"
-//#include "scene/assets.h"
 
 #include "ui/ui.h"
 
 #include "game/game.h"
-#include "game/game_states.h"
 #include "game/game_controls.h"
+#include "game/game_states.h"
 
 
 const MinigameDef minigame_def = {
@@ -45,36 +47,50 @@ const MinigameDef minigame_def = {
 
 Game minigame;
 
+Actor actors[ACTOR_COUNT];
 
-// this variables need to be declared here or in an assets.h header
-// or loaded in a different way
-// they probably need to be arranged and passed as arguments to the game_setState function
-
-/*
-//actor
-Actor player = actor_create(0, "rom:/game/pipo.t3dm");
-ActorAnimation player_animation = actorAnimation_create(&player);
-actorAnimation_init(&player, &player_animation);
-
-//scenery
-Scenery room = scenery_create(0, "rom:/game/testLevel.t3dm");
-
-Scenery n64logo = scenery_create(0, "rom:/game/n64logo.t3dm");
-*/
+Scenery level[SCENERY_COUNT];
 
 
 void minigame_init()
-{
+{      
 	game_init(&minigame);
+
+    actors[0] = actor_create(0, "rom:/game/pipo.t3dm");
+
+    level[0] = scenery_create(0, "rom:/game/testLevel.t3dm");
+    level[1] = scenery_create(0, "rom:/game/n64logo.t3dm");
+    level[1].position = (Vector3){200, 200, 0};
+
+    for (int i = 0; i < ACTOR_COUNT; i++) {
+
+        actor_init(&actors[i]);
+    }
+
+    for (int i = 0; i < SCENERY_COUNT; i++) {
+
+        scenery_set(&level[i]);
+    }
 }
 
 void minigame_loop()
 {	
-	game_setControlData(&minigame);
-	game_setState(&minigame);
+	game_play(&minigame, actors, level);
 }
 
 void minigame_cleanup()
 {
+	for (int i = 0; i < SCENERY_COUNT; i++) {
+
+		scenery_delete(&level[i]);
+	};
+
+	for (int i = 0; i < ACTOR_COUNT; i++) {
+
+		actor_delete(&actors[i]);
+	};
+
+	t3d_destroy();
+    
 	return;
 }

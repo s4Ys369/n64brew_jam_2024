@@ -2,35 +2,6 @@
 #define ACTOR_ANIMATION_H
 
 
-// structures
-
-typedef struct {
-
-	T3DAnim breathing_idle;
-	T3DAnim running_left;
-	T3DAnim jump_left;
-	T3DAnim falling_left;
-	T3DAnim landing_left;
-
-} AnimationSet;
-
-
-typedef struct {
-	
-	uint8_t previous;
-	uint8_t current;
-
-	AnimationSet main;
-	AnimationSet blend;
-
-	uint8_t change_delay;
-	float blending_ratio;
-	float speed_rate;
-	bool synced;
-
-} ActorAnimation;
-
-
 // function implemenations
 
 ActorAnimation actorAnimation_create(const Actor* actor)
@@ -137,6 +108,21 @@ void actor_setAnimation(Actor* actor, ActorAnimation* animation, const float fra
 	
 	if(syncpoint)rspq_syncpoint_wait(*syncpoint);
 	t3d_skeleton_update(&actor->armature.main);
+}
+
+// temporary place for this until i solve the circular dependency
+void actor_init(Actor* actor)
+{
+	actor->animation = actorAnimation_create(actor);
+	actorAnimation_init(actor, &actor->animation);
+}
+
+void actor_update(Actor* actor, ControllerData *control, float frame_time, float camera_angle_around, float camera_offset, rspq_syncpoint_t* syncpoint)
+{
+	actor_setControlData(actor, control, frame_time, camera_angle_around, camera_offset);
+	actor_setState(actor, actor->state);
+	actor_setAnimation(actor, &actor->animation, frame_time, syncpoint);
+	actor_setMotion(actor, frame_time);
 }
 
 
