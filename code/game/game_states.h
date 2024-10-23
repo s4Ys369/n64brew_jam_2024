@@ -72,7 +72,7 @@ void gameState_setMainMenu(Screen* screen, TimeData* timing, ControllerData** co
    
    		t3d_matrix_pop(1);
 
-		ui_main_menu(control);
+		ui_main_menu(control[PLAYER_1]);
 
 		rdpq_detach_show();
 		
@@ -176,8 +176,8 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData** co
 		syncPoint = rspq_syncpoint_new();
 
 		ui_draw();
-		if(control[PLAYER_1]->held.l)
-			ui_input_display(control);
+
+		ui_input_display(control);
 
 		rdpq_detach_show();
 	}
