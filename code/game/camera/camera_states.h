@@ -4,14 +4,14 @@
 
 // function prototypes
 
-void set_orbital(Camera *camera);
-void set_aiming(Camera *camera);
+void cameraState_setOrbital(Camera *camera);
+void cameraState_setAiming(Camera *camera);
 void camera_setState(Camera *camera, CameraState new_state);
 
 
 // function implemetations
 
-void set_orbital(Camera *camera)
+void cameraState_setOrbital(Camera *camera)
 {
     if (camera->field_of_view < camera->settings.field_of_view) 
         camera->zoom_acceleration = camera->settings.zoom_acceleration_rate * (camera->settings.zoom_max_speed - camera->zoom_speed);
@@ -33,7 +33,7 @@ void set_orbital(Camera *camera)
 }
 
 // the set aiming not ready for it's prime yet :( 
-void set_aiming(Camera *camera)
+void cameraState_setAiming(Camera *camera)
 {
     if (camera->field_of_view > camera->settings.field_of_view_aim) 
         camera->zoom_acceleration = (camera->settings.zoom_acceleration_rate + 10) * (camera->settings.zoom_max_speed - camera->zoom_speed);
@@ -53,16 +53,26 @@ void set_aiming(Camera *camera)
     camera->orbitational_acceleration.y = camera->settings.orbitational_acceleration_rate * ((camera->orbitational_target_velocity.y / 2) - camera->orbitational_velocity.y);
 }
 
+void set_minigame(Camera *camera)
+{
+    camera->orbitational_acceleration.x = camera->settings.orbitational_acceleration_rate * (camera->orbitational_target_velocity.x - camera->orbitational_velocity.x);
+    camera->orbitational_acceleration.y = camera->settings.orbitational_acceleration_rate * (camera->orbitational_target_velocity.y - camera->orbitational_velocity.y);
+}
+
 void camera_setState(Camera *camera, CameraState new_state) 
 {
     switch(new_state) {
 
         case ORBITAL: {
-            set_orbital(camera);
+            cameraState_setOrbital(camera);
             break;
         }
         case AIMING: {
-            set_aiming(camera);
+            cameraState_setAiming(camera);
+            break;
+        }
+        case MINIGAME: {
+            set_minigame(camera);
             break;
         }
     }

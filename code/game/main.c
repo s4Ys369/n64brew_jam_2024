@@ -29,7 +29,10 @@
 
 #include "ui/ui.h"
 
-#include "game_states.h"
+#include "game/game.h"
+#include "game/game_states.h"
+#include "game/game_controls.h"
+
 
 const MinigameDef minigame_def = {
     .gamename = "Fall Guys Clone",
@@ -38,9 +41,9 @@ const MinigameDef minigame_def = {
     .instructions = "Press A to win."
 };
 
-Screen screen;
-ControllerData control;
-TimeData timing;
+Game minigame = {
+	.state = GAMEPLAY
+};
 
 void minigame_init()
 {
@@ -51,18 +54,24 @@ void minigame_init()
 	dfs_init(DFS_DEFAULT_LOCATION);
 	rdpq_init();
 
-	screen_init(&screen);
+	screen_initDisplay(&minigame.screen);
+
+	screen_initT3dViewport(&minigame.screen);
+	t3d_init((T3DInitParams){});
 
 	joypad_init();
 
-	time_init(&timing);
+	time_init(&minigame.timing);
 	ui_init();
+
 }
-void minigame_loop(float deltatime)
-{
-	uint8_t game_state = GAMEPLAY;
-	game_setState(game_state, &screen, &timing, &control);
+
+void minigame_loop()
+{	
+	game_setState(minigame.state, &minigame.screen, &minigame.timing, &minigame.control);
+	game_setControlData(&minigame);
 }
+
 void minigame_cleanup()
 {
 	return;

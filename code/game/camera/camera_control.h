@@ -7,9 +7,9 @@ here are all the camera control related functions */
 
 int input(int input);
 
-void orbit_withStick(Camera *camera, ControllerData *data);
-void orbit_withCButtons(Camera *camera, ControllerData *data);
-void aim(Camera *camera, ControllerData *data);
+void camera_orbit_withStick(Camera *camera, ControllerData *data);
+void camera_orbit_withCButtons(Camera *camera, ControllerData *data);
+void camera_aim(Camera *camera, ControllerData *data);
 
 void cameraControl_setOrbitalMovement(Camera *camera, ControllerData *data_0);
 
@@ -27,7 +27,7 @@ int input(int input){
 /* camera_move_stick
 changes the camera variables depending on controller input*/
 
-void orbit_withStick(Camera *camera, ControllerData *data)
+void camera_orbit_withStick(Camera *camera, ControllerData *data)
 {
     int deadzone = 8;
     float stick_x = 0;
@@ -50,7 +50,7 @@ void orbit_withStick(Camera *camera, ControllerData *data)
 }
 
 
-void orbit_withCButtons(Camera *camera, ControllerData *data)
+void camera_orbit_withCButtons(Camera *camera, ControllerData *data)
 {
     float input_x = 0;
     float input_y = 0;
@@ -70,7 +70,7 @@ void orbit_withCButtons(Camera *camera, ControllerData *data)
 }
 
 
-void aim(Camera *camera, ControllerData *data)
+void camera_aim(Camera *camera, ControllerData *data)
 {
     if (data->held.z) camera_setState (camera, AIMING);
     else camera_setState (camera, ORBITAL);
@@ -79,9 +79,10 @@ void aim(Camera *camera, ControllerData *data)
 
 void cameraControl_setOrbitalMovement(Camera *camera, ControllerData *data_0)
 {
-    //orbit_withStick(camera, data_1);
-    orbit_withCButtons(camera, data_0);
-    aim(camera, data_0);
+    //camera_orbit_withStick(camera, data_1);
+    camera_orbit_withCButtons(camera, data_0);
+    camera_setState(camera, MINIGAME);
+    //camera_aim(camera, data_0);
 }
 
 #endif
