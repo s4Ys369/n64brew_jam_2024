@@ -1,6 +1,10 @@
 #ifndef GAME_CONTROLS_H
 #define GAME_CONTROLS_H
 
+void gameControl_setPause(Game *game);
+void gameControl_setGameplay(Game *game);
+void game_setControlData(Game *game);
+
 void gameControl_setPause(Game *game)
 {
     if (game->control.pressed.start && (game->state == GAMEPLAY)) {
