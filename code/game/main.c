@@ -84,8 +84,6 @@ void minigame_loop(float deltatime)
 }
 void minigame_cleanup()
 {
-	if(dpl_Temp)
-        rspq_block_free(dpl_Temp);
 	t3d_destroy();
 	sound_xm_stop();
 	return;
