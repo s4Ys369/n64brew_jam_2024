@@ -12,6 +12,8 @@
 #include "../../core.h"
 #include "../../minigame.h"
 
+#include "tools/txt_parser.h"
+
 #include "screen/screen.h"
 #include "control/controls.h"
 #include "time/time.h"
