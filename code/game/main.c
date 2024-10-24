@@ -12,7 +12,7 @@
 #include "../../core.h"
 #include "../../minigame.h"
 
-#include "tools/txt_parser.h"
+#include "txt/txt.h"
 
 #include "screen/screen.h"
 #include "control/controls.h"
@@ -53,6 +53,35 @@ Actor actors[ACTOR_COUNT];
 
 Scenery scenery[SCENERY_COUNT];
 
+LevelData levelA_data = {0};
+
+void txt_parse()
+{
+
+    // Parse shapes and triggers
+    txt_parseShapes("rom:/game/levels/levelA.txt", levelA_data.shapes, &levelA_data.shapeCount);
+    txt_parseTriggers("rom:/game/levels/levelA.txt", levelA_data.triggers, &levelA_data.triggerCount);
+
+    // Print all shapes
+    for (int i = 0; i < levelA_data.shapeCount; i++) {
+        debugf("\nShape %d:\n", i + 1);
+        debugf("Shape: %s\n", levelA_data.shapes[i].shape);
+        debugf("Name: %s\n", levelA_data.shapes[i].name);
+        debugf("Position: (%.2f, %.2f, %.2f)\n", levelA_data.shapes[i].pos[0], levelA_data.shapes[i].pos[1], levelA_data.shapes[i].pos[2]);
+        debugf("Dimensions: (%.2f, %.2f, %.2f)\n", levelA_data.shapes[i].dim[0], levelA_data.shapes[i].dim[1], levelA_data.shapes[i].dim[2]);
+        debugf("Rotation: (%.2f, %.2f, %.2f)\n", levelA_data.shapes[i].rot[0], levelA_data.shapes[i].rot[1], levelA_data.shapes[i].rot[2]);
+    }
+
+    // Print all triggers
+    for (int i = 0; i < levelA_data.triggerCount; i++) {
+        debugf("\nTrigger %d:\n", i + 1);
+        debugf("Trigger: %s\n", levelA_data.triggers[i].trigger);
+        debugf("Name: %s\n", levelA_data.triggers[i].name);
+        debugf("Position: (%.2f, %.2f, %.2f)\n", levelA_data.triggers[i].pos[0], levelA_data.triggers[i].pos[1], levelA_data.triggers[i].pos[2]);
+        debugf("Rotation: (%.2f, %.2f, %.2f)\n", levelA_data.triggers[i].rot[0], levelA_data.triggers[i].rot[1], levelA_data.triggers[i].rot[2]);
+    }
+
+}
 
 void minigame_init()
 {      
@@ -67,7 +96,7 @@ void minigame_init()
     }
     
      // scenery
-    scenery[0] = scenery_create(0, "rom:/game/testLevel.t3dm");
+    scenery[0] = scenery_create(0, "rom:/game/levelA.t3dm");
     scenery[1] = scenery_create(1, "rom:/game/n64logo.t3dm");
     scenery[1].position = (Vector3){200, 200, 0};
 
@@ -75,7 +104,16 @@ void minigame_init()
 
         scenery_set(&scenery[i]);
     }
+
+    bool oneShot = false;
+    if(oneShot == false)
+    {
+        txt_parse();
+        oneShot = true;
+    }
 }
+
+void minigame_fixedloop(){}
 
 void minigame_loop()
 {	
