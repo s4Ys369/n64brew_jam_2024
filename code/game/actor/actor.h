@@ -54,7 +54,7 @@ typedef struct {
 	T3DAnim running_left;
 	T3DAnim jump_left;
 	T3DAnim falling_left;
-	T3DAnim landing_left;
+	T3DAnim land_left;
 
 } AnimationSet;
 
