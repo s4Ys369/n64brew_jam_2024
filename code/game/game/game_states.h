@@ -39,8 +39,25 @@ void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery, PlayerDa
 		actor_update(&actors[i], game->control[i], game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
 	};
 
+	// CAM SWITCH TEST
+	static uint8_t camSwitch = 0;
+	static Vector3 camOrbit; 
+	static Vector3 targetPosition;
+
 	cameraControl_setOrbitalMovement(&game->scene.camera, game->control[0]);
-	camera_getMinigamePosition(&game->scene.camera, actors[0].body.position, game->timing.frame_time_s);
+
+	if (game->control[0]->pressed.b)
+	{
+    		camSwitch ^= 1;
+			targetPosition = actors[camSwitch].body.position;
+	} else {
+			targetPosition = actors[camSwitch].body.position;
+	}
+
+	if (camOrbit.x != targetPosition.x || camOrbit.y != targetPosition.y || camOrbit.z != targetPosition.z)
+		camOrbit = vector3_lerp(&camOrbit, &targetPosition, 0.2f);
+
+	camera_getMinigamePosition(&game->scene.camera, camOrbit, game->timing.frame_time_s);
 	camera_set(&game->scene.camera, &game->screen);
 
 
@@ -72,6 +89,7 @@ void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery, PlayerDa
 	ui_input_display(game->control[0]);
 
 	rdpq_detach_show();
+	sound_update_buffer();
 }
 
 
@@ -109,6 +127,7 @@ void gameState_setPause(Game* game, Actor* actors, Scenery* scenery, PlayerData*
 	ui_main_menu(game->control[0]);
 
 	rdpq_detach_show();
+	sound_update_buffer();
 }
 
 
