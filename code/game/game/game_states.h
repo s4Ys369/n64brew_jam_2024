@@ -105,7 +105,7 @@ void gameState_setPause(Game* game, Actor* actors, Scenery* scenery)
 	ui_draw();
 
 
-	ShapeFileData data_s;
+	ShapeFileData data_s = {0};
 	parseCheck(&data_s);
 
 	rdpq_detach_show();

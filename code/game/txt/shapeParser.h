@@ -30,18 +30,45 @@ typedef struct
     int numTags;
 } ShapeFileData;
 
+
+// AI do it for me momento
 void parseTagInfo(const char* line, TagInfo* info)
 {
-    // @TODO: This is the part that seems broken and I ran out of time to fix it!
     const char* offset = line;
-    sscanf(offset + 5, "%s", info->name);
-    offset += strlen(info->name);
 
-    sscanf(offset + 4, "%f %f %f", &info->pos[0], &info->pos[1], &info->pos[2]);
+    // Parse name
+    sscanf(offset + 5, "%s", info->name); // Adjusting to start after "name:"
+
+    // Move offset past name and spaces
+    offset += 5 + strlen(info->name) + 1; // 5 for "name:" + length of name + space/tab
+
+    // Parse position
+    sscanf(offset, "pos: %f %f %f", &info->pos[0], &info->pos[1], &info->pos[2]);
+    offset += strlen(offset) + 1; // Move past position
+
+    // Parse dimensions
+    sscanf(offset, "dim: %f %f %f", &info->dim[0], &info->dim[1], &info->dim[2]);
+    offset += strlen(offset) + 1; // Move past dimensions
+
+    // Parse rotation
+    sscanf(offset, "rot: %f %f %f %f", &info->rot[0], &info->rot[1], &info->rot[2], &info->rot[3]);
+}
 
 
-    offset += sscanf(offset + 4, "%f %f %f", &info->dim[0], &info->dim[1], &info->dim[2]);
-    offset += sscanf(offset + 4, "%f %f %f %f", &info->rot[0], &info->rot[1], &info->rot[2], &info->rot[3]);
+// Fill the struct one filed at a time?
+void parseShape(const char* line, ShapeFileData *shapeFileData, int index) {
+    sscanf(line, "shape: %*s name: %s pos: %f %f %f dim: %f %f %f rot: %f %f %f %f",
+        shapeFileData->shapes[index].info.name,
+        &shapeFileData->shapes[index].info.pos[0],
+        &shapeFileData->shapes[index].info.pos[1],
+        &shapeFileData->shapes[index].info.pos[2],
+        &shapeFileData->shapes[index].info.dim[0],
+        &shapeFileData->shapes[index].info.dim[1],
+        &shapeFileData->shapes[index].info.dim[2],
+        &shapeFileData->shapes[index].info.rot[0],
+        &shapeFileData->shapes[index].info.rot[1],
+        &shapeFileData->shapes[index].info.rot[2],
+        &shapeFileData->shapes[index].info.rot[3]);
 }
 
 bool parseFile(const char* filename, ShapeFileData* info)
@@ -53,7 +80,7 @@ bool parseFile(const char* filename, ShapeFileData* info)
 
     FILE* file = fopen(filename, "r");
     if (file == NULL)
-	{
+    {
         printf("Could not open file %s\n", filename);
         return false;
     }
@@ -63,45 +90,32 @@ bool parseFile(const char* filename, ShapeFileData* info)
 
     char line[256];
     while (fgets(line, sizeof(line), file))
-	{
+    {
+        // Handle shape count
         if (strncmp(line, "shapeCount:", 11) == 0)
         {
             sscanf(line + 11, " %d", &info->numShapes);
-            info->shapes = (ShapeInfo*)malloc(sizeof(ShapeInfo) * info->numShapes);
-            for (size_t i = 0; i < info->numShapes; i++)
-            {
-                info->shapes[i] = (ShapeInfo){};
-            }
+            info->shapes = (ShapeInfo*)malloc_uncached(sizeof(ShapeInfo) * info->numShapes);
         }
+        // Handle tag count
         else if (strncmp(line, "tagCount:", 9) == 0)
         {
             sscanf(line + 9, "%d", &info->numTags);
-            info->tags = (TagInfo*)malloc(sizeof(TagInfo) * info->numTags);
+            info->tags = (TagInfo*)malloc_uncached(sizeof(TagInfo) * info->numTags);
         }
+        // Handle shape lines
         else if (strncmp(line, "shape:", 6) == 0)
-		{
-            char* current = line;
-            current += 7;
-
-            ShapeInfo* currentShape = info->shapes + currentShapeIndex;
-
-            sscanf(current, "%s", currentShape->shape);
-            current += strlen(currentShape->shape) + 1;
-
-            parseTagInfo(current, &currentShape->info);
-
-            currentShapeIndex++;
+        {
+            parseShape(line, info, currentShapeIndex++);
         }
+        // Handle tag lines
         else if (strncmp(line, "tag:", 4) == 0)
         {
-            parseTagInfo(line + 6, &info->tags[currentTagIndex]);
-
-            currentTagIndex++;
+            parseTagInfo(line + 6, &info->tags[currentTagIndex++]); // Parse tag info
         }
     }
 
     fclose(file);
-
     return true;
 }
 
@@ -111,18 +125,35 @@ void parsePrint(ShapeFileData *shapeFileData)
     for (int i = 0; i < shapeFileData->numShapes; i++) {
         debugf("Shape %d:\n", i + 1);
         debugf("Name: %s\n", shapeFileData->shapes[i].info.name);
-        debugf("Position: (%f, %f, %f)\n", shapeFileData->shapes[i].info.pos[0], shapeFileData->shapes[i].info.pos[1], shapeFileData->shapes[i].info.pos[2]);
-        debugf("Dimensions: (%f, %f, %f)\n", shapeFileData->shapes[i].info.dim[0], shapeFileData->shapes[i].info.dim[1], shapeFileData->shapes[i].info.dim[2]);
-        debugf("Rotation: (%f, %f, %f)\n", shapeFileData->shapes[i].info.rot[0], shapeFileData->shapes[i].info.rot[1], shapeFileData->shapes[i].info.rot[2]);
+        debugf("Position: (%f, %f, %f)\n", 
+                shapeFileData->shapes[i].info.pos[0], 
+                shapeFileData->shapes[i].info.pos[1], 
+                shapeFileData->shapes[i].info.pos[2]);
+        debugf("Dimensions: (%f, %f, %f)\n", 
+                shapeFileData->shapes[i].info.dim[0], 
+                shapeFileData->shapes[i].info.dim[1], 
+                shapeFileData->shapes[i].info.dim[2]);
+        debugf("Rotation: (%f, %f, %f, %f)\n", // Added %f for the w component
+                shapeFileData->shapes[i].info.rot[0], 
+                shapeFileData->shapes[i].info.rot[1], 
+                shapeFileData->shapes[i].info.rot[2], 
+                shapeFileData->shapes[i].info.rot[3]); // Include w
         debugf("\n");
     }
 
-    // Print all triggers
+    // Print all tags
     for (int i = 0; i < shapeFileData->numTags; i++) {
         debugf("Tag %d:\n", i + 1);
         debugf("Name: %s\n", shapeFileData->tags[i].name);
-        debugf("Position: (%f, %f, %f)\n", shapeFileData->tags[i].pos[0], shapeFileData->tags[i].pos[1], shapeFileData->tags[i].pos[2]);
-        debugf("Rotation: (%f, %f, %f)\n", shapeFileData->tags[i].rot[0], shapeFileData->tags[i].rot[1], shapeFileData->tags[i].rot[2]);
+        debugf("Position: (%f, %f, %f)\n", 
+                shapeFileData->tags[i].pos[0], 
+                shapeFileData->tags[i].pos[1], 
+                shapeFileData->tags[i].pos[2]);
+        debugf("Rotation: (%f, %f, %f, %f)\n",
+                shapeFileData->tags[i].rot[0], 
+                shapeFileData->tags[i].rot[1], 
+                shapeFileData->tags[i].rot[2], 
+                shapeFileData->tags[i].rot[3]);
         debugf("\n");
     }
 }
