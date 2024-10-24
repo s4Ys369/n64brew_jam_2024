@@ -40,7 +40,7 @@
 #include "ui/ui.h"
 
 #include "game/game.h"
-#include "game/game_controls.h"
+#include "game/game_control.h"
 #include "game/game_states.h"
 
 

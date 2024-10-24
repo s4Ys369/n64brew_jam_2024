@@ -17,9 +17,9 @@ void animationSet_init(const Actor* actor, AnimationSet* set)
 {
 	set->breathing_idle = t3d_anim_create(actor->model, "breathing-idle");
 	set->running_left = t3d_anim_create(actor->model, "running-left");
-	//set->jump_left = t3d_anim_create(actor->model, "jump-left");
-	//set->falling_left = t3d_anim_create(actor->model, "falling-idle-left");
-	//set->landing_left = t3d_anim_create(actor->model, "landing-left");
+	set->jump_left = t3d_anim_create(actor->model, "jump-left");
+	set->falling_left = t3d_anim_create(actor->model, "falling-idle-left");
+	set->land_left = t3d_anim_create(actor->model, "land-left");
 }
 
 void actorAnimation_init(const Actor* actor, ActorAnimation* animation)
@@ -28,12 +28,11 @@ void actorAnimation_init(const Actor* actor, ActorAnimation* animation)
 	animationSet_init(actor, &animation->blend);
 	// attach main
 	t3d_anim_attach(&animation->main.breathing_idle, &actor->armature.main);
+	t3d_anim_attach(&animation->main.falling_left, &actor->armature.main);
 
 	// attach blend
 	t3d_anim_attach(&animation->blend.running_left, &actor->armature.blend);
-}
-
-	//t3d_anim_set_speed(&actor_animation.blend.walking_left, actor->armature.blending_ratio + 0.15f);		
+}	
 
 void actorAnimation_setStandIdle(Actor* actor, ActorAnimation* animation, const float frame_time, rspq_syncpoint_t* syncpoint)
 {
@@ -70,7 +69,7 @@ void actorAnimation_setRunning(Actor* actor, ActorAnimation* animation, const fl
 
 void actorAnimation_setJump(Actor* actor, ActorAnimation* animation, const float frame_time, rspq_syncpoint_t* syncpoint)
 {
-	t3d_anim_update(&animation->main.jump_left, frame_time);
+	t3d_anim_update(&animation->main.falling_left, frame_time);
 }
 
 void actor_setAnimation(Actor* actor, ActorAnimation* animation, const float frame_time, rspq_syncpoint_t* syncpoint)
@@ -96,14 +95,13 @@ void actor_setAnimation(Actor* actor, ActorAnimation* animation, const float fra
         }
 
         case JUMP: {
+			actorAnimation_setJump(actor, animation, frame_time, syncpoint);
             break;
         }
         case FALLING: {
+			actorAnimation_setJump(actor, animation, frame_time, syncpoint);
             break;
         }
-		case LANDING: {
-			break;
-		}
     }
 	
 	if(syncpoint)rspq_syncpoint_wait(*syncpoint);
