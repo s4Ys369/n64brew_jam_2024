@@ -312,8 +312,8 @@ void ui_printf(const char *txt, ...)
 
 void ui_main_menu(ControllerData* control)
 {
-    ui_draw_panel(TILE1, sprite_gradient, T_RED, 96, 64, 224, 140, 0, 0, 128, 64);
-    ui_draw_panel(TILE2, sprite_tessalate, T_BLACK, 112, 74, 208, 131, 0, 0, 64, 64);
+    ui_draw_panel(TILE1, sprite_gradient, T_GREEN, 96, 64, 224, 140, 0, 0, 128, 64);
+    ui_draw_panel(TILE2, sprite_tessalate, T_ORANGE, 112, 74, 208, 131, 0, 0, 64, 64);
     rdpq_sync_pipe();
     rdpq_set_mode_standard();
     rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
@@ -322,11 +322,11 @@ void ui_main_menu(ControllerData* control)
     rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 120, "Press");
     ui_draw_panel(TILE4, sprite_star, YELLOW, 100, 74, 132, 106, 0, 0, 64, 64);
     ui_draw_panel(TILE4, sprite_star, YELLOW, 187, 74, 219, 106, 0, 0, 64, 64);
-    if(control->pressed.a || control->held.a)
+    if(control->pressed.start || control->held.start)
     {
-        ui_draw_sprite(TILE3, sprite_faceButtons1, aHeld, 170, 108);
+        ui_draw_sprite(TILE3, sprite_faceButtons0, 1, 170, 108);
     } else {
-        ui_draw_sprite(TILE3, sprite_faceButtons0, aIdle, 170, 108);
+        ui_draw_sprite(TILE3, sprite_faceButtons0, 0, 170, 108);
     }
 }
 
@@ -336,76 +336,70 @@ void ui_textbox(void)
 }
 
 // Time to crash test the RDP
-void ui_input_display(ControllerData** control)
+void ui_input_display(ControllerData* control)
 {
     int s = 24;
     int t = 164;
-    rspq_syncpoint_t syncPoint0 = 0;
 
     // First row: Triggers
-    ui_draw_sprite(TILE0, sprite_dPadTriggers, 6, s, t);
-    if(control[PLAYER_1]->pressed.z || control[PLAYER_1]->held.z)
+    if(control->pressed.l || control->held.l)
+        ui_draw_sprite(TILE0, sprite_dPadTriggers, 6, s, t);
+    if(control->pressed.z || control->held.z)
         ui_draw_sprite(TILE1, sprite_dPadTriggers, 5, s+spriteWidth, t);
-    if(control[PLAYER_1]->pressed.r || control[PLAYER_1]->held.r)
+    if(control->pressed.r || control->held.r)
         ui_draw_sprite(TILE2, sprite_dPadTriggers, 7, s+(spriteWidth*2), t);
 
-    if(syncPoint0)rspq_syncpoint_wait(syncPoint0);
-    rspq_syncpoint_t syncPoint1 = rspq_syncpoint_new();
 
     // Second row: Face Buttons
-    if(control[PLAYER_1]->pressed.a || control[PLAYER_1]->held.a)
+    if(control->pressed.a || control->held.a)
     {
         ui_draw_sprite(TILE3, sprite_faceButtons1, aHeld, s, t+spriteHeight);
     } else {
         ui_draw_sprite(TILE3, sprite_faceButtons0, aIdle, s, t+spriteHeight);
     }
 
-    if(control[PLAYER_1]->pressed.b || control[PLAYER_1]->held.b)
+    if(control->pressed.b || control->held.b)
     {
         ui_draw_sprite(TILE4, sprite_faceButtons1, bHeld, s+spriteHeight, t+spriteHeight);
     } else {
         ui_draw_sprite(TILE4, sprite_faceButtons1, bIdle, s+spriteHeight, t+spriteHeight);
     }
 
-    if(control[PLAYER_1]->pressed.start || control[PLAYER_1]->held.start)
+    if(control->pressed.start || control->held.start)
     {
         ui_draw_sprite(TILE5, sprite_faceButtons0, 1, s+(spriteHeight*2), t+spriteHeight);
     } else {
         ui_draw_sprite(TILE5, sprite_faceButtons0, 0, s+(spriteHeight*2), t+spriteHeight);
     }
 
-    if(syncPoint1)rspq_syncpoint_wait(syncPoint1);
-    rspq_syncpoint_t syncPoint2 = rspq_syncpoint_new();
 
     // Third row: Sticks
     ui_draw_sprite(TILE6, sprite_controlStick, 0, s, t+(spriteHeight*2));
-    int stickX = s+(control[PLAYER_1]->input.stick_x/15);
-    int stickY = t+(spriteHeight*2)-(control[PLAYER_1]->input.stick_y/15);
+    int stickX = s+(control->input.stick_x/15);
+    int stickY = t+(spriteHeight*2)-(control->input.stick_y/15);
     ui_draw_sprite(TILE6, sprite_controlStick, 1, stickX, stickY);
-    if(control[PLAYER_1]->pressed.c_up || control[PLAYER_1]->held.c_up)
+    if(control->pressed.c_up || control->held.c_up)
     {
         ui_draw_sprite(TILE7, sprite_cButtons1, C_UP, s+(spriteHeight*2), t+(spriteHeight*2));
-    } else if(control[PLAYER_1]->pressed.c_down || control[PLAYER_1]->held.c_down) {
+    } else if(control->pressed.c_down || control->held.c_down) {
         ui_draw_sprite(TILE7, sprite_cButtons1, C_DOWN, s+(spriteHeight*2), t+(spriteHeight*2));
-    } else if(control[PLAYER_1]->pressed.c_left || control[PLAYER_1]->held.c_left) {
+    } else if(control->pressed.c_left || control->held.c_left) {
         ui_draw_sprite(TILE7, sprite_cButtons1, C_LEFT, s+(spriteHeight*2), t+(spriteHeight*2));
-    } else if(control[PLAYER_1]->pressed.c_right || control[PLAYER_1]->held.c_right) {
+    } else if(control->pressed.c_right || control->held.c_right) {
         ui_draw_sprite(TILE7, sprite_cButtons1, C_RIGHT, s+(spriteHeight*2), t+(spriteHeight*2));
     } else {
         ui_draw_sprite(TILE7, sprite_cButtons0, 0, s+(spriteHeight*2), t+(spriteHeight*2));
     }
 
-    if(syncPoint2)rspq_syncpoint_wait(syncPoint2);
-    syncPoint0 = rspq_syncpoint_new();
 }
 
-// Step 4/5: call this AFTER your game logic ends each frame
+
 void ui_update(void)
 {
     
 } 
 
-// Step 5/5: render out the UI at the very end
+
 void ui_draw(void)
 {
     ui_fps();

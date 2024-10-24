@@ -9,19 +9,17 @@
 
 typedef struct {
     uint32_t port;
-    Actor* actor;
-    ActorAnimation* animation;
+    Actor actor;
     uint8_t score;
 
 } PlayerData;
 
-PlayerData* player_init(uint32_t num, PlayerData* data);
+PlayerData* player_init(uint32_t num, Actor actor, PlayerData* data);
 
-PlayerData* player_init(uint32_t num, PlayerData* data)
+PlayerData* player_init(uint32_t num, Actor actor, PlayerData* data)
 {
     data->port = core_get_playercontroller(num);
-    data->actor = (Actor *)malloc(sizeof(Actor));
-    data->animation = (ActorAnimation *)malloc(sizeof(ActorAnimation));
+    data->actor = actor;
     data->score = 0;
     return data;
 }

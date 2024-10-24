@@ -6,6 +6,9 @@
 #include <t3d/t3danim.h>
 #include <t3d/t3ddebug.h>
 
+#define ACTOR_COUNT 2
+#define SCENERY_COUNT 2
+
 #include "../../core.h"
 #include "../../minigame.h"
 
@@ -27,13 +30,19 @@
 
 #include "players/players.h"
 
+#include "players/players.h"
+
+#include "scene/scene.h"
 #include "scene/scenery.h"
 
 #include "sound/sound.h"
 
 #include "ui/ui.h"
 
-#include "game_states.h"
+#include "game/game.h"
+#include "game/game_controls.h"
+#include "game/game_states.h"
+
 
 const MinigameDef minigame_def = {
     .gamename = "Fall Guys Clone",
@@ -42,49 +51,51 @@ const MinigameDef minigame_def = {
     .instructions = "Press A to win."
 };
 
-Screen screen;
-ControllerData *control[MAXPLAYERS];
-TimeData timing;
+Game minigame = {
+	.state = GAMEPLAY
+};
 
-PlayerData *players[MAXPLAYERS];
+PlayerData players[MAXPLAYERS];
+
+Actor actors[ACTOR_COUNT];
+
+Scenery scenery[SCENERY_COUNT];
 
 void minigame_init()
-{
-	debug_init_isviewer();
-	debug_init_usblog();
-	asset_init_compression(2);
+{      
+	game_init(&minigame);
 
-	dfs_init(DFS_DEFAULT_LOCATION);
-	rdpq_init();
-
-	screen_init(&screen);
-
-	joypad_init();
-
-	time_init(&timing);
-	ui_init();
-
-	for (size_t p = 0; p < MAXPLAYERS; ++p)
+    // actors
+	for (int i = 0; i < ACTOR_COUNT; i++)
 	{
-		control[p] = malloc(sizeof(ControllerData));
-    	players[p] = malloc(sizeof(PlayerData));
+		actors[i] = actor_create(i, "rom:/game/pipo.t3dm");
+        actor_init(&actors[i]);
+    }
+    
+	// scenery
+    scenery[0] = scenery_create(0, "rom:/game/testLevel.t3dm");
+    scenery[1] = scenery_create(1, "rom:/game/n64logo.t3dm");
+    scenery[1].position = (Vector3){200, 200, 0};
+
+    for (int i = 0; i < SCENERY_COUNT; i++)
+	{
+        scenery_set(&scenery[i]);
+    }
+
+	for (size_t p = 0; p < ACTOR_COUNT; ++p)
+	{
+		player_init(p, actors[p], &players[p]);
 	}
 
-	sound_load();
 }
-void minigame_loop(float deltatime)
-{
-	for(uint32_t p = 0; p < core_get_playercount(); ++p)
-	{
-    	if (players[p] != NULL)
-    	    player_init(p, players[p]); 
-	}
-	uint8_t game_state = GAMEPLAY;
-	game_setState(game_state, &screen, &timing, control, players);
+
+void minigame_loop()
+{	
+	game_play(&minigame, actors, scenery, players);
 }
 void minigame_cleanup()
 {
 	t3d_destroy();
 	sound_xm_stop();
-	return;
+	display_close();
 }

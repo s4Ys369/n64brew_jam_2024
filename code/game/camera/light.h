@@ -33,7 +33,7 @@ void light_set(LightData *light)
 {
     t3d_light_set_ambient(light->ambient_color);
     t3d_light_set_directional(0, light->directional_color, &light->direction);
-    t3d_light_set_count(1);
+    t3d_light_set_count(2);
 }
 
 #endif

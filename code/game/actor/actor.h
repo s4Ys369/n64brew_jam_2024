@@ -48,6 +48,32 @@ typedef struct{
 
 } ActorArmature;
 
+typedef struct {
+
+	T3DAnim breathing_idle;
+	T3DAnim running_left;
+	T3DAnim jump_left;
+	T3DAnim falling_left;
+	T3DAnim landing_left;
+
+} AnimationSet;
+
+
+typedef struct {
+	
+	uint8_t previous;
+	uint8_t current;
+
+	AnimationSet main;
+	AnimationSet blend;
+
+	uint8_t change_delay;
+	float blending_ratio;
+	float speed_rate;
+	bool synced;
+
+} ActorAnimation;
+
 
 typedef struct {
 
@@ -57,7 +83,9 @@ typedef struct {
 	T3DModel *model;
 	Vector3 scale;
 	
+	char model_path;
 	ActorArmature armature;
+	ActorAnimation animation;
 
 	RigidBody body;
 
@@ -82,6 +110,7 @@ typedef struct {
 // function prototypes
 
 Actor actor_create(uint32_t id, const char *model_path);
+void actor_init(Actor* actor);
 void actor_draw(Actor *actor);
 void actor_delete(Actor *actor);
 
@@ -158,6 +187,9 @@ void actor_draw(Actor *actor)
 void actor_delete(Actor *actor) 
 {
 	free_uncached(actor->modelMat);
+	t3d_skeleton_destroy(&actor->armature.main);
+	t3d_skeleton_destroy(&actor->armature.blend);
+	t3d_model_free(actor->model);
 }
 
 
