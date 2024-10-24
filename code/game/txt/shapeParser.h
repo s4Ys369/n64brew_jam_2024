@@ -1,9 +1,19 @@
+#ifndef SHAPEPARSER_H
+#define SHAPEPARSER_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_SHAPES 20
+#define MAX_TAGS 20
+
 typedef struct
 {
     char name[50];
     float pos[3];
     float dim[3];
-    float rot[3];
+    float rot[4];
 } TagInfo;
 
 typedef struct
@@ -27,11 +37,11 @@ void parseTagInfo(const char* line, TagInfo* info)
     sscanf(offset + 5, "%s", info->name);
     offset += strlen(info->name);
 
-    sscanf(offset + 4, "%f %f %f", info->pos[0], info->pos[1], info->pos[2]);
+    sscanf(offset + 4, "%f %f %f", &info->pos[0], &info->pos[1], &info->pos[2]);
 
 
-    offset += sscanf(offset + 4, "%f %f %f", info->dim[0], info->dim[1], &info->dim[2]);
-    offset += sscanf(offset + 4, "%f %f %f %f", info->rot[0], info->rot[1], info->rot[2], info->rot[3]);
+    offset += sscanf(offset + 4, "%f %f %f", &info->dim[0], &info->dim[1], &info->dim[2]);
+    offset += sscanf(offset + 4, "%f %f %f %f", &info->rot[0], &info->rot[1], &info->rot[2], &info->rot[3]);
 }
 
 bool parseFile(const char* filename, ShapeFileData* info)
@@ -60,7 +70,7 @@ bool parseFile(const char* filename, ShapeFileData* info)
             info->shapes = (ShapeInfo*)malloc(sizeof(ShapeInfo) * info->numShapes);
             for (size_t i = 0; i < info->numShapes; i++)
             {
-                info->shapes[i] = {};
+                info->shapes[i] = (ShapeInfo){};
             }
         }
         else if (strncmp(line, "tagCount:", 9) == 0)
@@ -95,6 +105,34 @@ bool parseFile(const char* filename, ShapeFileData* info)
     return true;
 }
 
+void parsePrint(ShapeFileData *shapeFileData)
+{
+    // Print all shapes
+    for (int i = 0; i < shapeFileData->numShapes; i++) {
+        debugf("Shape %d:\n", i + 1);
+        debugf("Name: %s\n", shapeFileData->shapes[i].info.name);
+        debugf("Position: (%f, %f, %f)\n", shapeFileData->shapes[i].info.pos[0], shapeFileData->shapes[i].info.pos[1], shapeFileData->shapes[i].info.pos[2]);
+        debugf("Dimensions: (%f, %f, %f)\n", shapeFileData->shapes[i].info.dim[0], shapeFileData->shapes[i].info.dim[1], shapeFileData->shapes[i].info.dim[2]);
+        debugf("Rotation: (%f, %f, %f)\n", shapeFileData->shapes[i].info.rot[0], shapeFileData->shapes[i].info.rot[1], shapeFileData->shapes[i].info.rot[2]);
+        debugf("\n");
+    }
+
+    // Print all triggers
+    for (int i = 0; i < shapeFileData->numTags; i++) {
+        debugf("Tag %d:\n", i + 1);
+        debugf("Name: %s\n", shapeFileData->tags[i].name);
+        debugf("Position: (%f, %f, %f)\n", shapeFileData->tags[i].pos[0], shapeFileData->tags[i].pos[1], shapeFileData->tags[i].pos[2]);
+        debugf("Rotation: (%f, %f, %f)\n", shapeFileData->tags[i].rot[0], shapeFileData->tags[i].rot[1], shapeFileData->tags[i].rot[2]);
+        debugf("\n");
+    }
+}
+
+void parseCheck(ShapeFileData* data)
+{
+    if(parseFile("rom:/game/levels/levelA.txt", data))
+        parsePrint(data);
+}
+
 void destroyShapeFileData(ShapeFileData* data)
 {
     if (data->shapes)
@@ -102,3 +140,5 @@ void destroyShapeFileData(ShapeFileData* data)
     if (data->tags)
         free(data->tags);
 }
+
+#endif // SHAPEPARSER_H

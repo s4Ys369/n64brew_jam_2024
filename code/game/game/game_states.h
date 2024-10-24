@@ -26,7 +26,6 @@ void gameState_setMainMenu()
     // code for the game over state
 }
 
-
 void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery)
 {
 	
@@ -104,6 +103,10 @@ void gameState_setPause(Game* game, Actor* actors, Scenery* scenery)
 	game->syncPoint = rspq_syncpoint_new();
 
 	ui_draw();
+
+
+	ShapeFileData data_s;
+	parseCheck(&data_s);
 
 	rdpq_detach_show();
 }
