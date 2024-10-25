@@ -65,5 +65,5 @@ void minigame_loop(float deltatime)
 }
 void minigame_cleanup()
 {
-	return;
+	ui_cleanup();
 }
