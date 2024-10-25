@@ -45,6 +45,7 @@ enum COLOR_NAMES
     COLOR_COUNT
 };
 
+// FMT_RGBA32, 32-bit packed RGBA (8888)
 const uint32_t COLORS[COLOR_COUNT] = 
 {
     0xD90000FF, // RED
@@ -80,6 +81,7 @@ const uint32_t COLORS[COLOR_COUNT] =
 
 inline color_t ui_color(int colorIdx);
 
+// Creates a color_t from one of the 32-bit packed COLORS.
 inline color_t ui_color(int colorIdx)
 {
     color_t color;

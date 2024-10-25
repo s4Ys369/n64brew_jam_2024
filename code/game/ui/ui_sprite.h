@@ -7,14 +7,18 @@
 extern "C" {
 #endif
 
+// Constant dimensions for sprites
+const int spriteWidth = 16, spriteHeight = 16;
+
+// Static pointers to sprites representing different controller elements
 static sprite_t *sprite_controlStick;
 static sprite_t *sprite_dPadTriggers;
 static sprite_t *sprite_cButtons0;
 static sprite_t *sprite_cButtons1;
 static sprite_t *sprite_faceButtons0;
 static sprite_t *sprite_faceButtons1;
-const int spriteWidth = 16, spriteHeight = 16;
 
+// Static pointers to sprites for panels
 static sprite_t *sprite_border;
 static sprite_t *sprite_gloss;
 static sprite_t *sprite_gradient;
@@ -22,16 +26,26 @@ static sprite_t *sprite_bubbleGrid;
 static sprite_t *sprite_tessalate;
 static sprite_t *sprite_star;
 
+// Surfaces for rendering UI elements
 surface_t surf_UIpanels;
 surface_t surf_UIsprites;
 
-void ui_spriteLoad(void);
+/* Declarations */
 
+void ui_spriteLoad(void);
+inline void ui_syncSprite(int color);
+void ui_spriteDraw(rdpq_tile_t tile, sprite_t *sprite, int idx, int x, int y);
+void ui_spriteDrawPanel(rdpq_tile_t tile, sprite_t *sprite, int color, int x0, int y0, int x1, int y1, int s, int t, int s1, int t1);
+void ui_spriteCleanup(void);
+
+/* Definitions */
+
+// Loads and assigns sprites to their corresponding pointers based on file paths set by ui_fileSprites.
 void ui_spriteLoad(void)
 {
     ui_fileSprites();
 
-    // IA
+    // Load IA format sprites (grayscale with alpha for UI overlays).
     sprite_border = sprite_load(uiSpritePanelFileName[0]);
     sprite_gloss = sprite_load(uiSpritePanelFileName[1]);
     sprite_gradient = sprite_load(uiSpritePanelFileName[2]);
@@ -41,15 +55,25 @@ void ui_spriteLoad(void)
     sprite_controlStick = sprite_load(uiSpriteButtonFileName[0]);
     sprite_dPadTriggers = sprite_load(uiSpriteButtonFileName[1]);
 
-    // RGBA32
+    // Load RGBA32 format sprites (full color with transparency for UI buttons).
     sprite_cButtons0 = sprite_load(uiSpriteButtonFileName[2]);
     sprite_cButtons1 = sprite_load(uiSpriteButtonFileName[3]);
     sprite_faceButtons0 = sprite_load(uiSpriteButtonFileName[4]);
     sprite_faceButtons1 = sprite_load(uiSpriteButtonFileName[5]);
 }
 
-void ui_spriteDraw(rdpq_tile_t tile, sprite_t *sprite, int idx, int x, int y);
+// Optional RDPQ sync and set for sprites. Similar to ui_syncText, but sets the combiner for textures and allows for primitive color to added.
+inline void ui_syncSprite(int color)
+{
+    rdpq_sync_pipe();
+    rdpq_set_mode_standard();
+    rdpq_mode_combiner(RDPQ_COMBINER_TEX_FLAT);
+    rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
+    rdpq_set_prim_color(ui_color(color));
+    rdpq_sync_tile();
+}
 
+// Draws a simple 16x16 sprite.
 void ui_spriteDraw(rdpq_tile_t tile, sprite_t *sprite, int idx, int x, int y)
 {
     int s = 0, t = 0;
@@ -66,11 +90,7 @@ void ui_spriteDraw(rdpq_tile_t tile, sprite_t *sprite, int idx, int x, int y)
 
     t = (idxCopy / 4) * spriteHeight;
 
-    rdpq_sync_pipe();
-    rdpq_set_mode_standard();
-    rdpq_mode_alphacompare(1);
-    rdpq_mode_filter(FILTER_BILINEAR);
-    rdpq_sync_tile();
+    ui_syncSprite(WHITE);
 
     surf_UIsprites = sprite_get_pixels(sprite);
 
@@ -78,17 +98,11 @@ void ui_spriteDraw(rdpq_tile_t tile, sprite_t *sprite, int idx, int x, int y)
     rdpq_texture_rectangle(tile, x, y, x+spriteWidth, y+spriteHeight, s, t);
 }
 
-void ui_spriteDrawPanel(rdpq_tile_t tile, sprite_t *sprite, int color, int x0, int y0, int x1, int y1, int s, int t, int s1, int t1);
-
+// Draws a scalable sprite with added primitive color.
 void ui_spriteDrawPanel(rdpq_tile_t tile, sprite_t *sprite, int color, int x0, int y0, int x1, int y1, int s, int t, int s1, int t1)
 {
 
-    rdpq_sync_pipe();
-    rdpq_set_mode_standard();
-    rdpq_mode_combiner(RDPQ_COMBINER_TEX_FLAT);
-    rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
-    rdpq_set_prim_color(ui_color(color));
-    rdpq_sync_tile();
+    ui_syncSprite(color);
 
     surf_UIpanels = sprite_get_pixels(sprite);
 
@@ -98,8 +112,7 @@ void ui_spriteDrawPanel(rdpq_tile_t tile, sprite_t *sprite, int color, int x0, i
 
 }
 
-void ui_spriteCleanup(void);
-
+// Frees static pointers to sprites.
 void ui_spriteCleanup(void)
 {
     sprite_free(sprite_controlStick);

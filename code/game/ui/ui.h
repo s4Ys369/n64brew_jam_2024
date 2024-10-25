@@ -9,7 +9,6 @@
 extern "C" {
 #endif
 
-
 // @TODO: Recreate button sprite tiling to remove these insanity checks.
 #define aPressed 2
 #define aIdle 3
@@ -31,15 +30,18 @@ enum cStates
 // @TODO: Unhardcode position, as it effects ui_printf as well.
 T3DVec3 fpsPos = {{32.0f,32.0f,1.0f}};
 
+/* Declarations */
 
 void ui_init(void);
+inline void ui_syncText(void);
 void ui_fps(void);
 void ui_printf(const char *txt, ...);
 void ui_main_menu(ControllerData* control);
 void ui_input_display(ControllerData* control);
-void ui_textbox(void); // @TODO: Needs integration of text parsing from upstream, currently does nothing.
+void ui_textbox(void);
 void ui_cleanup(void);
 
+/* Definitons */
 
 void ui_init(void)
 {
@@ -47,21 +49,25 @@ void ui_init(void)
     ui_spriteLoad();
 }
 
-void ui_fps(void)
+// Optional RDPQ sync and set for text, to prevent bleeding if the autosync engine misses something.
+inline void ui_syncText(void)
 {
     rdpq_sync_pipe();
     rdpq_set_mode_standard();
     rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
     rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
+    rdpq_sync_tile();
+}
+
+void ui_fps(void)
+{
+    ui_syncText();
     rdpq_text_printf(&txt_debugParms, ID_DEBUG, fpsPos.v[0], fpsPos.v[1], "FPS %.2f", display_get_fps());
 }
 
 void ui_printf(const char *txt, ...)
 {
-    rdpq_sync_pipe();
-    rdpq_set_mode_standard();
-    rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
-    rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
+    ui_syncText();
 
     va_list args;
     va_start(args, txt);
@@ -73,12 +79,11 @@ void ui_main_menu(ControllerData* control)
 {
     ui_spriteDrawPanel(TILE1, sprite_gradient, T_RED, 96, 64, 224, 140, 0, 0, 128, 64);
     ui_spriteDrawPanel(TILE2, sprite_tessalate, T_BLACK, 112, 74, 208, 131, 0, 0, 64, 64);
-    rdpq_sync_pipe();
-    rdpq_set_mode_standard();
-    rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
-    rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
+
+    ui_syncText();
     rdpq_text_print(&txt_titleParms, ID_TITLE, 136, 96, "TITLE");
     rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 120, "Press");
+
     ui_spriteDrawPanel(TILE4, sprite_star, YELLOW, 100, 74, 132, 106, 0, 0, 64, 64);
     ui_spriteDrawPanel(TILE4, sprite_star, YELLOW, 187, 74, 219, 106, 0, 0, 64, 64);
     if(control->pressed.a || control->held.a)
@@ -145,6 +150,7 @@ void ui_input_display(ControllerData* control)
 
 }
 
+// @TODO: Needs integration of text parsing from upstream, currently does nothing.
 void ui_textbox(void)
 {
 

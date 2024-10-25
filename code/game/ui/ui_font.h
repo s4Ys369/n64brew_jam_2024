@@ -8,8 +8,6 @@
 extern "C" {
 #endif
 
-#define FONT_ID_GAME 2
-
 enum FONT_IDS 
 {
     ID_RESERVED,
@@ -19,6 +17,7 @@ enum FONT_IDS
     ID_COUNT
 };
 
+// Array of pointers to rdpq_font_t, with each entry representing a font identified by an ID.
 rdpq_font_t *font[ID_COUNT];
 
 enum FONT_STYLES 
@@ -31,18 +30,33 @@ enum FONT_STYLES
     STYLE_COUNT
 };
 
+// RDPQ text parameters, used here primarily to set the following RDPQ font styles.
 rdpq_textparms_t txt_debugParms;
 rdpq_textparms_t txt_titleParms;
 rdpq_textparms_t txt_gameParms;
 
+// RDPQ font styles, used here primarily to set text color.
 rdpq_fontstyle_t txt_debug_fontStyle;
 rdpq_fontstyle_t txt_title_fontStyle;
 rdpq_fontstyle_t txt_game_fontStyle;
 rdpq_fontstyle_t txt_bright_fontStyle;
 rdpq_fontstyle_t txt_green_fontStyle;
 
-void ui_fontRegister(void);
+/* Declarations */
 
+void ui_fontRegister(void);
+void ui_fontUnregister(void);
+
+/* Definitions */
+
+/* All in one font initialization.
+ - Loads and regsiters fonts.
+ - Assigns colors to font styles.
+ - Register font styles for each font.
+ - Assigns font styles to text parameters.
+
+Possible improvements would be to separate functionality,
+to make fonts more flexible and modular. */
 void ui_fontRegister(void)
 {
     ui_fileFonts();
@@ -107,8 +121,7 @@ void ui_fontRegister(void)
 
 }
 
-void ui_fontUnregister(void);
-
+// Unregisters and frees fonts for the next minigame.
 void ui_fontUnregister(void)
 {
     for (int i = ID_DEBUG; i < ID_COUNT; ++i)
