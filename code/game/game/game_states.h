@@ -84,7 +84,7 @@ void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery, PlayerDa
 
 	game->syncPoint = rspq_syncpoint_new();
 
-	ui_draw();
+	ui_fps();
 	ui_printf("STATE %d", game->state);
 	ui_input_display(game->control[0]);
 

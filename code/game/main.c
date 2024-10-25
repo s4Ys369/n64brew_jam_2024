@@ -97,5 +97,6 @@ void minigame_cleanup()
 {
 	t3d_destroy();
 	sound_xm_stop();
+	ui_cleanup();
 	display_close();
 }
