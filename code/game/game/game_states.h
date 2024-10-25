@@ -87,6 +87,15 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorColl
 	};
 
 	t3d_matrix_pop(1);
+	ui_fps();
+	ui_printf(
+		"cState %d\n"
+		"pState %d\n"
+		"Contact %d",
+		actor->state,
+		actor->previous_state,
+		actor->grounded
+	);
 
 	game->syncPoint = rspq_syncpoint_new();
 
