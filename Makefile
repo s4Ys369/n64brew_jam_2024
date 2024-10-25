@@ -7,8 +7,6 @@ MINIGAME_DIR = code
 FILESYSTEM_DIR = filesystem
 MINIGAMEDSO_DIR = $(FILESYSTEM_DIR)/minigames
 
-GLTF_FLAGS = ''
-
 SRC = main.c core.c minigame.c menu.c
 
 filesystem/squarewave.font64: MKFONT_FLAGS += --outline 1 --range all
@@ -44,7 +42,7 @@ all: $(ROMNAME).z64
 $(FILESYSTEM_DIR)/%.sprite: $(ASSETS_DIR)/%.png
 	@mkdir -p $(dir $@)
 	@echo "    [SPRITE] $@"
-	@$(N64_MKSPRITE) $(MKSPRITE_FLAGS) -o $(dir $@) "$<"
+	$(N64_MKSPRITE) $(MKSPRITE_FLAGS) -o $(dir $@) "$<"
 
 $(FILESYSTEM_DIR)/%.font64: $(ASSETS_DIR)/%.ttf
 	@mkdir -p $(dir $@)
@@ -54,13 +52,13 @@ $(FILESYSTEM_DIR)/%.font64: $(ASSETS_DIR)/%.ttf
 $(FILESYSTEM_DIR)/%.t3dm: $(ASSETS_DIR)/%.glb
 	@mkdir -p $(dir $@)
 	@echo "    [T3D-MODEL] $@"
-	$(T3D_GLTF_TO_3D) "$<" $@ $(GLTF_FLAGS)
+	$(T3D_GLTF_TO_3D) "$<" $@ $(T3DM_FLAGS)
 	$(N64_BINDIR)/mkasset -c 2 -o $(dir $@) $@
 
 $(FILESYSTEM_DIR)/%.wav64: $(ASSETS_DIR)/%.wav
 	@mkdir -p $(dir $@)
 	@echo "    [SFX] $@"
-	@$(N64_AUDIOCONV) --wav-compress 1 -o $(dir $@) "$<"
+	$(N64_AUDIOCONV) $(AUDIOCONV_FLAGS) -o $(dir $@) "$<"
 
 $(FILESYSTEM_DIR)/%.xm64: $(ASSETS_DIR)/%.xm
 	@mkdir -p $(dir $@)
@@ -68,7 +66,11 @@ $(FILESYSTEM_DIR)/%.xm64: $(ASSETS_DIR)/%.xm
 	$(N64_AUDIOCONV) $(AUDIOCONV_FLAGS) -o $(dir $@) "$<"
 
 define MINIGAME_template
-SRC_$(1) = $$(wildcard $$(MINIGAME_DIR)/$(1)/*.c) $$(wildcard $$(MINIGAME_DIR)/$(1)/*.cpp)
+SRC_$(1) = \
+	$$(wildcard $$(MINIGAME_DIR)/$(1)/*.c) \
+	$$(wildcard $$(MINIGAME_DIR)/$(1)/**/*.c) \
+	$$(wildcard $$(MINIGAME_DIR)/$(1)/*.cpp) \
+	$$(wildcard $$(MINIGAME_DIR)/$(1)/**/*.cpp)
 $$(MINIGAMEDSO_DIR)/$(1).dso: $$(SRC_$(1):%.c=$$(BUILD_DIR)/%.o)
 -include $$(MINIGAME_DIR)/$(1)/$(1).mk
 endef

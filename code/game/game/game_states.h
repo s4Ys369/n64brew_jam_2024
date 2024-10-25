@@ -90,8 +90,6 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorColl
 
 	game->syncPoint = rspq_syncpoint_new();
 
-	ui_draw();
-
 	rdpq_detach_show();
 }
 
@@ -124,8 +122,6 @@ void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, ActorCollide
 	t3d_matrix_pop(1);
 
 	game->syncPoint = rspq_syncpoint_new();
-
-	ui_draw();
 
 	rdpq_detach_show();
 }

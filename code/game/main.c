@@ -45,7 +45,7 @@
 
 const MinigameDef minigame_def = {
     .gamename = "Fall Guys Clone",
-    .developername = "zoncabe, float4, s4ys, kaelin",
+    .developername = "zoncabe, float4, s4ys",
     .description = "This is a game that exist.",
     .instructions = "Press A to win."
 };
@@ -99,7 +99,6 @@ void minigame_loop()
 {	
 	game_play(&minigame, actor, scenery, &actor_collider, &actor_contact, &logo_collider);
 }
-
 void minigame_cleanup()
 {
 	for (int i = 0; i < SCENERY_COUNT; i++) {
