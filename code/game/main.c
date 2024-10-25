@@ -6,6 +6,8 @@
 #include <t3d/t3danim.h>
 #include <t3d/t3ddebug.h>
 
+#include <stdbool.h>
+
 #define ACTOR_COUNT 1
 #define SCENERY_COUNT 2
 
@@ -28,6 +30,9 @@
 #include "actor/actor_control.h"
 #include "actor/actor_animation.h"
 
+#include "actor/collision/actor_collision_detection.h"
+#include "actor/collision/actor_collision_response.h"
+
 #include "scene/scene.h"
 #include "scene/scenery.h"
 
@@ -47,22 +52,36 @@ const MinigameDef minigame_def = {
 
 Game minigame;
 
-Actor actors[ACTOR_COUNT];
+Actor actor[ACTOR_COUNT];
+ActorCollider actor_collider = {
+        settings: {
+            body_radius: 25,
+            body_height: 100,
+        }
+};
+ActorContactData actor_contact;
 
 Scenery scenery[SCENERY_COUNT];
 
+Box logo_collider = {
+        size: {100.0f, 100.0f, 100.0f,},
+        center: {200, 200, 50},
+        rotation: {0.0f, 0.0f, 45.0f},
+};
 
 void minigame_init()
 {      
 	game_init(&minigame);
 
     // actors
-    actors[0] = actor_create(0, "rom:/game/pipo.t3dm");
+    actor[0] = actor_create(0, "rom:/game/pipo.t3dm");
 
     for (int i = 0; i < ACTOR_COUNT; i++) {
-
-        actor_init(&actors[i]);
+        actor_init(&actor[i]);
     }
+
+
+    actorCollider_init(&actor_collider);
     
      // scenery
     scenery[0] = scenery_create(0, "rom:/game/testLevel.t3dm");
@@ -73,11 +92,12 @@ void minigame_init()
 
         scenery_set(&scenery[i]);
     }
+
 }
 
 void minigame_loop()
 {	
-	game_play(&minigame, actors, scenery);
+	game_play(&minigame, actor, scenery, &actor_collider, &actor_contact, &logo_collider);
 }
 
 void minigame_cleanup()
@@ -89,7 +109,7 @@ void minigame_cleanup()
 
 	for (int i = 0; i < ACTOR_COUNT; i++) {
 
-		actor_delete(&actors[i]);
+		actor_delete(&actor[i]);
 	};
 
 	t3d_destroy();

@@ -86,7 +86,7 @@ void actorCollision_setResponse(Actor* actor, ActorContactData* contact, ActorCo
     actorContactData_setAngleOfIncidence(contact, &actor->body.velocity);
     actorCollision_solvePenetration(actor, contact, collider);
 
-    if (contact->slope > 0 && contact->slope < 50) {
+    if (contact->slope >= 0 && contact->slope < 50) {
         actorCollision_setGroundResponse(actor);
         actorCollision_collideAndSlide(actor, contact);
     }

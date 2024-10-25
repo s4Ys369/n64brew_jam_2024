@@ -7,12 +7,12 @@
 void gameState_setIntro();
 void gameState_setMainMenu();
 
-void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery);
-void gameState_setPause(Game* game, Actor* actors, Scenery* scenery);
+void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* box_collider);
+void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* box_collider);
 
 void gameState_setGameOver();
 
-void game_play(Game* game, Actor* actors, Scenery* scenery);
+void game_play(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* box_collider);
 
 
 // function implementations
@@ -27,7 +27,7 @@ void gameState_setMainMenu()
 }
 
 
-void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery)
+void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* box_collider)
 {
 	
 	// ======== Update ======== //
@@ -37,11 +37,33 @@ void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery)
 
 	for (int i = 0; i < ACTOR_COUNT; i++) {
 
-		actor_update(&actors[i], &game->control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
+		actor_update(&actor[i], &game->control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
 	};
 
+
+	// new code for collision detection /////////////////////////////////
+
+    actorContactData_clear(actor_contact);
+    actorCollider_setVertical(actor_collider, &actor->body.position);
+
+    if (actor->body.position.z != 0 
+		&& actor->state != FALLING 
+        && actor->state != JUMP) {
+
+        actor->grounding_height = 0.0f;
+        actor_setState(actor, FALLING);
+    }
+
+	if (actorCollision_contactBox(actor_collider, box_collider)) {
+        actorCollision_contactBoxSetData(actor_contact, actor_collider, box_collider);
+        actorCollision_setResponse(&actor[0], actor_contact, actor_collider);
+    }
+    
+	///////////////////////////////////////////////////////////////////
+
+
 	cameraControl_setOrbitalMovement(&game->scene.camera, &game->control);
-	camera_getMinigamePosition(&game->scene.camera, actors[0].body.position, game->timing.frame_time_s);
+	camera_getMinigamePosition(&game->scene.camera, actor[0].body.position, game->timing.frame_time_s);
 	camera_set(&game->scene.camera, &game->screen);
 
 
@@ -61,7 +83,7 @@ void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery)
 	
 	for (int i = 0; i < ACTOR_COUNT; i++) {
 		
-		actor_draw(&actors[i]);
+		actor_draw(&actor[i]);
 	};
 
 	t3d_matrix_pop(1);
@@ -74,7 +96,7 @@ void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery)
 }
 
 
-void gameState_setPause(Game* game, Actor* actors, Scenery* scenery)
+void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* box_collider)
 {
 	// ======== Update ======== //
 
@@ -82,7 +104,7 @@ void gameState_setPause(Game* game, Actor* actors, Scenery* scenery)
 	controllerData_getInputs(&game->control);
 
 	cameraControl_setOrbitalMovement(&game->scene.camera, &game->control);
-	camera_getMinigamePosition(&game->scene.camera, actors[0].body.position, game->timing.frame_time_s);
+	camera_getMinigamePosition(&game->scene.camera, actor[0].body.position, game->timing.frame_time_s);
 	camera_set(&game->scene.camera, &game->screen);
 
 	// ======== Draw ======== //
@@ -114,7 +136,7 @@ void gameState_setGameOver()
     // code for the game over state
 }
 
-void game_play(Game* game, Actor* actors, Scenery* scenery)
+void game_play(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* box_collider)
 {
 	for(;;)
 	{
@@ -130,11 +152,11 @@ void game_play(Game* game, Actor* actors, Scenery* scenery)
 				break;
 			}
 			case GAMEPLAY:{
-				gameState_setGameplay(game, actors, scenery);
+				gameState_setGameplay(game, actor, scenery,actor_collider, actor_contact, box_collider);
 				break;
 			}
 			case PAUSE:{
-				gameState_setPause(game, actors, scenery);
+				gameState_setPause(game, actor, scenery,actor_collider, actor_contact, box_collider);
 				break;
 			}
 			case GAME_OVER:{
