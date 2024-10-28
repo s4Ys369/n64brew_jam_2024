@@ -12,6 +12,7 @@ T3DM_FILES := $(ASSETS)/capsule.t3dm \
               $(ASSETS)/n64logo.t3dm \
               $(ASSETS)/pipo.t3dm \
               $(ASSETS)/room.t3dm \
+              $(ASSETS)/cube.t3dm \
               $(ASSETS)/testLevel.t3dm
 
 SPRITE_FILES := $(ASSETS)/black_filled_tile.sprite \
@@ -47,6 +48,7 @@ ASSETS_LIST += $(JSON_FILES) $(T3DM_FILES) $(SPRITE_FILES) $(UI_SPRITE_FILES) $(
 # t3d flags
 $(ASSETS)/capsule.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/n64logo.t3dm: T3DM_FLAGS = --base-scale=1
+$(ASSETS)/cube.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/pipo.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/room.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
 $(ASSETS)/testLevel.t3dm: T3DM_FLAGS = --base-scale=1 --bvh

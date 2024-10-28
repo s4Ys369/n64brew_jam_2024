@@ -64,9 +64,9 @@ ActorContactData actor_contact;
 Scenery scenery[SCENERY_COUNT];
 
 Box logo_collider = {
-        size: {100.0f, 100.0f, 70.0f,},
-        center: {200.0f, 200.0f, 50.0f},
-        rotation: {0.0f, 0.0f, 45.0f},
+        size: {150.0f, 150.0f, 150.0f,},
+        center: {200.0f, 200.0f, 75.0f},
+        rotation: {0.0f, 0.0f, -45.0f},
 };
 
 void minigame_init()
@@ -85,8 +85,10 @@ void minigame_init()
     
      // scenery
     scenery[0] = scenery_create(0, "rom:/game/testLevel.t3dm");
-    scenery[1] = scenery_create(1, "rom:/game/n64logo.t3dm");
-    scenery[1].position = (Vector3){200, 200, 0};
+    scenery[1] = scenery_create(1, "rom:/game/cube.t3dm");
+    scenery[1].position = (Vector3){200, 200, 75};
+    scenery[1].scale = (Vector3){1.5f, 1.5f, 1.5f};
+    scenery[1].rotation = (Vector3){0.0f, 0.0f, -45.0f};
 
     for (int i = 0; i < SCENERY_COUNT; i++) {
 
