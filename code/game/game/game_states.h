@@ -26,7 +26,6 @@ void gameState_setMainMenu()
     // code for the game over state
 }
 
-static int contact = 0;
 void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* box_collider)
 {
 	
@@ -48,8 +47,7 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorColl
 
     if (actor->body.position.z != 0 
 		&& actor->state != FALLING 
-        && actor->state != JUMP
-		&& contact == 0) {
+        && actor->state != JUMP) {
 
         actor->grounding_height = 0.0f;
         actor->state = FALLING;
@@ -58,10 +56,8 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorColl
 	if (actorCollision_contactBox(actor_collider, box_collider)) {
         actorCollision_contactBoxSetData(actor_contact, actor_collider, box_collider);
         actorCollision_setResponse(&actor[0], actor_contact, actor_collider);
-		contact = 1;
-    } else {
-		contact = 0;
-	}
+
+    }
 
 	actor_setState(actor, actor->state);
     
@@ -97,12 +93,10 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorColl
 	ui_printf(
 		"cState %d\n"
 		"pState %d\n"
-		"Grounded %d\n"
-		"Contact %d",
+		"Grounded %d",
 		actor->state,
 		actor->previous_state,
-		actor->grounded,
-		contact
+		actor->grounded
 	);
 
 	game->syncPoint = rspq_syncpoint_new();
