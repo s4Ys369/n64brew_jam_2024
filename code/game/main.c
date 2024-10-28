@@ -55,8 +55,8 @@ Game minigame;
 Actor actor[ACTOR_COUNT];
 ActorCollider actor_collider = {
         settings: {
-            body_radius: 25,
-            body_height: 100,
+            body_radius: 15.0f,
+            body_height: 100.0f,
         }
 };
 ActorContactData actor_contact;
@@ -64,8 +64,8 @@ ActorContactData actor_contact;
 Scenery scenery[SCENERY_COUNT];
 
 Box logo_collider = {
-        size: {100.0f, 100.0f, 100.0f,},
-        center: {200, 200, 50},
+        size: {100.0f, 100.0f, 70.0f,},
+        center: {200.0f, 200.0f, 50.0f},
         rotation: {0.0f, 0.0f, 45.0f},
 };
 
