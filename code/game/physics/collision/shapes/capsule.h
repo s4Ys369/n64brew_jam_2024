@@ -57,7 +57,7 @@ void capsule_contactSphereSetData(ContactData* contact, const Capsule* capsule, 
 
     // Calculate the squared distance from the closest point to the sphere center
     contact->normal = vector3_difference(&closest_on_axis, &sphere->center);
-    contact->penetration = capsule->radius + sphere->radius - fabs(vector3_magnitude(&contact->normal));
+    contact->penetration = capsule->radius + sphere->radius - fabsf(vector3_magnitude(&contact->normal));
     vector3_normalize(&contact->normal);
 
     // Calculate the contact point in reference to the sphere
@@ -80,7 +80,7 @@ void capsule_contactAABBSetData(ContactData* contact, const Capsule* capsule, co
     
     Vector3 closest_point_on_axis = segment_closestToPoint(&capsule->end, &capsule->start, &contact->point);
     Vector3 distance_vector = vector3_difference(&closest_point_on_axis, &contact->point);
-    contact->penetration = capsule->radius - fabs(vector3_magnitude(&distance_vector));
+    contact->penetration = capsule->radius - fabsf(vector3_magnitude(&distance_vector));
     contact->normal = distance_vector;
     vector3_normalize(&contact->normal);
 }
@@ -113,7 +113,7 @@ bool capsule_contactPlane(const Capsule* capsule, const Plane* plane)
     float distance_to_end = plane_distanceToPoint(plane, &capsule->end);
 
     // Check if either endpoint of the capsule is within the radius distance from the plane
-    if (fabs(distance_to_start) <= capsule->radius || fabs(distance_to_end) <= capsule->radius) {
+    if (fabsf(distance_to_start) <= capsule->radius || fabsf(distance_to_end) <= capsule->radius) {
         return true;
     }
 
@@ -135,15 +135,15 @@ void capsule_contactPlaneSetData(ContactData* contact, const Capsule* capsule, c
     contact->normal = plane->normal;
 
     // Determine the point of contact and penetration depth
-    if (fabs(distance_to_start) <= capsule->radius) {
+    if (fabsf(distance_to_start) <= capsule->radius) {
         // The start point of the capsule is within the radius distance from the plane
-        contact->penetration = capsule->radius - fabs(distance_to_start);
+        contact->penetration = capsule->radius - fabsf(distance_to_start);
         contact->point = capsule->start;
         vector3_addScaledVector(&contact->point, &contact->normal, -distance_to_start);
     } 
-    else if (fabs(distance_to_end) <= capsule->radius) {
+    else if (fabsf(distance_to_end) <= capsule->radius) {
         // The end point of the capsule is within the radius distance from the plane
-        contact->penetration = capsule->radius - fabs(distance_to_end);
+        contact->penetration = capsule->radius - fabsf(distance_to_end);
         contact->point = capsule->end;
         vector3_addScaledVector(&contact->point, &contact->normal, -distance_to_end);
     }

@@ -317,16 +317,16 @@ inline float segment_distanceToPoint(const Vector3 *a, const Vector3 *b, const V
 Matrix3x3 rotationMatrix_getFromEuler(const Vector3 *rotation)
 {
     float rad_x = rad(rotation->x);
-    float cos_rad_x = cosf(rad_x);
-    float sin_rad_x = sinf(rad_x);
+    float cos_rad_x = fm_cosf(rad_x);
+    float sin_rad_x = fm_sinf(rad_x);
 
     float rad_y = rad(rotation->y);
-    float cos_rad_y = cosf(rad_y);
-    float sin_rad_y = sinf(rad_y);
+    float cos_rad_y = fm_cosf(rad_y);
+    float sin_rad_y = fm_sinf(rad_y);
 
     float rad_z = rad(rotation->z);
-    float cos_rad_z = cosf(rad_z);
-    float sin_rad_z = sinf(rad_z);
+    float cos_rad_z = fm_cosf(rad_z);
+    float sin_rad_z = fm_sinf(rad_z);
 
     Matrix3x3 R_x = {
         .row = {
@@ -363,16 +363,16 @@ Matrix3x3 rotationMatrix_getFromEuler(const Vector3 *rotation)
 void point_rotateZYX(Vector3 *point, const Vector3 *rotation)
 {
     float rad_x = rad(rotation->x);
-    float cos_rad_x = cosf(rad_x);
-    float sin_rad_x = sinf(rad_x);
+    float cos_rad_x = fm_cosf(rad_x);
+    float sin_rad_x = fm_sinf(rad_x);
 
     float rad_y = rad(rotation->y);
-    float cos_rad_y = cosf(rad_y);
-    float sin_rad_y = sinf(rad_y);
+    float cos_rad_y = fm_cosf(rad_y);
+    float sin_rad_y = fm_sinf(rad_y);
 
     float rad_z = rad(rotation->z);
-    float cos_rad_z = cosf(rad_z);
-    float sin_rad_z = sinf(rad_z);
+    float cos_rad_z = fm_cosf(rad_z);
+    float sin_rad_z = fm_sinf(rad_z);
 
     // Rotate around Z axis
     float xZ = point->x * cos_rad_z - point->y * sin_rad_z;
@@ -391,16 +391,16 @@ void point_rotateZYX(Vector3 *point, const Vector3 *rotation)
 void point_rotateXYZ(Vector3 *point, const Vector3 *rotation)
 {
     float rad_x = rad(rotation->x);
-    float cos_rad_x = cosf(rad_x);
-    float sin_rad_x = sinf(rad_x);
+    float cos_rad_x = fm_cosf(rad_x);
+    float sin_rad_x = fm_sinf(rad_x);
 
     float rad_y = rad(rotation->y);
-    float cos_rad_y = cosf(rad_y);
-    float sin_rad_y = sinf(rad_y);
+    float cos_rad_y = fm_cosf(rad_y);
+    float sin_rad_y = fm_sinf(rad_y);
 
     float rad_z = rad(rotation->z);
-    float cos_rad_z = cosf(rad_z);
-    float sin_rad_z = sinf(rad_z);
+    float cos_rad_z = fm_cosf(rad_z);
+    float sin_rad_z = fm_sinf(rad_z);
 
     // Rotate around X axis (inverse order)
     float yX = point->y * cos_rad_x + point->z * sin_rad_x;

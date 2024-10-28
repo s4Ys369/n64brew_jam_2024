@@ -133,7 +133,7 @@ void camera_getOrbitalPosition(Camera *camera, Vector3 barycenter, float frame_t
 	camera->zoom_speed += camera->zoom_acceleration * frame_time;
 	camera->offset_speed += camera->offset_acceleration * frame_time;
 
-	if (fabs(camera->orbitational_velocity.x) < 1 && fabs(camera->orbitational_velocity.y) < 1 && fabs(camera->zoom_speed) < 1 && fabs(camera->offset_speed) < 1){
+	if (fabsf(camera->orbitational_velocity.x) < 1.0f && fabsf(camera->orbitational_velocity.y) < 1.0f && fabsf(camera->zoom_speed) < 1.0f && fabsf(camera->offset_speed) < 1.0f){
 		camera->orbitational_velocity.x = 0;
 		camera->orbitational_velocity.y = 0;
 		camera->zoom_speed = 0;
@@ -152,14 +152,14 @@ void camera_getOrbitalPosition(Camera *camera, Vector3 barycenter, float frame_t
     if (camera->pitch > camera->settings.max_pitch) camera->pitch = camera->settings.max_pitch;
     if (camera->pitch < -camera->settings.max_pitch + 30) camera->pitch = -camera->settings.max_pitch + 30; // this hard coded + 20 is for the near plane to not enter the actor geometry during "camera collision"
 
-    camera->horizontal_barycenter_distance = camera->distance_from_barycenter * cosf(rad(camera->pitch));
-	camera->vertical_barycenter_distance = camera->distance_from_barycenter * sinf(rad(camera->pitch));
+    camera->horizontal_barycenter_distance = camera->distance_from_barycenter * fm_cosf(rad(camera->pitch));
+	camera->vertical_barycenter_distance = camera->distance_from_barycenter * fm_sinf(rad(camera->pitch));
 
-	camera-> horizontal_target_distance = camera->target_distance * cosf(rad(camera->pitch));
-	camera->vertical_target_distance = camera->target_distance * sinf(rad(camera->pitch + 180));
+	camera-> horizontal_target_distance = camera->target_distance * fm_cosf(rad(camera->pitch));
+	camera->vertical_target_distance = camera->target_distance * fm_sinf(rad(camera->pitch + 180));
 
-    camera->position.x = barycenter.x - (camera->horizontal_barycenter_distance * sinf(rad(camera->angle_around_barycenter - camera->offset_angle)));
-    camera->position.y = barycenter.y - (camera->horizontal_barycenter_distance * cosf(rad(camera->angle_around_barycenter - camera->offset_angle)));
+    camera->position.x = barycenter.x - (camera->horizontal_barycenter_distance * fm_sinf(rad(camera->angle_around_barycenter - camera->offset_angle)));
+    camera->position.y = barycenter.y - (camera->horizontal_barycenter_distance * fm_cosf(rad(camera->angle_around_barycenter - camera->offset_angle)));
     camera->position.z = barycenter.z + camera->offset_height + camera->vertical_barycenter_distance;
 	
 	/* this is a temporary brute force abomination to "collide" the camera with an horizontal plane at height 20 simulating the floor,
@@ -169,16 +169,16 @@ void camera_getOrbitalPosition(Camera *camera, Vector3 barycenter, float frame_t
 	camera->distance_from_barycenter = camera->settings.distance_from_baricenter;
 	while (camera->position.z < 30)  {
 		camera->distance_from_barycenter--; 
-		camera->horizontal_barycenter_distance = camera->distance_from_barycenter * cosf(rad(camera->pitch));
-		camera->vertical_barycenter_distance = camera->distance_from_barycenter * sinf(rad(camera->pitch));
+		camera->horizontal_barycenter_distance = camera->distance_from_barycenter * fm_cosf(rad(camera->pitch));
+		camera->vertical_barycenter_distance = camera->distance_from_barycenter * fm_sinf(rad(camera->pitch));
 
-		camera->position.x = barycenter.x - camera->horizontal_barycenter_distance * sinf(rad(camera->angle_around_barycenter - camera->offset_angle));
-		camera->position.y = barycenter.y - camera->horizontal_barycenter_distance * cosf(rad(camera->angle_around_barycenter - camera->offset_angle));
+		camera->position.x = barycenter.x - camera->horizontal_barycenter_distance * fm_sinf(rad(camera->angle_around_barycenter - camera->offset_angle));
+		camera->position.y = barycenter.y - camera->horizontal_barycenter_distance * fm_cosf(rad(camera->angle_around_barycenter - camera->offset_angle));
 		camera->position.z = barycenter.z + camera->offset_height + camera->vertical_barycenter_distance;
 	}
 
-	camera->target.x = barycenter.x - camera-> horizontal_target_distance * sinf(rad(camera->angle_around_barycenter + 180));
-	camera->target.y = barycenter.y - camera-> horizontal_target_distance * cosf(rad(camera->angle_around_barycenter + 180));
+	camera->target.x = barycenter.x - camera-> horizontal_target_distance * fm_sinf(rad(camera->angle_around_barycenter + 180));
+	camera->target.y = barycenter.y - camera-> horizontal_target_distance * fm_cosf(rad(camera->angle_around_barycenter + 180));
 	camera->target.z = barycenter.z + camera->offset_height + camera->vertical_target_distance;
 }
 
@@ -187,7 +187,7 @@ void camera_getMinigamePosition(Camera *camera, Vector3 barycenter, float frame_
 	camera->orbitational_velocity.x += camera->orbitational_acceleration.x * frame_time;
     camera->orbitational_velocity.y += camera->orbitational_acceleration.y * frame_time;
 
-	if (fabs(camera->orbitational_velocity.x) < 1 && fabs(camera->orbitational_velocity.y) < 1 && fabs(camera->zoom_speed) < 1 && fabs(camera->offset_speed) < 1){
+	if (fabsf(camera->orbitational_velocity.x) < 1.0f && fabsf(camera->orbitational_velocity.y) < 1.0f && fabsf(camera->zoom_speed) < 1.0f && fabsf(camera->offset_speed) < 1.0f){
 		camera->orbitational_velocity.x = 0;
 		camera->orbitational_velocity.y = 0;
 	}
@@ -201,11 +201,11 @@ void camera_getMinigamePosition(Camera *camera, Vector3 barycenter, float frame_
     if (camera->pitch > camera->settings.max_pitch) camera->pitch = camera->settings.max_pitch;
     if (camera->pitch < -camera->settings.max_pitch + 30) camera->pitch = -camera->settings.max_pitch + 30; // this hard coded + 20 is for the near plane to not enter the actor geometry during "camera collision"
 
-    camera->horizontal_barycenter_distance = camera->distance_from_barycenter * cosf(rad(camera->pitch));
-	camera->vertical_barycenter_distance = camera->distance_from_barycenter * sinf(rad(camera->pitch));
+    camera->horizontal_barycenter_distance = camera->distance_from_barycenter * fm_cosf(rad(camera->pitch));
+	camera->vertical_barycenter_distance = camera->distance_from_barycenter * fm_sinf(rad(camera->pitch));
 
-    camera->position.x = barycenter.x - (camera->horizontal_barycenter_distance * sinf(rad(camera->angle_around_barycenter - camera->offset_angle)));
-    camera->position.y = barycenter.y - (camera->horizontal_barycenter_distance * cosf(rad(camera->angle_around_barycenter - camera->offset_angle)));
+    camera->position.x = barycenter.x - (camera->horizontal_barycenter_distance * fm_sinf(rad(camera->angle_around_barycenter - camera->offset_angle)));
+    camera->position.y = barycenter.y - (camera->horizontal_barycenter_distance * fm_cosf(rad(camera->angle_around_barycenter - camera->offset_angle)));
     camera->position.z = barycenter.z + camera->offset_height + camera->vertical_barycenter_distance;
 	
 	/* this is a temporary brute force abomination to "collide" the camera with an horizontal plane at height 20 simulating the floor,
@@ -215,11 +215,11 @@ void camera_getMinigamePosition(Camera *camera, Vector3 barycenter, float frame_
 	camera->distance_from_barycenter = camera->settings.distance_from_baricenter;
 	while (camera->position.z < 30)  {
 		camera->distance_from_barycenter--; 
-		camera->horizontal_barycenter_distance = camera->distance_from_barycenter * cosf(rad(camera->pitch));
-		camera->vertical_barycenter_distance = camera->distance_from_barycenter * sinf(rad(camera->pitch));
+		camera->horizontal_barycenter_distance = camera->distance_from_barycenter * fm_cosf(rad(camera->pitch));
+		camera->vertical_barycenter_distance = camera->distance_from_barycenter * fm_sinf(rad(camera->pitch));
 
-		camera->position.x = barycenter.x - camera->horizontal_barycenter_distance * sinf(rad(camera->angle_around_barycenter - camera->offset_angle));
-		camera->position.y = barycenter.y - camera->horizontal_barycenter_distance * cosf(rad(camera->angle_around_barycenter - camera->offset_angle));
+		camera->position.x = barycenter.x - camera->horizontal_barycenter_distance * fm_sinf(rad(camera->angle_around_barycenter - camera->offset_angle));
+		camera->position.y = barycenter.y - camera->horizontal_barycenter_distance * fm_cosf(rad(camera->angle_around_barycenter - camera->offset_angle));
 		camera->position.z = barycenter.z + camera->offset_height + camera->vertical_barycenter_distance;
 	}
 

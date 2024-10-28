@@ -34,7 +34,7 @@ void actorCollision_solvePenetration(Actor* actor, ActorContactData* contact, Ac
     float numerator = contact->displacement + collider->body.radius - vector3_returnDotProduct(&contact->data.point, &contact->data.normal);
 
     float t;
-    if (fabs(denominator) > 0.0001f) t = numerator / denominator;
+    if (fabsf(denominator) > 0.0001f) t = numerator / denominator;
     else return;
 
     Vector3 axis_closest_at_contact = contact->data.point;
