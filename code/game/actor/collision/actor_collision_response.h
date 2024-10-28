@@ -64,7 +64,7 @@ void actorCollision_setGroundResponse(Actor* actor)
     actor->body.acceleration.z = 0;
     actor->body.velocity.z = 0;
     actor->grounding_height = actor->body.position.z;
-    actor_setState(actor, actor->previous_state);
+    actor->state = actor->previous_state;
 }
 
 void actorCollision_setCeilingResponse(Actor* actor, ActorContactData* contact)
@@ -78,7 +78,7 @@ void actorCollision_setCeilingResponse(Actor* actor, ActorContactData* contact)
         actor->body.velocity.x = 0.0f;
         actor->body.velocity.y = 0.0f;
     }
-    actor_setState(actor, FALLING);
+    actor->state = FALLING;
 }
 
 void actorCollision_setResponse(Actor* actor, ActorContactData* contact, ActorCollider* collider)
