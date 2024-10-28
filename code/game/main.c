@@ -9,7 +9,7 @@
 #include <stdbool.h>
 
 #define ACTOR_COUNT 1
-#define SCENERY_COUNT 2
+#define SCENERY_COUNT 4
 
 #include "../../core.h"
 #include "../../minigame.h"
@@ -63,11 +63,15 @@ ActorContactData actor_contact;
 
 Scenery scenery[SCENERY_COUNT];
 
-Box logo_collider = {
-        size: {150.0f, 150.0f, 150.0f,},
-        center: {200.0f, 200.0f, 75.0f},
-        rotation: {0.0f, 0.0f, -45.0f},
-};
+Box box_colliders[SCENERY_COUNT - 1]; // Objects minus room
+
+Vector3 boxSize = {150.f,150.0f,150.0f};
+
+void init_box(Box *box, Vector3 size, Vector3 center, Vector3 rotation) {
+        box->size = size;
+        box->center = center;
+        box->rotation = rotation;
+}
 
 void minigame_init()
 {      
@@ -85,10 +89,28 @@ void minigame_init()
     
      // scenery
     scenery[0] = scenery_create(0, "rom:/game/testLevel.t3dm");
+
+    // Ceiling Test
     scenery[1] = scenery_create(1, "rom:/game/cube.t3dm");
-    scenery[1].position = (Vector3){200, 200, 75};
+    scenery[1].position = (Vector3){200.0f, 200.0f, 300.0f};
     scenery[1].scale = (Vector3){1.5f, 1.5f, 1.5f};
     scenery[1].rotation = (Vector3){0.0f, 0.0f, -45.0f};
+
+    // Box Test
+    scenery[2] = scenery_create(2, "rom:/game/cube.t3dm");
+    scenery[2].position = (Vector3){-200.0f, 200.0f, 75.0f};
+    scenery[2].scale = (Vector3){1.5f, 1.5f, 1.5f};
+    scenery[2].rotation = (Vector3){0.0f, 0.0f, -45.0f};
+
+    // Slope Test
+    scenery[3] = scenery_create(3, "rom:/game/cube.t3dm");
+    scenery[3].position = (Vector3){-200.0f, -200.0f, 75.0f};
+    scenery[3].scale = (Vector3){1.5f, 1.5f, 1.5f};
+    scenery[3].rotation = (Vector3){0.0f, 45.0f, -45.0f};
+
+    init_box(&box_colliders[0], boxSize, (Vector3){200.0f, 200.0f, 300.0f}, (Vector3){0.0f, 0.0f, -45.0f});
+    init_box(&box_colliders[1], boxSize, (Vector3){-200.0f, 200.0f, 75.0f}, (Vector3){0.0f, 0.0f, -45.0f});
+    init_box(&box_colliders[2], boxSize, (Vector3){-200.0f, -200.0f, 75.0f}, (Vector3){0.0f, 45.0f, -45.0f});
 
     for (int i = 0; i < SCENERY_COUNT; i++) {
 
@@ -99,7 +121,7 @@ void minigame_init()
 
 void minigame_loop()
 {	
-	game_play(&minigame, actor, scenery, &actor_collider, &actor_contact, &logo_collider);
+	game_play(&minigame, actor, scenery, &actor_collider, &actor_contact, box_colliders);
 }
 void minigame_cleanup()
 {

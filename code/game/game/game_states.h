@@ -7,12 +7,12 @@
 void gameState_setIntro();
 void gameState_setMainMenu();
 
-void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* box_collider);
-void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* box_collider);
+void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[]);
+void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[]);
 
 void gameState_setGameOver();
 
-void game_play(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* box_collider);
+void game_play(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[]);
 
 
 // function implementations
@@ -26,7 +26,7 @@ void gameState_setMainMenu()
     // code for the game over state
 }
 
-void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* box_collider)
+void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[])
 {
 	
 	// ======== Update ======== //
@@ -50,15 +50,15 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorColl
         && actor->state != JUMP) {
 
         actor->grounding_height = 0.0f;
-        if(!(actor->grounded))actor->state = FALLING;
+        actor->state = FALLING;
     }
 
-	if (actorCollision_contactBox(actor_collider, box_collider)) {
-        actorCollision_contactBoxSetData(actor_contact, actor_collider, box_collider);
-        actorCollision_setResponse(&actor[0], actor_contact, actor_collider);
-    } else {
-		if(actor->body.position.z > actor->grounding_height)
-		actor->grounded = false;
+	for(int i = 0; i < SCENERY_COUNT -1; ++i) // Objects minus room
+	{
+		if (actorCollision_contactBox(actor_collider, &box_collider[i])) {
+    	    actorCollision_contactBoxSetData(actor_contact, actor_collider, &box_collider[i]);
+    	    actorCollision_setResponse(&actor[0], actor_contact, actor_collider);
+    	}
 	}
 
 	actor_setState(actor, actor->state);
@@ -107,7 +107,7 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorColl
 }
 
 
-void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* box_collider)
+void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[])
 {
 	// ======== Update ======== //
 
@@ -145,7 +145,7 @@ void gameState_setGameOver()
     // code for the game over state
 }
 
-void game_play(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* box_collider)
+void game_play(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[])
 {
 	for(;;)
 	{
