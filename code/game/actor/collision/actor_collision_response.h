@@ -79,7 +79,12 @@ void actorCollision_setCeilingResponse(Actor* actor, ActorContactData* contact)
         actor->body.velocity.y = 0.0f;
     }
 
-    if(!(actor->grounded)) actor->state = FALLING;
+    // Possible fix for Sloped Ceilings forcing Player downwards
+    if(!(actor->grounded))
+    {
+        actor->state = FALLING;
+        actor->hasCollided = false;
+    }
 }
 
 void actorCollision_setResponse(Actor* actor, ActorContactData* contact, ActorCollider* collider)

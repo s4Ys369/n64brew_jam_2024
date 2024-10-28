@@ -97,6 +97,8 @@ typedef struct {
 	bool grounded;
 	float grounding_height;
 
+	bool hasCollided; // Testing a collision boolean
+
 	uint8_t locomotion_state;
 	uint8_t previous_state;
 	uint8_t state;

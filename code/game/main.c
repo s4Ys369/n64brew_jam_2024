@@ -55,8 +55,8 @@ Game minigame;
 Actor actor[ACTOR_COUNT];
 ActorCollider actor_collider = {
         settings: {
-            body_radius: 15.0f,
-            body_height: 100.0f,
+            body_radius: 30.0f, // Testing large Player capsule
+            body_height: 110.0f,
         }
 };
 ActorContactData actor_contact;
@@ -65,7 +65,9 @@ Scenery scenery[SCENERY_COUNT];
 
 Box box_colliders[SCENERY_COUNT - 1]; // Objects minus room
 
-Vector3 boxSize = {150.f,150.0f,150.0f};
+// Testing making the boxes' collisions larger than the model's 
+Vector3 boxSize =  {160.0f, 160.0f, 150.0f};
+Vector3 rampSize = {410.0f, 150.0f, 150.0f};
 
 void init_box(Box *box, Vector3 size, Vector3 center, Vector3 rotation) {
         box->size = size;
@@ -92,25 +94,25 @@ void minigame_init()
 
     // Ceiling Test
     scenery[1] = scenery_create(1, "rom:/game/cube.t3dm");
-    scenery[1].position = (Vector3){200.0f, 200.0f, 300.0f};
+    scenery[1].position = (Vector3){200.0f, 200.0f, 150.0f};
     scenery[1].scale = (Vector3){1.5f, 1.5f, 1.5f};
-    scenery[1].rotation = (Vector3){0.0f, 0.0f, -45.0f};
+    scenery[1].rotation = (Vector3){0.0f, 0.0f, 0.0f};
 
     // Box Test
     scenery[2] = scenery_create(2, "rom:/game/cube.t3dm");
-    scenery[2].position = (Vector3){-200.0f, 200.0f, 75.0f};
+    scenery[2].position = (Vector3){-170.0f, 200.0f, 60.0f};
     scenery[2].scale = (Vector3){1.5f, 1.5f, 1.5f};
-    scenery[2].rotation = (Vector3){0.0f, 0.0f, -45.0f};
+    scenery[2].rotation = (Vector3){0.0f, 0.0f, 0.0f};
 
     // Slope Test
     scenery[3] = scenery_create(3, "rom:/game/cube.t3dm");
-    scenery[3].position = (Vector3){-200.0f, -200.0f, 75.0f};
-    scenery[3].scale = (Vector3){1.5f, 1.5f, 1.5f};
-    scenery[3].rotation = (Vector3){0.0f, 45.0f, -45.0f};
+    scenery[3].position = (Vector3){-200.0f, -200.0f, 25.0f};
+    scenery[3].scale =    (Vector3){4.0f, 1.5f, 1.5f};
+    scenery[3].rotation = (Vector3){0.0f, -30.0f, 20.0f};
 
-    init_box(&box_colliders[0], boxSize, (Vector3){200.0f, 200.0f, 300.0f}, (Vector3){0.0f, 0.0f, -45.0f});
-    init_box(&box_colliders[1], boxSize, (Vector3){-200.0f, 200.0f, 75.0f}, (Vector3){0.0f, 0.0f, -45.0f});
-    init_box(&box_colliders[2], boxSize, (Vector3){-200.0f, -200.0f, 75.0f}, (Vector3){0.0f, 45.0f, -45.0f});
+    init_box(&box_colliders[0], boxSize, (Vector3){200.0f, 200.0f, 150.0f}, (Vector3){0.0f, 0.0f, 0.0f}); // Ceiling
+    init_box(&box_colliders[1], boxSize, (Vector3){-170.0f, 200.0f, 60.0f}, (Vector3){0.0f, 0.0f, 0.0f}); // Box
+    init_box(&box_colliders[2], rampSize, (Vector3){-200.0f, -200.0f, 25.0f}, (Vector3){0.0f, 30.0f, -20.0f}); // Slope
 
     for (int i = 0; i < SCENERY_COUNT; i++) {
 

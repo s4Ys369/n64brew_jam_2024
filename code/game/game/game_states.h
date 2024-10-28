@@ -45,12 +45,11 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorColl
     actorContactData_clear(actor_contact);
     actorCollider_setVertical(actor_collider, &actor->body.position);
 
-    if (actor->body.position.z != 0 
-		&& actor->state != FALLING 
+    if (actor->body.position.z != 0
         && actor->state != JUMP) {
 
         actor->grounding_height = 0.0f;
-        actor->state = FALLING;
+        if(!(actor->hasCollided)) actor->state = FALLING;
     }
 
 	for(int i = 0; i < SCENERY_COUNT -1; ++i) // Objects minus room
@@ -58,7 +57,10 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorColl
 		if (actorCollision_contactBox(actor_collider, &box_collider[i])) {
     	    actorCollision_contactBoxSetData(actor_contact, actor_collider, &box_collider[i]);
     	    actorCollision_setResponse(&actor[0], actor_contact, actor_collider);
-    	}
+			actor->hasCollided = true;
+    	} else {
+			actor->hasCollided = false;
+		}
 	}
 
 	actor_setState(actor, actor->state);
@@ -95,9 +97,15 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorColl
 	ui_printf(
 		"cState %d\n"
 		"pState %d\n"
+		"Contact %d\n"
+		"gHeight %.2f\n"
+		"Actor Z %.2f\n"
 		"Grounded %d",
 		actor->state,
 		actor->previous_state,
+		actor->hasCollided,
+		actor->grounding_height,
+		actor->body.position.z,
 		actor->grounded
 	);
 
