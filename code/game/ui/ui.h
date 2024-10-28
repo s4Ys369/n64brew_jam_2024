@@ -61,8 +61,10 @@ inline void ui_syncText(void)
 
 void ui_fps(void)
 {
+    heap_stats_t heap_stats;
+    sys_get_heap_stats(&heap_stats);
     ui_syncText();
-    rdpq_text_printf(&txt_debugParms, ID_DEBUG, fpsPos.v[0], fpsPos.v[1], "FPS %.2f", display_get_fps());
+    rdpq_text_printf(&txt_debugParms, ID_DEBUG, fpsPos.v[0], fpsPos.v[1], "FPS %.2f Mem: %d KiB", display_get_fps(), heap_stats.used/1024);
 }
 
 void ui_printf(const char *txt, ...)
