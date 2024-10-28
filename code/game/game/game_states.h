@@ -57,7 +57,7 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorColl
         actorCollision_contactBoxSetData(actor_contact, actor_collider, box_collider);
         actorCollision_setResponse(&actor[0], actor_contact, actor_collider);
     } else {
-		if(actor->body.position.z >= actor->grounding_height)
+		if(actor->body.position.z > actor->grounding_height)
 		actor->grounded = false;
 	}
 

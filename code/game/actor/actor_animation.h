@@ -113,6 +113,7 @@ void actor_init(Actor* actor)
 {
 	actor->animation = actorAnimation_create(actor);
 	actorAnimation_init(actor, &actor->animation);
+	actor->grounded = true; // Doesn't get set from first collision with floor
 }
 
 void actor_update(Actor* actor, ControllerData *control, float frame_time, float camera_angle_around, float camera_offset, rspq_syncpoint_t* syncpoint)
