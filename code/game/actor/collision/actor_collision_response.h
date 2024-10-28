@@ -78,7 +78,8 @@ void actorCollision_setCeilingResponse(Actor* actor, ActorContactData* contact)
         actor->body.velocity.x = 0.0f;
         actor->body.velocity.y = 0.0f;
     }
-    actor->state = FALLING;
+
+    if(!(actor->grounded)) actor->state = FALLING;
 }
 
 void actorCollision_setResponse(Actor* actor, ActorContactData* contact, ActorCollider* collider)

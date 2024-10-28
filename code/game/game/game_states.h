@@ -50,14 +50,16 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorColl
         && actor->state != JUMP) {
 
         actor->grounding_height = 0.0f;
-        actor->state = FALLING;
+        if(!(actor->grounded))actor->state = FALLING;
     }
 
 	if (actorCollision_contactBox(actor_collider, box_collider)) {
         actorCollision_contactBoxSetData(actor_contact, actor_collider, box_collider);
         actorCollision_setResponse(&actor[0], actor_contact, actor_collider);
-
-    }
+    } else {
+		if(actor->body.position.z >= actor->grounding_height)
+		actor->grounded = false;
+	}
 
 	actor_setState(actor, actor->state);
     
