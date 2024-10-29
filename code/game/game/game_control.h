@@ -6,7 +6,7 @@
 
 void game_setControlData(Game *game)
 {
-    if (game->control[0]->pressed.start) {
+    if (game->control[0]->released.start) {
 
         if (game->state == PAUSE) game->state = GAMEPLAY;
         else if (game->state == GAMEPLAY) game->state = PAUSE;

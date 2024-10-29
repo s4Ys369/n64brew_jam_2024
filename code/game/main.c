@@ -89,8 +89,14 @@ void minigame_init()
 
 }
 
+void minigame_fixedloop()
+{
+	for (int i = 0; i < core_get_playercount(); i++)
+		controllerData_getInputs(players[i].port, minigame.control[i]);
+}	
+
 void minigame_loop()
-{	
+{
 	game_play(&minigame, actors, scenery, players);
 }
 void minigame_cleanup()
