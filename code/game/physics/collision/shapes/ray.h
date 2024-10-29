@@ -128,7 +128,7 @@ void raycast_aabb(ContactData* contact, const Ray* ray, const AABB* aabb)
     float rayDirectionInverse = 0;
     
     // For x-axis
-    if (fabs(ray->direction.x) < epsilon) {
+    if (fabsf(ray->direction.x) < epsilon) {
         if (ray->origin.x < aabb->minCoordinates.x || ray->origin.x > aabb->maxCoordinates.x) return;
     } else {
         rayDirectionInverse = 1.0f / ray->direction.x;
@@ -145,7 +145,7 @@ void raycast_aabb(ContactData* contact, const Ray* ray, const AABB* aabb)
     }
 
     // For y-axis
-    if (fabs(ray->direction.y) < epsilon) {
+    if (fabsf(ray->direction.y) < epsilon) {
         if (ray->origin.y < aabb->minCoordinates.y || ray->origin.y > aabb->maxCoordinates.y) return;
     } else {
         rayDirectionInverse = 1.0f / ray->direction.y;
@@ -162,7 +162,7 @@ void raycast_aabb(ContactData* contact, const Ray* ray, const AABB* aabb)
     }
 
     // For z-axis
-    if (fabs(ray->direction.z) < epsilon) {
+    if (fabsf(ray->direction.z) < epsilon) {
         if (ray->origin.z < aabb->minCoordinates.z || ray->origin.z > aabb->maxCoordinates.z) return;
     } else {
         rayDirectionInverse = 1.0f / ray->direction.z;
@@ -242,7 +242,7 @@ bool ray_intersectionPlane(const Ray* ray, const Plane* plane)
     float denominator = vector3_returnDotProduct(&ray->direction, &plane->normal);
     
     // If the denominator is zero, the ray is parallel to the plane
-    if (fabs(denominator) < 1e-6) return false;
+    if (fabsf(denominator) < 1e-6) return false;
     
     // If t is negative, the ray intersects the plane in the opposite direction
     float t = (plane->displacement - vector3_returnDotProduct(&ray->origin, &plane->normal)) / denominator;

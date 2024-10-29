@@ -3,6 +3,7 @@
 
 // collision types
 
+/*
 #define SPHERE 1
 #define AABB 2
 #define BOX 3
@@ -11,6 +12,7 @@
 #define CAPSULE 6
 #define TERRAIN 7
 #define MESH 8
+*/
 
 // structures
 
