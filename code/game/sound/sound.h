@@ -54,6 +54,12 @@ void sound_xm_update(bool isLooping, float volume)
 	xm64player_set_vol(&xmPlayer, volume);
 }
 
+void sound_wav_close(void);
+
+void sound_wav_close(void)
+{
+	wav64_close(&sfx_boing);
+}
 
 void sound_wav_bounce(void);
 
@@ -72,6 +78,14 @@ void sound_update_buffer(void)
 		audio_write_end();
 	}*/
 	mixer_try_play();
+}
+
+void sound_cleanup(void);
+
+void sound_cleanup(void)
+{
+	sound_wav_close();
+	sound_xm_stop();
 }
 
 #endif // SOUND_H

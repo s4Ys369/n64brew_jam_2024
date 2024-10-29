@@ -165,8 +165,6 @@ void gameState_setGameOver()
 
 void game_play(Game* game, Actor* actor, Scenery* scenery, PlayerData* players, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[])
 {
-	for(;;)
-	{
 		game_setControlData(game);
 		switch(game->state)
 		{
@@ -191,8 +189,7 @@ void game_play(Game* game, Actor* actor, Scenery* scenery, PlayerData* players, 
 				break;
 			}
 		}
-		
-	}
+
 }
 
 #endif

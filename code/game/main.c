@@ -137,8 +137,14 @@ void minigame_init()
 
 }
 
+static uint32_t timer = 0;
+void minigame_fixedloop()
+{
+    timer++;
+    if(timer >= 120) minigame_end();
+}
 void minigame_loop()
-{	
+{
 	game_play(&minigame, actors, scenery, players, &actor_collider, &actor_contact, box_colliders);
 }
 void minigame_cleanup()
@@ -153,8 +159,13 @@ void minigame_cleanup()
 		actor_delete(&actors[i]);
 	};
 
-	t3d_destroy();
-	sound_xm_stop();
+    for (size_t p = 0; p < MAXPLAYERS; ++p)
+	{
+		free(minigame.control[p]);
+	}
+
+	sound_cleanup();
 	ui_cleanup();
+    t3d_destroy();
 	display_close();
 }

@@ -192,6 +192,7 @@ void actor_delete(Actor *actor)
 	t3d_skeleton_destroy(&actor->armature.main);
 	t3d_skeleton_destroy(&actor->armature.blend);
 	t3d_model_free(actor->model);
+	rspq_block_free(actor->dl);
 }
 
 
