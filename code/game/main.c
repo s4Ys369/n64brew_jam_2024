@@ -167,5 +167,6 @@ void minigame_cleanup()
 	sound_cleanup();
 	ui_cleanup();
     t3d_destroy();
+    surface_free(&minigame.screen.depthBuffer);
 	display_close();
 }

@@ -191,6 +191,16 @@ void actor_delete(Actor *actor)
 	free_uncached(actor->modelMat);
 	t3d_skeleton_destroy(&actor->armature.main);
 	t3d_skeleton_destroy(&actor->armature.blend);
+	t3d_anim_destroy(&actor->animation.main.breathing_idle);
+	t3d_anim_destroy(&actor->animation.main.falling_left);
+	t3d_anim_destroy(&actor->animation.main.jump_left);
+	t3d_anim_destroy(&actor->animation.main.land_left);
+	t3d_anim_destroy(&actor->animation.main.running_left);
+	t3d_anim_destroy(&actor->animation.blend.breathing_idle);
+	t3d_anim_destroy(&actor->animation.blend.falling_left);
+	t3d_anim_destroy(&actor->animation.blend.jump_left);
+	t3d_anim_destroy(&actor->animation.blend.land_left);
+	t3d_anim_destroy(&actor->animation.blend.running_left);
 	t3d_model_free(actor->model);
 	rspq_block_free(actor->dl);
 }
