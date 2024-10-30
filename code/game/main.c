@@ -149,6 +149,7 @@ void minigame_loop()
 }
 void minigame_cleanup()
 {
+    rspq_wait();
 	for (int i = 0; i < SCENERY_COUNT; i++) {
 
 		scenery_delete(&scenery[i]);
@@ -166,7 +167,9 @@ void minigame_cleanup()
 
 	sound_cleanup();
 	ui_cleanup();
-    t3d_destroy();
     surface_free(&minigame.screen.depthBuffer);
+
+    rspq_wait();
+    t3d_destroy();
 	display_close();
 }
