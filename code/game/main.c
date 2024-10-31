@@ -116,7 +116,9 @@ void minigame_init()
             scenery[shapes + 1].scale = scale;
             scenery[shapes + 1].rotation = rot;
 
-            init_box(&box_colliders[shapes], pos, scale, vector3_returnScaled(&tempRot, 100.0f), 1.0f);
+            Vector3 colRot = vector3_getInverse(&rot);
+
+            init_box(&box_colliders[shapes], vector3_returnScaled(&scale, 100.0f), pos, colRot, 1.0f);
         }
         parsePrint(&shapeData);
     }

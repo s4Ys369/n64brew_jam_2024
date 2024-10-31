@@ -327,7 +327,7 @@ inline Vector3 vector3_flip_coords(Vector3 vec) {
 inline Vector3 vector3_flip_up(Vector3 vec) {
     Vector3 result;
     result.x = vec.x;
-    result.y = -vec.z;
+    result.y = vec.z;
     result.z = vec.y;
     return result;
 }
