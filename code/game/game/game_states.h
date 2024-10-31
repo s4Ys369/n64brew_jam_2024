@@ -144,6 +144,10 @@ void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, ActorCollide
 
 	game->syncPoint = rspq_syncpoint_new();
 
+
+	ShapeFileData data_s = {0};
+	parseCheck(&data_s);
+
 	rdpq_detach_show();
 }
 

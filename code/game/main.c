@@ -14,6 +14,8 @@
 #include "../../core.h"
 #include "../../minigame.h"
 
+#include "txt/shapeParser.h"
+
 #include "screen/screen.h"
 #include "control/controls.h"
 #include "time/time.h"
@@ -119,7 +121,10 @@ void minigame_init()
         scenery_set(&scenery[i]);
     }
 
+
 }
+
+void minigame_fixedloop(){}
 
 void minigame_loop()
 {	
