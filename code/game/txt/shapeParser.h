@@ -25,9 +25,9 @@ typedef struct
 typedef struct
 {
     ShapeInfo* shapes;
-    int numShapes;
+    size_t numShapes;
     TagInfo* tags;
-    int numTags;
+    size_t numTags;
 } ShapeFileData;
 
 
@@ -57,6 +57,7 @@ void parseTagInfo(const char* line, TagInfo* info)
 
 // Fill the struct one filed at a time?
 void parseShape(const char* line, ShapeFileData *shapeFileData, int index) {
+    // @TODO: Y and Z are reversed, bullet and t3d uses Y Up, code base using Z Up, not sure if left or right handed.
     sscanf(line, "shape: %*s name: %s pos: %f %f %f dim: %f %f %f rot: %f %f %f %f",
         shapeFileData->shapes[index].info.name,
         &shapeFileData->shapes[index].info.pos[0],
@@ -160,7 +161,7 @@ void parsePrint(ShapeFileData *shapeFileData)
 
 void parseCheck(ShapeFileData* data)
 {
-    if(parseFile("rom:/game/levels/levelA.txt", data))
+    if(parseFile("rom:/game/levels/testLevel.txt", data))
         parsePrint(data);
 }
 
