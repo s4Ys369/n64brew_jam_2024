@@ -122,6 +122,7 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
 		scenery_set(&room);
 		scenery_set(&n64logo);
 		n64logo.position = (Vector3){200, 200, 0};
+		sound_spatial(&n64logo.position, &player.body.position, &camera);
 
 		// ======== Draw ======== //
 		

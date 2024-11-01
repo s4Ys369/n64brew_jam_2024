@@ -102,4 +102,60 @@ void sound_update(void)
 	mixer_try_play();
 }
 
+////// Spatial 3D sound experiment
+
+Vector3 calculate_camera_forward(const Camera* camera) {
+    Vector3 direction = {
+        camera->target.x - camera->position.x,
+        camera->target.y - camera->position.y,
+        camera->target.z - camera->position.z
+    };
+	vector3_normalize(&direction);
+    return direction;
+}
+
+void sound_spatial( const Vector3 *spawner, 
+					const Vector3 *player, 
+					const Camera *camera) 
+{
+	float pan_sensitivity = 0.5f;
+
+    // Calculate distance vector for volume attenuation
+    Vector3 diff = vector3_difference(spawner, player);
+    float distance = vector3_magnitude(&diff);
+
+    // Volume attenuation (inverse-square or linear falloff)
+    float max_distance = 1000.0f; // Maximum distance for audible sound
+    float volume = 1.0f - (distance / max_distance);
+    if (volume < 0.1f) volume = 0.1f; // Clamp volume to minimum
+    
+    // Calculate the horizontal angle (azimuth) for panning
+    Vector3 horizontal_diff = {diff.x, diff.y, 0.0f};
+    float horizontal_distance = vector3_magnitude(&horizontal_diff);
+
+	Vector3 player_forward = calculate_camera_forward(camera);
+    float cos_angle = vector3_returnDotProduct(&horizontal_diff, &player_forward) / horizontal_distance;
+    float angle = acosf(cos_angle); // Angle in radians
+
+	// Adjust angle based on pan sensitivity
+    angle *= pan_sensitivity;
+
+    // Determine if sound is to the left or right
+    float pan = (angle / M_PI); // Normalize angle to [0, 1]
+    if (diff.x * player_forward.y - diff.y * player_forward.x > 0) {
+        pan = 1.0f - pan; // Flip pan if on the right side
+    }
+    
+    // Apply a vertical attenuation if sound changes by height
+    float vertical_attenuation = fminf(1.0f, fmaxf(0.1f, 1.0f - fabsf(diff.z) / max_distance));
+
+    // Final volume adjustment with vertical attenuation
+    volume *= vertical_attenuation;
+
+    // Set the channel volume and panning
+    mixer_ch_set_vol_pan(SFX_CHANNEL, volume, pan);
+}
+
+////// Spatial 3D sound experiment
+
 #endif // SOUND_H
