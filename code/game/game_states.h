@@ -106,8 +106,7 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
 		controllerData_getInputs(control);
 
 		// Best to play audio as soon as possible
-		//if(control->pressed.a) 
-		sound_wavPlay(0,true);
+		if(control->pressed.a) sound_wavPlay(0,false);
 
 		actor_setControlData(&player, control, timing->frame_time_s, camera.angle_around_barycenter, camera.offset_angle);
 		actor_setState(&player, player.state);
@@ -118,12 +117,15 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
 		camera_getOrbitalPosition(&camera, player.body.position, timing->frame_time_s);
 		camera_set(&camera, screen);
 
+		
 		sound_update();
 
 		scenery_set(&room);
 		scenery_set(&n64logo);
 		n64logo.position = (Vector3){200, 200, 0};
-		sound_spatial(&n64logo.position, &player.body.position, &camera);
+		sound_reverb();
+		//sound_spatial(&n64logo.position, &player.body.position, &camera);
+		
 
 		// ======== Draw ======== //
 		

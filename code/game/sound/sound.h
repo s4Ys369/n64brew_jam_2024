@@ -133,7 +133,7 @@ void sound_spatial( const Vector3 *spawner,
         // Volume attenuation (inverse-square or linear falloff)
         float max_distance = 8000.0f; // Maximum distance for audible sound
         volume = 1.0f - (distance / max_distance);
-        if (volume < 0.1f) volume = 0.1f; // Clamp volume to minimum
+        volume = fmaxf(0.1f, volume); // Clamp volume to minimum
 
         // Calculate the horizontal angle (azimuth) for panning
         Vector3 horizontal_diff = {diff.x, diff.y, 0.0f};
@@ -158,6 +158,95 @@ void sound_spatial( const Vector3 *spawner,
     mixer_ch_set_vol_pan(SFX_CHANNEL, volume, pan);
 }
 
-////// Spatial 3D sound experiment
+////// Audio filters
+
+#define REVERB_BUFFER_SIZE 32000  // Size for the delay buffer
+#define MAX_COMB_FILTERS 3
+#define MAX_ALLPASS_FILTERS 2
+
+
+typedef struct {
+    float comb_delays[MAX_COMB_FILTERS];
+    float comb_feedback;
+    float allpass_delays[MAX_ALLPASS_FILTERS];
+    float allpass_feedback;
+    float sample_rate;
+    float reverb_mix;
+} ReverbParams;
+
+// Schroeder Reverberator Parameters
+ReverbParams paramsSchroeder = {
+    {2.0f, 3.0f, 4.0f}, // Comb filter delays in frames
+    0.2f,
+    {1.0f, 2.0f}, // All-pass filter delays in frames
+    0.3f,
+    16000.0f,
+    0.3f
+};
+
+// Circular buffers for the comb and all-pass filters
+float comb_delay_buffer[REVERB_BUFFER_SIZE];
+int comb_buffer_index = 0;
+
+float allpass_delay_buffer[REVERB_BUFFER_SIZE];
+int allpass_buffer_index = 0;
+
+// Comb Filter implementation
+float comb_filter(float input, float delay_seconds, float feedback, float sample_rate) {
+    int delay_samples = (int)(delay_seconds * sample_rate);
+    int buffer_index = (comb_buffer_index + REVERB_BUFFER_SIZE - delay_samples) % REVERB_BUFFER_SIZE;
+    
+    float delayed_sample = comb_delay_buffer[buffer_index];
+    float output = delayed_sample + input;
+
+    // Store the output with feedback in the buffer
+    comb_delay_buffer[comb_buffer_index] = input + delayed_sample * feedback;
+    comb_buffer_index = (comb_buffer_index + 1) % REVERB_BUFFER_SIZE;
+
+    return output;
+}
+
+// All-Pass Filter implementation
+float allpass_filter(float input, float delay_seconds, float feedback, float sample_rate) {
+    int delay_samples = (int)(delay_seconds * sample_rate);
+    int buffer_index = (allpass_buffer_index + REVERB_BUFFER_SIZE - delay_samples) % REVERB_BUFFER_SIZE;
+
+    float delayed_sample = allpass_delay_buffer[buffer_index];
+    float output = delayed_sample - (input * feedback) + input;
+
+    // Store the new input into the delay buffer
+    allpass_delay_buffer[allpass_buffer_index] = input + delayed_sample * feedback;
+    allpass_buffer_index = (allpass_buffer_index + 1) % REVERB_BUFFER_SIZE;
+
+    return output;
+}
+
+// Applies reverb to SFX Channel
+void sound_reverb(void) {
+
+    float pan = 0.5f;
+    float volume = 1.0f;
+
+
+    if (volume < 0.5f) volume = 0.5f;  // Clamp volume to minimum
+
+    // Apply comb filters
+    float reverb_volume = 0.0f;
+    for (int i = 0; i < MAX_COMB_FILTERS; i++)
+        reverb_volume += comb_filter(volume, paramsSchroeder.comb_delays[i], paramsSchroeder.comb_feedback, paramsSchroeder.sample_rate);
+
+
+    // Apply all-pass filters
+    for (int i = 0; i < MAX_ALLPASS_FILTERS; i++) 
+        reverb_volume = allpass_filter(reverb_volume, paramsSchroeder.allpass_delays[i], paramsSchroeder.allpass_feedback, paramsSchroeder.sample_rate);
+
+
+    // Mix original sound with reverb
+    float final_volume = volume * (1.0f - paramsSchroeder.reverb_mix) + reverb_volume * paramsSchroeder.reverb_mix;
+
+    // Set volume in the mixer
+    mixer_ch_set_vol_pan(SFX_CHANNEL, final_volume, pan);
+}
+
 
 #endif // SOUND_H
