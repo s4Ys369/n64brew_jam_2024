@@ -46,6 +46,7 @@ void sound_load(void)
 
 	// Open and play first XM in the list
     xm64player_open(&xmPlayer, xmFileNames[0]);
+    xm64player_set_vol(&xmPlayer, 0.8f);
     xm64player_play(&xmPlayer, MUSIC_CHANNEL);
 }
 
@@ -118,39 +119,40 @@ void sound_spatial( const Vector3 *spawner,
 					const Vector3 *player, 
 					const Camera *camera) 
 {
-	float pan_sensitivity = 0.5f;
+
+    float pan = 0.5f;
+    float volume = 1.0f;
 
     // Calculate distance vector for volume attenuation
     Vector3 diff = vector3_difference(spawner, player);
     float distance = vector3_magnitude(&diff);
 
-    // Volume attenuation (inverse-square or linear falloff)
-    float max_distance = 1000.0f; // Maximum distance for audible sound
-    float volume = 1.0f - (distance / max_distance);
-    if (volume < 0.1f) volume = 0.1f; // Clamp volume to minimum
-    
-    // Calculate the horizontal angle (azimuth) for panning
-    Vector3 horizontal_diff = {diff.x, diff.y, 0.0f};
-    float horizontal_distance = vector3_magnitude(&horizontal_diff);
+    // If close enough to the sound spawner, skip unnecessary spatial calculations
+    if(distance > 250.0f)
+    {
+        // Volume attenuation (inverse-square or linear falloff)
+        float max_distance = 8000.0f; // Maximum distance for audible sound
+        volume = 1.0f - (distance / max_distance);
+        if (volume < 0.1f) volume = 0.1f; // Clamp volume to minimum
 
-	Vector3 player_forward = calculate_camera_forward(camera);
-    float cos_angle = vector3_returnDotProduct(&horizontal_diff, &player_forward) / horizontal_distance;
-    float angle = acosf(cos_angle); // Angle in radians
+        // Calculate the horizontal angle (azimuth) for panning
+        Vector3 horizontal_diff = {diff.x, diff.y, 0.0f};
+        float horizontal_distance = vector3_magnitude(&horizontal_diff);        
 
-	// Adjust angle based on pan sensitivity
-    angle *= pan_sensitivity;
+        Vector3 player_forward = calculate_camera_forward(camera);
+        float cos_angle = vector3_returnDotProduct(&horizontal_diff, &player_forward) / horizontal_distance;
+        float angle = acosf(cos_angle); // Angle in radians
 
-    // Determine if sound is to the left or right
-    float pan = (angle / M_PI); // Normalize angle to [0, 1]
-    if (diff.x * player_forward.y - diff.y * player_forward.x > 0) {
-        pan = 1.0f - pan; // Flip pan if on the right side
+        // Determine if sound is to the left or right
+        pan = 0.5f * (1.0f + angle / M_PI); // Normalize to [0, 1] with 0.5 as center
+        if (diff.x * player_forward.y - diff.y * player_forward.x > 0) pan = 1.0f - pan; // Flip pan if on the right side
+
+        // Apply a vertical attenuation if sound changes by height
+        float vertical_attenuation = fminf(1.0f, fmaxf(0.1f, 1.0f - fabsf(diff.z) / max_distance));   
+
+        // Final volume adjustment with vertical attenuation
+        volume *= vertical_attenuation;
     }
-    
-    // Apply a vertical attenuation if sound changes by height
-    float vertical_attenuation = fminf(1.0f, fmaxf(0.1f, 1.0f - fabsf(diff.z) / max_distance));
-
-    // Final volume adjustment with vertical attenuation
-    volume *= vertical_attenuation;
 
     // Set the channel volume and panning
     mixer_ch_set_vol_pan(SFX_CHANNEL, volume, pan);

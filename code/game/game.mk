@@ -49,7 +49,7 @@ $(ASSETS)/testLevel.t3dm: T3DM_FLAGS = --base-scale=1200 --bvh
 
 # audioconv flags
 $(ASSETS)/ene.xm64: AUDIOCONV_FLAGS = ''
-$(ASSETS)/boing.wav64: AUDIOCONV_FLAGS = ''
+$(ASSETS)/boing.wav64: AUDIOCONV_FLAGS = --wav-mono
 
 # font64 flags
 $(ASSETS)/chunkysans.font64: MKFONT_FLAGS += --outline 2 --size 12
