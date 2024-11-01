@@ -69,6 +69,6 @@ void minigame_loop(float deltatime)
 void minigame_cleanup()
 {
 	t3d_destroy();
-	sound_xm_stop();
+	sound_cleanup();
 	return;
 }
