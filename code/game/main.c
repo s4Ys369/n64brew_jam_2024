@@ -149,27 +149,33 @@ void minigame_loop()
 }
 void minigame_cleanup()
 {
+    // Step 1: Free subsystems
+    sound_cleanup();
+    ui_cleanup();
+
+    // Step 2: Flush and execute all remaining RSPQ commands
+    rspq_flush();
     rspq_wait();
-	for (int i = 0; i < SCENERY_COUNT; i++) {
 
-		scenery_delete(&scenery[i]);
-	};
-
+    // Step 3: Destroy Tiny3D models, matrices, animations and RSPQ blocks
 	for (int i = 0; i < ACTOR_COUNT; i++) {
 
 		actor_delete(&actors[i]);
 	};
 
+    for (int i = 0; i < SCENERY_COUNT; i++) {
+
+		scenery_delete(&scenery[i]);
+	}
+    t3d_destroy(); // Then destroy library
+
+    // Step 4: Free controller data
     for (size_t p = 0; p < MAXPLAYERS; ++p)
 	{
 		free(minigame.control[p]);
 	}
 
-	sound_cleanup();
-	ui_cleanup();
+    // Step 5: Free allocated surface buffers
     surface_free(&minigame.screen.depthBuffer);
-
-    rspq_wait();
-    t3d_destroy();
 	display_close();
 }
