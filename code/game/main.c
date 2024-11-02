@@ -114,9 +114,9 @@ void minigame_init()
     actorCollider_init(&actor_collider);
     
     // scenery
-    scenery[0] = scenery_create(0, "rom:/game/peeweeplayhouse.t3dm");
+    scenery[0] = scenery_create(0, "rom:/game/testLevel.t3dm");
 
-    if (parseFile("rom:/game/levels/peeweeplayhouse.txt", &shapeData))
+    if (parseFile("rom:/game/levels/testLevel.txt", &shapeData))
     {
         box_colliders = (Box *)malloc(sizeof(Box) * shapeData.numShapes);
         for (size_t shapes = 0; shapes < shapeData.numShapes; ++shapes) 
@@ -126,8 +126,8 @@ void minigame_init()
             Vector3 tempPos = vector3_from_array(shapeData.shapes[shapes].info.pos);
             Vector3 tempScale = vector3_from_array(shapeData.shapes[shapes].info.dim);
             Quaternion tempRot = quat_from_array(shapeData.shapes[shapes].info.rot);
-            Vector3 pos = vector3_flip_up(vector3_returnScaled(&tempPos, 2.0f));     // returnScaled is only necessary when using `base-scale=` with t3d
-            Vector3 scale = vector3_flip_up(vector3_returnScaled(&tempScale, 2.0f)); // returnScaled is only necessary when using `base-scale=` with t3d
+            Vector3 pos = vector3_flip_up(vector3_returnScaled(&tempPos, 500.0f));     // returnScaled is only necessary when using `base-scale=` with t3d
+            Vector3 scale = vector3_flip_up(vector3_returnScaled(&tempScale, 500.0f)); // returnScaled is only necessary when using `base-scale=` with t3d
 			Vector3 rot = quaternion_to_euler(tempRot);
 
             // To match the input for the physics engine, switch to Z up, and convert rotations radians to degrees
