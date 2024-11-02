@@ -9,7 +9,7 @@
 #include <stdbool.h>
 
 #define ACTOR_COUNT 1
-#define SCENERY_COUNT 9
+#define SCENERY_COUNT 1
 
 #include "../../core.h"
 #include "../../minigame.h"
@@ -130,19 +130,22 @@ void minigame_init()
             Vector3 scale = vector3_flip_up(vector3_returnScaled(&tempScale, 2.0f)); // returnScaled is only necessary when using `base-scale=` with t3d
 			Vector3 rot = quaternion_to_euler(tempRot);
 
-			/*Optional Visual Display*/
-			scenery[shapes + 1] = scenery_create(shapes + 1, "rom:/game/cube.t3dm");
-            scenery[shapes + 1].position = pos;
-            scenery[shapes + 1].scale = scale;
-            scenery[shapes + 1].rotation = rot;
+            // To match the input for the physics engine, switch to Z up, and convert rotations radians to degrees
+			Vector3 colRot = vector3_flip_up(rot);
+            colRot.x = deg(colRot.x);
+            colRot.y = deg(colRot.y);
+            colRot.z = deg(colRot.z);
 
-			// @TODO: Still unsure about how collision rotations are handled
-			Vector3 colRot = vector3_getInverse(&rot);
+			/*Optional Visual Display*/
+			//scenery[shapes + 1] = scenery_create(shapes + 1, "rom:/game/cube.t3dm");
+            //scenery[shapes + 1].position = pos;
+            //scenery[shapes + 1].scale = scale;
+            //scenery[shapes + 1].rotation = rot;
 
 			// Applying transformed values to box colliders
             init_box(&box_colliders[shapes], scale, pos, colRot, 1.0f);
         }
-        parsePrint(&shapeData);
+        //parsePrint(&shapeData);
     }
 
 
