@@ -13,7 +13,7 @@ typedef struct
     char name[50];
     float pos[3];
     float dim[3];
-    float rot[3];
+    float rot[4];
 } TagInfo;
 
 typedef struct
@@ -58,7 +58,7 @@ void parseTagInfo(const char* line, TagInfo* info)
 // Fill the struct one filed at a time?
 void parseShape(const char* line, ShapeFileData *shapeFileData, int index) {
     // @TODO: Y and Z are reversed, bullet and t3d uses Y Up, code base using Z Up, not sure if left or right handed.
-    sscanf(line, "shape: %*s name: %s pos: %f %f %f dim: %f %f %f rot: %f %f %f",
+    sscanf(line, "shape: %*s name: %s pos: %f %f %f dim: %f %f %f rot: %f %f %f %f",
         shapeFileData->shapes[index].info.name,
         &shapeFileData->shapes[index].info.pos[0],
         &shapeFileData->shapes[index].info.pos[1],
@@ -68,7 +68,8 @@ void parseShape(const char* line, ShapeFileData *shapeFileData, int index) {
         &shapeFileData->shapes[index].info.dim[2],
         &shapeFileData->shapes[index].info.rot[0],
         &shapeFileData->shapes[index].info.rot[1],
-        &shapeFileData->shapes[index].info.rot[2]);
+        &shapeFileData->shapes[index].info.rot[2],
+        &shapeFileData->shapes[index].info.rot[3]);
 }
 
 bool parseFile(const char* filename, ShapeFileData* info)
@@ -133,10 +134,11 @@ void parsePrint(ShapeFileData *shapeFileData)
                 shapeFileData->shapes[i].info.dim[0], 
                 shapeFileData->shapes[i].info.dim[1], 
                 shapeFileData->shapes[i].info.dim[2]);
-        debugf("Rotation: (%f, %f, %f)\n",
+        debugf("Rotation: (%f, %f, %f, %f)\n",
                 shapeFileData->shapes[i].info.rot[0], 
                 shapeFileData->shapes[i].info.rot[1], 
-                shapeFileData->shapes[i].info.rot[2]);
+                shapeFileData->shapes[i].info.rot[2],
+                shapeFileData->shapes[i].info.rot[3]);
         debugf("\n");
     }
 
@@ -148,10 +150,11 @@ void parsePrint(ShapeFileData *shapeFileData)
                 shapeFileData->tags[i].pos[0], 
                 shapeFileData->tags[i].pos[1], 
                 shapeFileData->tags[i].pos[2]);
-        debugf("Rotation: (%f, %f, %f)\n",
+        debugf("Rotation: (%f, %f, %f, %f)\n",
                 shapeFileData->tags[i].rot[0], 
                 shapeFileData->tags[i].rot[1], 
-                shapeFileData->tags[i].rot[2]);
+                shapeFileData->tags[i].rot[2],
+                shapeFileData->tags[i].rot[3]);
         debugf("\n");
     }
 }
