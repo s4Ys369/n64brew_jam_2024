@@ -9,7 +9,7 @@
 #include <stdbool.h>
 
 #define ACTOR_COUNT 1
-#define SCENERY_COUNT 13
+#define SCENERY_COUNT 9
 
 #include "../../core.h"
 #include "../../minigame.h"
@@ -68,15 +68,35 @@ ShapeFileData shapeData = {0};
 
 Box* box_colliders;
 
-// Testing making the boxes' collisions larger than the model's 
-Vector3 boxSize =  {160.0f, 160.0f, 150.0f};
-Vector3 rampSize = {410.0f, 150.0f, 150.0f};
-
 void init_box(Box *box, Vector3 size, Vector3 center, Vector3 rotation, float scalar)
 {
     box->size = vector3_returnScaled(&size, scalar);
     box->center = vector3_returnScaled(&center, scalar);
     box->rotation = rotation;
+}
+
+// The bullet exporter stores rotations as quaternions, but Tiny3D and the physics engine uses Euler Angles
+Vector3 quaternion_to_euler(Quaternion q) {
+    Vector3 euler;
+
+    // Roll (X-axis rotation)
+    float sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
+    float cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
+    euler.x = atan2f(sinr_cosp, cosr_cosp);
+
+    // Pitch (Y-axis rotation)
+    float sinp = 2 * (q.w * q.y - q.z * q.x);
+    if (fabs(sinp) >= 1)
+        euler.y = copysignf(M_PI / 2, sinp);  // Use 90 degrees if out of range
+    else
+        euler.y = asinf(sinp);
+
+    // Yaw (Z-axis rotation)
+    float siny_cosp = 2 * (q.w * q.z + q.x * q.y);
+    float cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
+    euler.z = atan2f(siny_cosp, cosy_cosp);
+
+    return euler;
 }
 
 void minigame_init()
@@ -94,31 +114,33 @@ void minigame_init()
     actorCollider_init(&actor_collider);
     
     // scenery
-    scenery[0] = scenery_create(0, "rom:/game/testLevel.t3dm");
+    scenery[0] = scenery_create(0, "rom:/game/peeweeplayhouse.t3dm");
 
-    if (parseFile("rom:/game/levels/testLevel.txt", &shapeData))
+    if (parseFile("rom:/game/levels/peeweeplayhouse.txt", &shapeData))
     {
         box_colliders = (Box *)malloc(sizeof(Box) * shapeData.numShapes);
         for (size_t shapes = 0; shapes < shapeData.numShapes; ++shapes) 
         {
-            scenery[shapes + 1] = scenery_create(shapes + 1, "rom:/game/cube.t3dm");
 
             // Parsing and conversion for position, scale, and rotation
             Vector3 tempPos = vector3_from_array(shapeData.shapes[shapes].info.pos);
             Vector3 tempScale = vector3_from_array(shapeData.shapes[shapes].info.dim);
-            Vector3 tempRot = vector3_from_array(shapeData.shapes[shapes].info.rot);
-            Vector3 pos = vector3_flip_coords(vector3_returnScaled(&tempPos, -500.0f));
-            Vector3 scale = vector3_flip_coords(vector3_returnScaled(&tempScale, 5.0f));
-            Vector3 rot = vector3_flip_coords(vector3_returnScaled(&tempRot, 100.0f));
+            Quaternion tempRot = quat_from_array(shapeData.shapes[shapes].info.rot);
+            Vector3 pos = vector3_flip_up(vector3_returnScaled(&tempPos, 2.0f));     // returnScaled is only necessary when using `base-scale=` with t3d
+            Vector3 scale = vector3_flip_up(vector3_returnScaled(&tempScale, 2.0f)); // returnScaled is only necessary when using `base-scale=` with t3d
+			Vector3 rot = quaternion_to_euler(tempRot);
 
-            // Applying transformed values to scenery and box collider
+			/*Optional Visual Display*/
+			scenery[shapes + 1] = scenery_create(shapes + 1, "rom:/game/cube.t3dm");
             scenery[shapes + 1].position = pos;
             scenery[shapes + 1].scale = scale;
             scenery[shapes + 1].rotation = rot;
 
-            Vector3 colRot = vector3_getInverse(&rot);
+			// @TODO: Still unsure about how collision rotations are handled
+			Vector3 colRot = vector3_getInverse(&rot);
 
-            init_box(&box_colliders[shapes], vector3_returnScaled(&scale, 100.0f), pos, colRot, 1.0f);
+			// Applying transformed values to box colliders
+            init_box(&box_colliders[shapes], scale, pos, colRot, 1.0f);
         }
         parsePrint(&shapeData);
     }
