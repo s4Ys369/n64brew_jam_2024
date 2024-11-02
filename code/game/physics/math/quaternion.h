@@ -56,6 +56,8 @@ Matrix3x3 quaternion_getMatrix(const Quaternion* quaternion);
 
 Quaternion quaternion_slerp(const Quaternion* q, const Quaternion* r, float t);
 
+Quaternion quat_from_array(float arr[4]);
+
 // Implementations
 
 /* Initializes the quaternion to zero. */
@@ -413,6 +415,16 @@ Vector3 quaternion_rotateVector(Vector3 v, Quaternion q) {
     Vector3 result = vector3_sum(&rv1, &rv2);
     result = vector3_sum(&result, &rv3);
 
+    return result;
+}
+
+inline Quaternion quat_from_array(float arr[4])
+{
+    Quaternion result;
+    result.x = arr[0];
+    result.y = arr[1];
+    result.z = arr[2];
+    result.w = arr[3];
     return result;
 }
 
