@@ -1,35 +1,63 @@
 # Project-specific assets
-ASSETS_LIST += \
-	filesystem/game/levels/levelA.txt \
-	filesystem/game/capsule.t3dm \
-	filesystem/game/n64logo.t3dm \
-	filesystem/game/pipo.t3dm \
-	filesystem/game/room.t3dm \
-	filesystem/game/testLevel.t3dm \
-	filesystem/game/levelA.t3dm \
-	filesystem/game/black_filled_tile.sprite \
-	filesystem/game/black_tile.sprite \
-	filesystem/game/capsule_skin.sprite \
-	filesystem/game/eye.sprite \
-	filesystem/game/green_tile.sprite \
-	filesystem/game/grey_tile.sprite \
-	filesystem/game/mui.sprite \
-	filesystem/game/red_tile.sprite \
-	filesystem/game/yellow_tile.sprite \
-	filesystem/game/chunkysans.font64 \
-	filesystem/game/TitanOne-Regular.font64
+ASSETS = filesystem/game
+DIALOG_DIR = $(ASSETS)/dialogs
+LEVEL_DIR = $(ASSETS)/levels
+UI_DIR = $(ASSETS)/ui
+
+TXT_FILES := $(LEVEL_DIR)/testLevel.txt
+
+T3DM_FILES := $(ASSETS)/capsule.t3dm \
+              $(ASSETS)/n64logo.t3dm \
+              $(ASSETS)/pipo.t3dm \
+              $(ASSETS)/room.t3dm \
+              $(ASSETS)/cube.t3dm \
+              $(ASSETS)/testLevel.t3dm
+
+SPRITE_FILES := $(ASSETS)/black_filled_tile.sprite \
+                $(ASSETS)/black_tile.sprite \
+                $(ASSETS)/capsule_skin.sprite \
+                $(ASSETS)/eye.sprite \
+                $(ASSETS)/green_tile.sprite \
+                $(ASSETS)/grey_tile.sprite \
+                $(ASSETS)/red_tile.sprite \
+                $(ASSETS)/yellow_tile.sprite
+
+UI_SPRITE_FILES := $(UI_DIR)/buttons/control_stick.ia8.sprite \
+                   $(UI_DIR)/buttons/d_pad_triggers.ia8.sprite \
+                   $(UI_DIR)/buttons/c_buttons0.rgba32.sprite \
+                   $(UI_DIR)/buttons/c_buttons1.rgba32.sprite \
+                   $(UI_DIR)/buttons/face_buttons0.rgba32.sprite \
+                   $(UI_DIR)/buttons/face_buttons1.rgba32.sprite \
+                   $(UI_DIR)/panels/border.ia4.sprite \
+                   $(UI_DIR)/panels/border.ia8.sprite \
+                   $(UI_DIR)/panels/gloss.ia4.sprite \
+                   $(UI_DIR)/panels/gloss.ia8.sprite \
+                   $(UI_DIR)/panels/gradient.ia4.sprite \
+                   $(UI_DIR)/panels/pattern_bubble_grid.ia4.sprite \
+                   $(UI_DIR)/panels/pattern_tessalate.ia4.sprite \
+                   $(UI_DIR)/panels/star.ia8.sprite
+
+FONT_FILES := $(UI_DIR)/fonts/chunkysans.font64 \
+              $(UI_DIR)/fonts/TitanOne-Regular.font64
+
+# Final assets list
+ASSETS_LIST += $(TXT_FILES) $(T3DM_FILES) $(SPRITE_FILES) $(UI_SPRITE_FILES) $(FONT_FILES)
 
 # t3d flags
-filesystem/game/capsule.t3dm: GLTF_FLAGS = --base-scale=1
-filesystem/game/n64logo.t3dm: GLTF_FLAGS = --base-scale=1
-filesystem/game/pipo.t3dm: GLTF_FLAGS = --base-scale=1
-filesystem/game/room.t3dm: GLTF_FLAGS = --base-scale=1 --bvh
-filesystem/game/testLevel.t3dm: GLTF_FLAGS = --base-scale=1 --bvh
-filesystem/game/levelA.t3dm: GLTF_FLAGS = --base-scale=100 --bvh
+$(ASSETS)/capsule.t3dm: T3DM_FLAGS = --base-scale=1
+$(ASSETS)/n64logo.t3dm: T3DM_FLAGS = --base-scale=1
+$(ASSETS)/cube.t3dm: T3DM_FLAGS = --base-scale=1
+$(ASSETS)/pipo.t3dm: T3DM_FLAGS = --base-scale=1
+$(ASSETS)/room.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
+$(ASSETS)/testLevel.t3dm: T3DM_FLAGS = --base-scale=500 --bvh
 
 # font64 flags
-filesystem/game/chunkysans.font64: MKFONT_FLAGS += --outline 2 --size 12
-filesystem/game/TitanOne-Regular.font64: MKFONT_FLAGS += --outline 1 --size 12
+$(UI_DIR)/fonts/chunkysans.font64: MKFONT_FLAGS += --outline 2 --size 12
+$(UI_DIR)/fonts/TitanOne-Regular.font64: MKFONT_FLAGS += --outline 1 --size 12
+
+ifeq ($(DEBUG),1)
+  N64_CFLAGS += -ggdb
+endif
 
 # Add rule for copying TXTs
 $(FILESYSTEM_DIR)/%.txt: $(ASSETS_DIR)/%.txt

@@ -20,8 +20,8 @@ void actorMotion_integrate (Actor *actor, float frame_time);
 
 void actorMotion_setHorizontalAcceleration(Actor *actor, float target_speed, float acceleration_rate)
 {
-    actor->target_velocity.x = target_speed * sinf(rad(actor->target_yaw));
-    actor->target_velocity.y = target_speed * -cosf(rad(actor->target_yaw));
+    actor->target_velocity.x = target_speed * fm_sinf(rad(actor->target_yaw));
+    actor->target_velocity.y = target_speed * -fm_cosf(rad(actor->target_yaw));
 
     actor->body.acceleration.x = acceleration_rate * (actor->target_velocity.x - actor->body.velocity.x);
     actor->body.acceleration.y = acceleration_rate * (actor->target_velocity.y - actor->body.velocity.y);
@@ -29,8 +29,8 @@ void actorMotion_setHorizontalAcceleration(Actor *actor, float target_speed, flo
 
 void actorMotion_setHorizontalInertiaAcceleration(Actor *actor, float target_speed, float acceleration_rate)
 {
-    actor->target_velocity.x = target_speed * sinf(rad(actor->body.rotation.z));
-    actor->target_velocity.y = target_speed * -cosf(rad(actor->body.rotation.z));
+    actor->target_velocity.x = target_speed * fm_sinf(rad(actor->body.rotation.z));
+    actor->target_velocity.y = target_speed * -fm_cosf(rad(actor->body.rotation.z));
 
     actor->body.acceleration.x = acceleration_rate * (actor->target_velocity.x - actor->body.velocity.x);
     actor->body.acceleration.y = acceleration_rate * (actor->target_velocity.y - actor->body.velocity.y);
@@ -55,7 +55,7 @@ void actorMotion_integrate (Actor *actor, float frame_time)
         vector3_addScaledVector(&actor->body.velocity, &actor->body.acceleration, frame_time);
     }
 
-	if (fabs(actor->body.velocity.x) < 10 && fabs(actor->body.velocity.y) < 10){
+	if (fabsf(actor->body.velocity.x) < 10.0f && fabsf(actor->body.velocity.y) < 10.0f){
 		actor->body.velocity.x = 0;
 		actor->body.velocity.y = 0;
 	}
@@ -65,7 +65,7 @@ void actorMotion_integrate (Actor *actor, float frame_time)
 
     if (actor->body.velocity.x != 0 || actor->body.velocity.y != 0) {
 
-		actor->body.rotation.z = deg(atan2(-actor->body.velocity.x, -actor->body.velocity.y));
+		actor->body.rotation.z = deg(fm_atan2f(-actor->body.velocity.x, -actor->body.velocity.y));
 
         Vector2 horizontal_velocity = {actor->body.velocity.x, actor->body.velocity.y};
         actor->horizontal_speed = vector2_magnitude(&horizontal_velocity);       
@@ -76,7 +76,7 @@ void actorMotion_setIdle(Actor *actor)
 {
     actorMotion_setStopingAcceleration(actor);
     
-    if  (fabs(actor->body.velocity.x) < 1 && fabs(actor->body.velocity.y) < 1){
+    if  (fabsf(actor->body.velocity.x) < 1.0f && fabsf(actor->body.velocity.y) < 1.0f){
 
         vector3_init(&actor->body.velocity);
         actor->horizontal_speed = 0;    

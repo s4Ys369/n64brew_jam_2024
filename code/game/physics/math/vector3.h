@@ -59,6 +59,10 @@ bool vector3_notEquals(const Vector3* v, const Vector3* w);
 bool vector3_lessThan(const Vector3* v, const Vector3* w);
 bool vector3_approxEquals(const Vector3* v, const Vector3* w);
 
+Vector3 vector3_from_array(float arr[3]);
+Vector3 vector3_flip_coords(Vector3 vec);
+Vector3 vector3_flip_up(Vector3 vec);
+
 
 inline void vector3_init(Vector3 *v) 
 {
@@ -298,6 +302,35 @@ inline float vector3_returnMinValue(const Vector3* v)
 inline float vector3_returnMaxValue(const Vector3* v) 
 {
     return max3(v->x, v->y, v->z);
+}
+
+inline Vector3 vector3_from_array(float arr[3])
+{
+    Vector3 result;
+    result.x = arr[0];
+    result.y = arr[1];
+    result.z = arr[2];
+    return result;
+}
+
+// Function to convert a vector from a right-handed Y-up coordinate system to a left-handed Z-up coordinate system
+inline Vector3 vector3_flip_coords(Vector3 vec)
+{
+    Vector3 result;
+    result.x = vec.x;   
+    result.y = vec.z;
+    result.z = -vec.y;
+    return result;
+}
+
+// Function to convert a vector from a right-handed Y-up coordinate system to a right-handed Z-up coordinate system
+inline Vector3 vector3_flip_up(Vector3 vec)
+{
+    Vector3 result;
+    result.x = vec.x;
+    result.y = -vec.z;
+    result.z = vec.y;
+    return result;
 }
 
 #endif

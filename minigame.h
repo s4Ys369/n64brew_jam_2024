@@ -7,10 +7,10 @@
 
     // You need to have one of these structs defined globally for the minigame manager to detect it
     typedef struct {
-        char* gamename;
-        char* developername;
-        char* description;
-        char* instructions;
+        const char* gamename;
+        const char* developername;
+        const char* description;
+        const char* instructions;
     } MinigameDef;
 
 

@@ -25,7 +25,7 @@ void actor_setState (Actor *actor, uint8_t state);
 void actorState_setIdle(Actor *actor)
 {
     if (actor->state == STAND_IDLE) return;
-    actor->previous_state = actor->state;
+    if (actor->previous_state != FALLING && actor->state != JUMP) actor->previous_state = actor->state;
     actor->state = STAND_IDLE;
     actor->locomotion_state = STAND_IDLE;
     
@@ -34,7 +34,7 @@ void actorState_setIdle(Actor *actor)
 void actorState_setRunning(Actor *actor)
 {
     if (actor->state == RUNNING) return;
-    actor->previous_state = actor->state;
+    if (actor->previous_state != FALLING && actor->state != JUMP) actor->previous_state = actor->state;
     actor->state = RUNNING;
     actor->locomotion_state = RUNNING;
 }
@@ -43,7 +43,7 @@ void actorState_setJump(Actor *actor)
 {
     if (actor->state == JUMP) return;
     
-    actor->previous_state = actor->state;
+    if (actor->previous_state != FALLING && actor->state != JUMP) actor->previous_state = actor->state;
     actor->state = JUMP;
     actor->grounded = 0;
     //actor->grounding_height = -FLT_MAX;
@@ -53,7 +53,7 @@ void actorState_setFalling (Actor *actor)
 {
     if (actor->state == FALLING ) return;
 
-    actor->previous_state = actor->state;
+    if (actor->state != FALLING && actor->state != JUMP) actor->previous_state = actor->state;
     actor->state = FALLING;
     //actor->grounding_height = -FLT_MAX;
 }

@@ -56,6 +56,8 @@ Matrix3x3 quaternion_getMatrix(const Quaternion* quaternion);
 
 Quaternion quaternion_slerp(const Quaternion* q, const Quaternion* r, float t);
 
+Quaternion quat_from_array(float arr[4]);
+
 // Implementations
 
 /* Initializes the quaternion to zero. */
@@ -208,16 +210,16 @@ bool quaternion_equals(const Quaternion* q, const Quaternion* r) {
 /* Initializes the quaternion using Euler angles. */
 void quaternion_setFromEulerAngles(Quaternion* quaternion, float angleX, float angleY, float angleZ) {
     float angle = angleX * 0.5f;
-    float sinX = sinf(angle);
-    float cosX = cosf(angle);
+    float sinX = fm_sinf(angle);
+    float cosX = fm_cosf(angle);
 
     angle = angleY * 0.5f;
-    float sinY = sinf(angle);
-    float cosY = cosf(angle);
+    float sinY = fm_sinf(angle);
+    float cosY = fm_cosf(angle);
 
     angle = angleZ * 0.5f;
-    float sinZ = sinf(angle);
-    float cosZ = cosf(angle);
+    float sinZ = fm_sinf(angle);
+    float cosZ = fm_cosf(angle);
 
     float cosYcosZ = cosY * cosZ;
     float sinYcosZ = sinY * cosZ;
@@ -389,11 +391,11 @@ Quaternion quaternion_slerp(const Quaternion* q, const Quaternion* r, float t) {
     float theta = acosf(cosineTheta);
 
     /* Compute sin(theta) */
-    float sineTheta = sinf(theta);
+    float sineTheta = fm_sinf(theta);
 
     /* Compute the two coefficients that are in the spherical linear interpolation formula */
-    float coeff1 = sinf((1.0f - t) * theta) / sineTheta;
-    float coeff2 = sinf(t * theta) / sineTheta * invert;
+    float coeff1 = fm_sinf((1.0f - t) * theta) / sineTheta;
+    float coeff2 = fm_sinf(t * theta) / sineTheta * invert;
 
     /* Compute and return the interpolated quaternion */
     Quaternion q1 = quaternion_returnScaled(q, coeff1);
@@ -413,6 +415,16 @@ Vector3 quaternion_rotateVector(Vector3 v, Quaternion q) {
     Vector3 result = vector3_sum(&rv1, &rv2);
     result = vector3_sum(&result, &rv3);
 
+    return result;
+}
+
+inline Quaternion quat_from_array(float arr[4])
+{
+    Quaternion result;
+    result.x = arr[0];
+    result.y = arr[1];
+    result.z = arr[2];
+    result.w = arr[3];
     return result;
 }
 

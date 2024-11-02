@@ -1,6 +1,8 @@
 #ifndef SHAPEPARSER_H
 #define SHAPEPARSER_H
 
+// @copyright: the following file contains code written by float4, with consent given to use here.
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,9 +27,9 @@ typedef struct
 typedef struct
 {
     ShapeInfo* shapes;
-    int numShapes;
+    size_t numShapes;
     TagInfo* tags;
-    int numTags;
+    size_t numTags;
 } ShapeFileData;
 
 
@@ -55,7 +57,7 @@ void parseTagInfo(const char* line, TagInfo* info)
 }
 
 
-// Fill the struct one filed at a time?
+// Fill the struct one field at a time, breaks otherwise
 void parseShape(const char* line, ShapeFileData *shapeFileData, int index) {
     sscanf(line, "shape: %*s name: %s pos: %f %f %f dim: %f %f %f rot: %f %f %f %f",
         shapeFileData->shapes[index].info.name,
@@ -133,11 +135,11 @@ void parsePrint(ShapeFileData *shapeFileData)
                 shapeFileData->shapes[i].info.dim[0], 
                 shapeFileData->shapes[i].info.dim[1], 
                 shapeFileData->shapes[i].info.dim[2]);
-        debugf("Rotation: (%f, %f, %f, %f)\n", // Added %f for the w component
+        debugf("Rotation: (%f, %f, %f, %f)\n",
                 shapeFileData->shapes[i].info.rot[0], 
                 shapeFileData->shapes[i].info.rot[1], 
-                shapeFileData->shapes[i].info.rot[2], 
-                shapeFileData->shapes[i].info.rot[3]); // Include w
+                shapeFileData->shapes[i].info.rot[2],
+                shapeFileData->shapes[i].info.rot[3]);
         debugf("\n");
     }
 
@@ -152,7 +154,7 @@ void parsePrint(ShapeFileData *shapeFileData)
         debugf("Rotation: (%f, %f, %f, %f)\n",
                 shapeFileData->tags[i].rot[0], 
                 shapeFileData->tags[i].rot[1], 
-                shapeFileData->tags[i].rot[2], 
+                shapeFileData->tags[i].rot[2],
                 shapeFileData->tags[i].rot[3]);
         debugf("\n");
     }
@@ -160,7 +162,7 @@ void parsePrint(ShapeFileData *shapeFileData)
 
 void parseCheck(ShapeFileData* data)
 {
-    if(parseFile("rom:/game/levels/levelA.txt", data))
+    if(parseFile("rom:/game/levels/testLevel.txt", data))
         parsePrint(data);
 }
 

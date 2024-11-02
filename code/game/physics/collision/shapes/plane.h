@@ -56,7 +56,7 @@ bool plane_contactSphere(const Plane* plane, const Sphere* sphere) {
     float distance = vector3_returnDotProduct(&plane->normal, &sphere->center) - plane->displacement;
     
     // Check if the distance is less than the radius of the sphere
-    return fabs(distance) <= sphere->radius;
+    return fabsf(distance) <= sphere->radius;
 }
 
 void plane_contactSphereGetData(ContactData* contact, const Plane* plane, const Sphere* sphere) {

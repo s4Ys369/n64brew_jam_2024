@@ -7,12 +7,12 @@
 void gameState_setIntro();
 void gameState_setMainMenu();
 
-void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery);
-void gameState_setPause(Game* game, Actor* actors, Scenery* scenery);
+void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[], size_t numBoxes);
+void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[]);
 
 void gameState_setGameOver();
 
-void game_play(Game* game, Actor* actors, Scenery* scenery);
+void game_play(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[], size_t numBoxes);
 
 
 // function implementations
@@ -26,7 +26,7 @@ void gameState_setMainMenu()
     // code for the game over state
 }
 
-void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery)
+void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[], size_t numBoxes)
 {
 	
 	// ======== Update ======== //
@@ -36,11 +36,40 @@ void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery)
 
 	for (int i = 0; i < ACTOR_COUNT; i++) {
 
-		actor_update(&actors[i], &game->control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
+		actor_update(&actor[i], &game->control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
 	};
 
+
+	// new code for collision detection /////////////////////////////////
+
+    actorContactData_clear(actor_contact);
+    actorCollider_setVertical(actor_collider, &actor->body.position);
+
+    if (actor->body.position.z != 0
+        && actor->state != JUMP) {
+
+        actor->grounding_height = 0.0f;
+        if(!(actor->hasCollided)) actor->state = FALLING;
+    }
+
+	for(size_t i = 0; i < numBoxes; ++i)
+	{
+		if (actorCollision_contactBox(actor_collider, &box_collider[i])) {
+    	    actorCollision_contactBoxSetData(actor_contact, actor_collider, &box_collider[i]);
+    	    actorCollision_setResponse(&actor[0], actor_contact, actor_collider);
+			actor->hasCollided = true;
+    	} else {
+			actor->hasCollided = false;
+		}
+	}
+
+	actor_setState(actor, actor->state);
+    
+	///////////////////////////////////////////////////////////////////
+
+
 	cameraControl_setOrbitalMovement(&game->scene.camera, &game->control);
-	camera_getMinigamePosition(&game->scene.camera, actors[0].body.position, game->timing.frame_time_s);
+	camera_getMinigamePosition(&game->scene.camera, actor[0].body.position, game->timing.frame_time_s);
 	camera_set(&game->scene.camera, &game->screen);
 
 
@@ -60,20 +89,33 @@ void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery)
 	
 	for (int i = 0; i < ACTOR_COUNT; i++) {
 		
-		actor_draw(&actors[i]);
+		actor_draw(&actor[i]);
 	};
 
 	t3d_matrix_pop(1);
+	ui_fps();
+	ui_printf(
+		"cState %d\n"
+		"pState %d\n"
+		"Contact %d\n"
+		"gHeight %.2f\n"
+		"Actor Z %.2f\n"
+		"Grounded %d",
+		actor->state,
+		actor->previous_state,
+		actor->hasCollided,
+		actor->grounding_height,
+		actor->body.position.z,
+		actor->grounded
+	);
 
 	game->syncPoint = rspq_syncpoint_new();
-
-	ui_draw();
 
 	rdpq_detach_show();
 }
 
 
-void gameState_setPause(Game* game, Actor* actors, Scenery* scenery)
+void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[])
 {
 	// ======== Update ======== //
 
@@ -81,7 +123,7 @@ void gameState_setPause(Game* game, Actor* actors, Scenery* scenery)
 	controllerData_getInputs(&game->control);
 
 	cameraControl_setOrbitalMovement(&game->scene.camera, &game->control);
-	camera_getMinigamePosition(&game->scene.camera, actors[0].body.position, game->timing.frame_time_s);
+	camera_getMinigamePosition(&game->scene.camera, actor[0].body.position, game->timing.frame_time_s);
 	camera_set(&game->scene.camera, &game->screen);
 
 	// ======== Draw ======== //
@@ -102,12 +144,6 @@ void gameState_setPause(Game* game, Actor* actors, Scenery* scenery)
 
 	game->syncPoint = rspq_syncpoint_new();
 
-	ui_draw();
-
-
-	ShapeFileData data_s = {0};
-	parseCheck(&data_s);
-
 	rdpq_detach_show();
 }
 
@@ -117,7 +153,7 @@ void gameState_setGameOver()
     // code for the game over state
 }
 
-void game_play(Game* game, Actor* actors, Scenery* scenery)
+void game_play(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[], size_t numBoxes)
 {
 	for(;;)
 	{
@@ -133,11 +169,11 @@ void game_play(Game* game, Actor* actors, Scenery* scenery)
 				break;
 			}
 			case GAMEPLAY:{
-				gameState_setGameplay(game, actors, scenery);
+				gameState_setGameplay(game, actor, scenery,actor_collider, actor_contact, box_collider, numBoxes);
 				break;
 			}
 			case PAUSE:{
-				gameState_setPause(game, actors, scenery);
+				gameState_setPause(game, actor, scenery,actor_collider, actor_contact, box_collider);
 				break;
 			}
 			case GAME_OVER:{
