@@ -25,7 +25,8 @@ SPRITE_FILES := $(ASSETS)/black_filled_tile.sprite \
                 $(ASSETS)/yellow_tile.sprite
 
 SOUND_FILES := $(SOUND_DIR)/ene.xm64 \
-               $(SOUND_DIR)/boing.wav64
+               $(SOUND_DIR)/boing.wav64 \
+               $(SOUND_DIR)/heal.wav64
 
 UI_SPRITE_FILES := $(UI_DIR)/control_stick.ia8.sprite \
                    $(UI_DIR)/d_pad_triggers.ia8.sprite \
@@ -50,6 +51,7 @@ $(ASSETS)/testLevel.t3dm: T3DM_FLAGS = --base-scale=1200 --bvh
 # audioconv flags
 $(ASSETS)/ene.xm64: AUDIOCONV_FLAGS = ''
 $(ASSETS)/boing.wav64: AUDIOCONV_FLAGS = --wav-mono
+$(ASSETS)/heal.wav64: AUDIOCONV_FLAGS = --wav-compress=3
 
 # font64 flags
 $(ASSETS)/chunkysans.font64: MKFONT_FLAGS += --outline 2 --size 12

@@ -17,13 +17,14 @@ const char* xmFileNames[NUM_XM] = {
 };
 
 // WAV files
-#define NUM_WAV 1 // @TODO: enumerate
+#define NUM_WAV 2 // @TODO: enumerate
 
 // Each WAV must have its own structure
 wav64_t soundEffects[NUM_WAV];
 
 const char* wavFileNames[NUM_WAV] = {
     "rom:/game/sound/boing.wav64",
+    "rom:/game/sound/heal.wav64",
 };
 
 /* Function Declarations */

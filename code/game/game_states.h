@@ -106,7 +106,7 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
 		controllerData_getInputs(control);
 
 		// Best to play audio as soon as possible
-		if(control->pressed.a) sound_wavPlay(0,false);
+		if(control->pressed.a) sound_wavPlay(1,false);
 
 		actor_setControlData(&player, control, timing->frame_time_s, camera.angle_around_barycenter, camera.offset_angle);
 		actor_setState(&player, player.state);
