@@ -36,6 +36,8 @@ Matrix3x3 rotationMatrix_getFromEuler(const Vector3 *rotation);
 
 void rotate_normal(Vector3 *vector, const Vector3 *rotation);
 
+Vector3 vector3_fromQuaternion(Quaternion q);
+
 
 // function implementations
 
@@ -452,6 +454,30 @@ void rotate_vector(Vector3 *vector, const Vector3 *rotation)
     Vector3 rad_rotation = vector3_degToRad(rotation);
     Quaternion q_rotation = quaternion_getFromVector(&rad_rotation);
     *vector = vector3_rotateByQuaternion(vector, &q_rotation);
+}
+
+inline Vector3 vector3_fromQuaternion(Quaternion q)
+{
+    Vector3 euler;
+
+    // Roll (X-axis rotation)
+    float sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
+    float cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
+    euler.x = atan2f(sinr_cosp, cosr_cosp);
+
+    // Pitch (Y-axis rotation)
+    float sinp = 2 * (q.w * q.y - q.z * q.x);
+    if (fabs(sinp) >= 1)
+        euler.y = copysignf(M_PI / 2, sinp);  // Use 90 degrees if out of range
+    else
+        euler.y = asinf(sinp);
+
+    // Yaw (Z-axis rotation)
+    float siny_cosp = 2 * (q.w * q.z + q.x * q.y);
+    float cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
+    euler.z = atan2f(siny_cosp, cosy_cosp);
+
+    return euler;
 }
 
 #endif

@@ -17,6 +17,8 @@ AABB box_getLocalAABB(const Box* box);
 bool box_contactSphere(const Box* box, const Sphere* sphere);
 void box_contactSphereSetData(ContactData* contact, const Box* box, const Sphere* sphere);
 
+void box_init(Box *box, Vector3 size, Vector3 center, Vector3 rotation, float scalar);
+
 
 // function implementations
 
@@ -64,6 +66,13 @@ void box_contactSphereSetData(ContactData* contact, const Box* box, const Sphere
     // Transform the closest point and normal back to global space
     point_transformToGlobalSpace(&contact->point, &box->center, &box->rotation);
     rotate_normal(&contact->normal, &box->rotation); // Rotate normal to global space
+}
+
+void box_init(Box *box, Vector3 size, Vector3 center, Vector3 rotation, float scalar)
+{
+    box->size = vector3_returnScaled(&size, scalar);
+    box->center = vector3_returnScaled(&center, scalar);
+    box->rotation = rotation;
 }
 
 

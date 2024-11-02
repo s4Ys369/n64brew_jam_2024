@@ -1,6 +1,8 @@
 #ifndef SHAPEPARSER_H
 #define SHAPEPARSER_H
 
+// @copyright: the following file contains code written by float4, with consent given to use here.
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -55,9 +57,8 @@ void parseTagInfo(const char* line, TagInfo* info)
 }
 
 
-// Fill the struct one filed at a time?
+// Fill the struct one field at a time, breaks otherwise
 void parseShape(const char* line, ShapeFileData *shapeFileData, int index) {
-    // @TODO: Y and Z are reversed, bullet and t3d uses Y Up, code base using Z Up, not sure if left or right handed.
     sscanf(line, "shape: %*s name: %s pos: %f %f %f dim: %f %f %f rot: %f %f %f %f",
         shapeFileData->shapes[index].info.name,
         &shapeFileData->shapes[index].info.pos[0],

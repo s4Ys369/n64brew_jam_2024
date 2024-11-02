@@ -313,9 +313,9 @@ inline Vector3 vector3_from_array(float arr[3])
     return result;
 }
 
-
 // Function to convert a vector from a right-handed Y-up coordinate system to a left-handed Z-up coordinate system
-inline Vector3 vector3_flip_coords(Vector3 vec) {
+inline Vector3 vector3_flip_coords(Vector3 vec)
+{
     Vector3 result;
     result.x = vec.x;   
     result.y = vec.z;
@@ -324,7 +324,8 @@ inline Vector3 vector3_flip_coords(Vector3 vec) {
 }
 
 // Function to convert a vector from a right-handed Y-up coordinate system to a right-handed Z-up coordinate system
-inline Vector3 vector3_flip_up(Vector3 vec) {
+inline Vector3 vector3_flip_up(Vector3 vec)
+{
     Vector3 result;
     result.x = vec.x;
     result.y = -vec.z;
