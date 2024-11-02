@@ -123,8 +123,11 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
 		scenery_set(&room);
 		scenery_set(&n64logo);
 		n64logo.position = (Vector3){200, 200, 0};
-		sound_reverb();
-		//sound_spatial(&n64logo.position, &player.body.position, &camera);
+
+		if(!(control->held.l))
+		{
+			sound_spatial(&n64logo.position, &player.body.position, &camera);
+		}
 		
 
 		// ======== Draw ======== //
@@ -146,6 +149,16 @@ void gameState_setGameplay(Screen* screen, TimeData* timing, ControllerData* con
 		syncPoint = rspq_syncpoint_new();
 
 		ui_draw();
+    	rdpq_sync_pipe();
+    	rdpq_set_mode_standard();
+    	rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
+    	rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
+		if(!(control->held.l))
+		{
+    		rdpq_text_print(&txt_debugParms, ID_DEBUG, 32.0f, 44.0f, "With Effects");
+		} else {
+			rdpq_text_print(&txt_debugParms, ID_DEBUG, 32.0f, 44.0f, "Without Effects");
+		}
 
 		rdpq_detach_show();
 	}
