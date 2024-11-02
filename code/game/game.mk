@@ -4,9 +4,7 @@ DIALOG_DIR = $(ASSETS)/dialogs
 LEVEL_DIR = $(ASSETS)/levels
 UI_DIR = $(ASSETS)/ui
 
-JSON_FILES := $(DIALOG_DIR)/dialog_test.json \
-              $(LEVEL_DIR)/saveGameDataTest.json \
-              $(LEVEL_DIR)/testLevel.json
+TXT_FILES := $(LEVEL_DIR)/testLevel.txt
 
 T3DM_FILES := $(ASSETS)/capsule.t3dm \
               $(ASSETS)/n64logo.t3dm \
@@ -43,7 +41,7 @@ FONT_FILES := $(UI_DIR)/fonts/chunkysans.font64 \
               $(UI_DIR)/fonts/TitanOne-Regular.font64
 
 # Final assets list
-ASSETS_LIST += $(JSON_FILES) $(T3DM_FILES) $(SPRITE_FILES) $(UI_SPRITE_FILES) $(FONT_FILES)
+ASSETS_LIST += $(TXT_FILES) $(T3DM_FILES) $(SPRITE_FILES) $(UI_SPRITE_FILES) $(FONT_FILES)
 
 # t3d flags
 $(ASSETS)/capsule.t3dm: T3DM_FLAGS = --base-scale=1
@@ -51,7 +49,7 @@ $(ASSETS)/n64logo.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/cube.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/pipo.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/room.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
-$(ASSETS)/testLevel.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
+$(ASSETS)/testLevel.t3dm: T3DM_FLAGS = --base-scale=500 --bvh
 
 # font64 flags
 $(UI_DIR)/fonts/chunkysans.font64: MKFONT_FLAGS += --outline 2 --size 12
@@ -61,8 +59,8 @@ ifeq ($(DEBUG),1)
   N64_CFLAGS += -ggdb
 endif
 
-# Add rule for copying JSONs
-$(FILESYSTEM_DIR)/%.json: $(ASSETS_DIR)/%.json
+# Add rule for copying TXTs
+$(FILESYSTEM_DIR)/%.txt: $(ASSETS_DIR)/%.txt
 	@mkdir -p $(dir $@)
-	@echo "    [JSON] $@"
+	@echo "    [TXT] $@"
 	@cp $< $@

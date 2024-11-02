@@ -7,12 +7,12 @@
 void gameState_setIntro();
 void gameState_setMainMenu();
 
-void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[]);
+void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[], size_t numBoxes);
 void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[]);
 
 void gameState_setGameOver();
 
-void game_play(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[]);
+void game_play(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[], size_t numBoxes);
 
 
 // function implementations
@@ -26,7 +26,7 @@ void gameState_setMainMenu()
     // code for the game over state
 }
 
-void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[])
+void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[], size_t numBoxes)
 {
 	
 	// ======== Update ======== //
@@ -52,7 +52,7 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorColl
         if(!(actor->hasCollided)) actor->state = FALLING;
     }
 
-	for(int i = 0; i < SCENERY_COUNT -1; ++i) // Objects minus room
+	for(size_t i = 0; i < numBoxes; ++i)
 	{
 		if (actorCollision_contactBox(actor_collider, &box_collider[i])) {
     	    actorCollision_contactBoxSetData(actor_contact, actor_collider, &box_collider[i]);
@@ -153,7 +153,7 @@ void gameState_setGameOver()
     // code for the game over state
 }
 
-void game_play(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[])
+void game_play(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[], size_t numBoxes)
 {
 	for(;;)
 	{
@@ -169,7 +169,7 @@ void game_play(Game* game, Actor* actor, Scenery* scenery, ActorCollider* actor_
 				break;
 			}
 			case GAMEPLAY:{
-				gameState_setGameplay(game, actor, scenery,actor_collider, actor_contact, box_collider);
+				gameState_setGameplay(game, actor, scenery,actor_collider, actor_contact, box_collider, numBoxes);
 				break;
 			}
 			case PAUSE:{

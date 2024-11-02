@@ -9,10 +9,12 @@
 #include <stdbool.h>
 
 #define ACTOR_COUNT 1
-#define SCENERY_COUNT 4
+#define SCENERY_COUNT 13
 
 #include "../../core.h"
 #include "../../minigame.h"
+
+#include "txt/shapeParser.h"
 
 #include "screen/screen.h"
 #include "control/controls.h"
@@ -62,17 +64,19 @@ ActorCollider actor_collider = {
 ActorContactData actor_contact;
 
 Scenery scenery[SCENERY_COUNT];
+ShapeFileData shapeData = {0};
 
-Box box_colliders[SCENERY_COUNT - 1]; // Objects minus room
+Box* box_colliders;
 
 // Testing making the boxes' collisions larger than the model's 
 Vector3 boxSize =  {160.0f, 160.0f, 150.0f};
 Vector3 rampSize = {410.0f, 150.0f, 150.0f};
 
-void init_box(Box *box, Vector3 size, Vector3 center, Vector3 rotation) {
-        box->size = size;
-        box->center = center;
-        box->rotation = rotation;
+void init_box(Box *box, Vector3 size, Vector3 center, Vector3 rotation, float scalar)
+{
+    box->size = vector3_returnScaled(&size, scalar);
+    box->center = vector3_returnScaled(&center, scalar);
+    box->rotation = rotation;
 }
 
 void minigame_init()
@@ -89,41 +93,50 @@ void minigame_init()
 
     actorCollider_init(&actor_collider);
     
-     // scenery
+    // scenery
     scenery[0] = scenery_create(0, "rom:/game/testLevel.t3dm");
 
-    // Ceiling Test
-    scenery[1] = scenery_create(1, "rom:/game/cube.t3dm");
-    scenery[1].position = (Vector3){200.0f, 200.0f, 150.0f};
-    scenery[1].scale = (Vector3){1.5f, 1.5f, 1.5f};
-    scenery[1].rotation = (Vector3){0.0f, 0.0f, 0.0f};
+    if (parseFile("rom:/game/levels/testLevel.txt", &shapeData))
+    {
+        box_colliders = (Box *)malloc(sizeof(Box) * shapeData.numShapes);
+        for (size_t shapes = 0; shapes < shapeData.numShapes; ++shapes) 
+        {
+            scenery[shapes + 1] = scenery_create(shapes + 1, "rom:/game/cube.t3dm");
 
-    // Box Test
-    scenery[2] = scenery_create(2, "rom:/game/cube.t3dm");
-    scenery[2].position = (Vector3){-170.0f, 200.0f, 60.0f};
-    scenery[2].scale = (Vector3){1.5f, 1.5f, 1.5f};
-    scenery[2].rotation = (Vector3){0.0f, 0.0f, 0.0f};
+            // Parsing and conversion for position, scale, and rotation
+            Vector3 tempPos = vector3_from_array(shapeData.shapes[shapes].info.pos);
+            Vector3 tempScale = vector3_from_array(shapeData.shapes[shapes].info.dim);
+            Vector3 tempRot = vector3_from_array(shapeData.shapes[shapes].info.rot);
+            Vector3 pos = vector3_flip_coords(vector3_returnScaled(&tempPos, -500.0f));
+            Vector3 scale = vector3_flip_coords(vector3_returnScaled(&tempScale, 5.0f));
+            Vector3 rot = vector3_flip_coords(vector3_returnScaled(&tempRot, 100.0f));
 
-    // Slope Test
-    scenery[3] = scenery_create(3, "rom:/game/cube.t3dm");
-    scenery[3].position = (Vector3){-200.0f, -200.0f, 25.0f};
-    scenery[3].scale =    (Vector3){4.0f, 1.5f, 1.5f};
-    scenery[3].rotation = (Vector3){0.0f, -30.0f, 20.0f};
+            // Applying transformed values to scenery and box collider
+            scenery[shapes + 1].position = pos;
+            scenery[shapes + 1].scale = scale;
+            scenery[shapes + 1].rotation = rot;
 
-    init_box(&box_colliders[0], boxSize, (Vector3){200.0f, 200.0f, 150.0f}, (Vector3){0.0f, 0.0f, 0.0f}); // Ceiling
-    init_box(&box_colliders[1], boxSize, (Vector3){-170.0f, 200.0f, 60.0f}, (Vector3){0.0f, 0.0f, 0.0f}); // Box
-    init_box(&box_colliders[2], rampSize, (Vector3){-200.0f, -200.0f, 25.0f}, (Vector3){0.0f, 30.0f, -20.0f}); // Slope
+            Vector3 colRot = vector3_getInverse(&rot);
+
+            init_box(&box_colliders[shapes], vector3_returnScaled(&scale, 100.0f), pos, colRot, 1.0f);
+        }
+        parsePrint(&shapeData);
+    }
+
 
     for (int i = 0; i < SCENERY_COUNT; i++) {
 
         scenery_set(&scenery[i]);
     }
 
+
 }
+
+void minigame_fixedloop(){}
 
 void minigame_loop()
 {	
-	game_play(&minigame, actor, scenery, &actor_collider, &actor_contact, box_colliders);
+	game_play(&minigame, actor, scenery, &actor_collider, &actor_contact, box_colliders, shapeData.numShapes);
 }
 void minigame_cleanup()
 {
