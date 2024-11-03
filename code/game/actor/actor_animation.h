@@ -16,10 +16,10 @@ ActorAnimation actorAnimation_create(const Actor* actor)
 void animationSet_init(const Actor* actor, AnimationSet* set)
 {
 	set->breathing_idle = t3d_anim_create(actor->model, "breathing-idle");
-	set->running_left = t3d_anim_create(actor->model, "running-left");
-	set->jump_left = t3d_anim_create(actor->model, "jump-left");
+	set->running_left = t3d_anim_create(actor->model, "running-10-left");
+	//set->jump_left = t3d_anim_create(actor->model, "jump-left");
 	set->falling_left = t3d_anim_create(actor->model, "falling-idle-left");
-	set->land_left = t3d_anim_create(actor->model, "land-left");
+	set->land_left = t3d_anim_create(actor->model, "falling-to-landing-left");
 }
 
 void actorAnimation_init(const Actor* actor, ActorAnimation* animation)
