@@ -76,6 +76,8 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorColl
 	// Call setState after processing collision responses
 	actor_setState(actor, actor->state);
 
+	if(actor->body.position.z <= -199.0f) actor->body.position = (Vector3){0.0f, 0.0f, 200.0f};
+
     
 	///////////////////////////////////////////////////////////////////
 

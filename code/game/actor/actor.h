@@ -134,8 +134,8 @@ Actor actor_create(uint32_t id, const char *model_path)
 		.locomotion_state = 1,
 
 		.body = {
-            .position = {0.0f, 100.0f, 0.0f},
-            .velocity = {0.0f, -10.0f, 0.0f},
+            .position = {0.0f, 0.0f, 200.0f},
+            .velocity = {0.0f, 0.0f, -10.0f},
             .rotation = {0.0f, 0.0f, 0.0f},
         },
         

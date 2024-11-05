@@ -97,30 +97,42 @@ void level_parse(const char *text_path, Box **colliders, ShapeFileData *shapeDat
             colRot.z = deg(colRot.z);
 
 			// Applying transformed values to box colliders
-            box_init(&(*colliders)[shapes], scale, pos, colRot, 500.0f); // If using `--base-scale=n` with T3D, enter n here as the scalar
+            box_init(&(*colliders)[shapes], scale, pos, colRot, 5.0f); // If using `--base-scale=n` with T3D, enter n here as the scalar
         }
     }
 }
 
 // HEXAGON TEST
-Triangle hexagon[6];
+typedef struct {
+  Box* box;
+  AABB aabb;
+} PlatformCollider;
 
-// Define the hexagon vertices and center
-Vector3 center = { 0.0f, 0.0f, 0.0f };
-Vector3 vertices[] = {
-    { 400.0f, 0.0f,  250.0f },
-    { 0.0f, 0.0f,  450.0f },
-    { -400.0f, 0.0f,  250.0f },
-    { -400.0f, 0.0f, -250.0f },
-    { 400.0f, 0.0f, -250.0f },
-    { 0.0f,  0.0f, -450.0f }
-};
+
+typedef struct {
+  Vector3 position;
+  PlatformCollider* collider;
+  bool despawned;
+} Platform;
+
+Platform platform;
+ShapeFileData platformShapeData = {0};
+
+Vector3 int16_to_vector3(const int16_t int_arr[3]) {
+    Vector3 vec;
+    vec.x = (float)int_arr[0];
+    vec.y = (float)int_arr[1];
+    vec.z = (float)int_arr[2];
+    return vec;
+}
 
 void minigame_init()
 {      
 	game_init(&minigame);
-    level_parse("rom:/game/levels/testLevel.txt", &box_colliders, &shapeData);
-    hex_init(hexagon, &center, vertices);
+    // Allocate memory for platform.collider
+    platform.collider = (PlatformCollider *)malloc(sizeof(PlatformCollider));
+    //level_parse("rom:/game/levels/testLevel.txt", &box_colliders, &shapeData);
+    level_parse("rom:/game/levels/platform.txt", &platform.collider->box, &platformShapeData);
 
     // actors
     actor[0] = actor_create(0, "rom:/game/pipo.t3dm");
@@ -133,12 +145,16 @@ void minigame_init()
     actorCollider_init(&actor_collider);
     
     // scenery
-    scenery[0] = scenery_create(0, "rom:/game/testLevel.t3dm");
+    scenery[0] = scenery_create(0, "rom:/game/hex_platform.t3dm");
 
     for (int i = 0; i < SCENERY_COUNT; i++) {
 
         scenery_set(&scenery[i]);
     }
+
+    platform.collider->aabb.maxCoordinates = int16_to_vector3(scenery[0].model->aabbMax);
+    platform.collider->aabb.minCoordinates = int16_to_vector3(scenery[0].model->aabbMin);
+    platform.despawned = false;
 
 }
 
@@ -146,7 +162,7 @@ void minigame_fixedloop(){}
 
 void minigame_loop()
 {	
-	game_play(&minigame, actor, scenery, &actor_collider, &actor_contact, box_colliders, shapeData.numShapes);
+	game_play(&minigame, actor, scenery, &actor_collider, &actor_contact, platform.collider->box, platformShapeData.numShapes);
 }
 void minigame_cleanup()
 {
