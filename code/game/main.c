@@ -77,9 +77,12 @@ Scenery scenery[SCENERY_COUNT];
 void minigame_init()
 {
     game_init(&minigame);
+
+#ifdef PROFILING
     //rdpq_debug_start();
     profile_data.frame_count = 0;
     rspq_profile_start();
+#endif
 
     // actors
     for (int i = 0; i < ACTOR_COUNT; i++) {

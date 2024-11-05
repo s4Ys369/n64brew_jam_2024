@@ -1,8 +1,13 @@
 #ifndef GAME_STATES_H
 #define GAME_STATES_H
 
+// Comment out to disable RSPQ Profiling
+#define PROFILING
+
+#ifdef PROFILING
 #include "rspq_profile.h"
 static rspq_profile_data_t profile_data;
+#endif
 
 
 // function prototypes
@@ -112,6 +117,7 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 	rdpq_detach_show();
 	sound_update_buffer();
 
+#ifdef PROFILING
 	rspq_profile_next_frame();
 	if(frameCounter > 29)
 	{
@@ -120,6 +126,7 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 		frameCounter = 0;
 	}
     rspq_profile_get_data(&profile_data);
+#endif // PROFILING
 
 }
 
