@@ -135,11 +135,11 @@ Actor actor_create(uint32_t id, const char *model_path)
 
 		.body = {
             .position = {0.0f, 0.0f, 0.0f},
-            .velocity = {0.0f, 0.0f, 0.0f},
+            .velocity = {0.0f, -10.0f, 0.0f},
             .rotation = {0.0f, 0.0f, 0.0f},
         },
         
-		.grounding_height = 0.0f,
+		.grounding_height = -2000.0f, // magic number
         
 		.settings = {
 			.idle_acceleration_rate = 9,

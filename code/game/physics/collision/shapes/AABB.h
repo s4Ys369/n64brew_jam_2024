@@ -8,6 +8,8 @@ typedef struct AABB {
     Vector3 maxCoordinates;
 } AABB;
 
+#define MAGIC_NUM 0
+
 // function prototypes
 
 void aabb_setFromCenterAndSize(AABB *aabb, const Vector3* center, const Vector3* size);
@@ -103,7 +105,7 @@ Vector3 aabb_closestToSegment(const AABB* aabb, const Vector3* a, const Vector3*
     v2.z = v.z * v.z;
 
     // Determine regions and tanchor values for a
-    if (v.x > FLT_MIN) {
+    if (v.x > MAGIC_NUM) {
         if (s.x < -half_size.x) {
             region.x = -1;
             tanchor.x = (-half_size.x - s.x) / v.x;
@@ -117,7 +119,7 @@ Vector3 aabb_closestToSegment(const AABB* aabb, const Vector3* a, const Vector3*
             tanchor.x = 2;		// this will never be a valid tanchor
     }
 
-    if (v.y > FLT_MIN) {
+    if (v.y > MAGIC_NUM) {
         if (s.y < -half_size.y) {
             region.y = -1;
             tanchor.y = (-half_size.y - s.y) / v.y;
@@ -130,7 +132,7 @@ Vector3 aabb_closestToSegment(const AABB* aabb, const Vector3* a, const Vector3*
             region.y = 0;
             tanchor.y = 2;		// this will never be a valid tanchor
     }
-    if (v.z > FLT_MIN) {
+    if (v.z > MAGIC_NUM) {
         if (s.z < -half_size.z) {
             region.z = -1;
             tanchor.z = (-half_size.z - s.z) / v.z;

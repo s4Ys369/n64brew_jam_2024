@@ -58,14 +58,24 @@ void actorCollision_collideAndSlide(Actor* actor, ActorContactData* contact)
     vector3_add(&actor->body.position, &projection);
 }
 
-void actorCollision_setGroundResponse(Actor* actor)
+void actorCollision_setGroundResponse(Actor* actor, ActorContactData* contact, ActorCollider* collider)
 {
     actor->grounded = true;
     actor->body.acceleration.z = 0;
     actor->body.velocity.z = 0;
     actor->grounding_height = actor->body.position.z;
     actor->state = actor->previous_state;
+
+    // Lower the gorund height slightly when on a slope
+    if (contact->slope >= 1.0f && contact->slope < 50.0f) {
+        float slope_offset = 0.1f * contact->slope;
+        actor->grounding_height -= slope_offset;
+        actor->body.position.z = actor->grounding_height;
+    } else {
+        actor->grounding_height = actor->body.position.z;
+    }
 }
+
 
 void actorCollision_setCeilingResponse(Actor* actor, ActorContactData* contact)
 {   
@@ -93,7 +103,7 @@ void actorCollision_setResponse(Actor* actor, ActorContactData* contact, ActorCo
     actorCollision_solvePenetration(actor, contact, collider);
 
     if (contact->slope >= 0 && contact->slope < 50) {
-        actorCollision_setGroundResponse(actor);
+        actorCollision_setGroundResponse(actor, contact, collider);
         actorCollision_collideAndSlide(actor, contact);
     }
     else if (contact->slope > 95 && actor->grounded == false) {
@@ -110,7 +120,7 @@ void actorCollision_collideWithPlayground(Actor* actor) {
     if (actor->body.position.x < -1870) actor->body.position.x = -1875;
     if (actor->body.position.y > 1870) actor->body.position.y = 1875;
     if (actor->body.position.y < -1870) actor->body.position.y = -1875;
-    if (actor->body.position.z < 0) actor->body.position.z = 0;
+    if (actor->body.position.z < -2000.0f) actor->body.position.z = -2000.0f;
 }
 
 #endif
