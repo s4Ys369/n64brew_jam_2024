@@ -6,7 +6,7 @@
 #include <t3d/t3danim.h>
 #include <t3d/t3ddebug.h>
 
-#define ACTOR_COUNT 4
+#define ACTOR_COUNT 3
 #define SCENERY_COUNT 1
 
 #include "../../core.h"

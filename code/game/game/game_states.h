@@ -35,8 +35,8 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 	
 	// ======== Update ======== //
 	rdpq_sync_pipe();
-	rdpq_set_mode_standard();
     t3d_frame_start();
+	rdpq_sync_tile();
 
 	time_setData(&game->timing);
 	frameCounter++;
@@ -61,28 +61,27 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 
 	for (int i = 0; i < ACTOR_COUNT; i++)
 	{
-		rspq_flush();
-		rspq_wait();
 		rdpq_sync_pipe();
-		rdpq_set_mode_standard();
+		rdpq_sync_tile();
 		screen_clearT3dViewport(&game->screen.gameplay_viewport[i]);
 
+		t3d_matrix_push_pos(1);
+
 		for (int i = 0; i < SCENERY_COUNT; i++) {
-			t3d_matrix_push_pos(1);
+			
 			scenery_draw(&scenery[i]);
-			t3d_matrix_pop(1);
 		};
 	
 		for (int i = 0; i < ACTOR_COUNT; i++) {
-			t3d_matrix_push_pos(1);
 			actor_draw(&actor[i]);
-			t3d_matrix_pop(1);
 		};
+
+		t3d_matrix_pop(1);
+
+		game->syncPoint = rspq_syncpoint_new();
 
 	}
 
-	
-	game->syncPoint = rspq_syncpoint_new();
 
 	int sizeX = display_get_width();
     int sizeY = display_get_height();

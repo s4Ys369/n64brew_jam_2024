@@ -167,8 +167,8 @@ Actor actor_create(uint32_t id, const char *model_path)
 
     rspq_block_begin();
 	rdpq_sync_pipe();
-	rdpq_set_mode_standard();
     rdpq_set_prim_color(RGBA32(255, 255, 255, 255));
+    rdpq_sync_tile();
     t3d_model_draw_skinned(actor.model, &actor.armature.main);
     actor.dl = rspq_block_end();
 
