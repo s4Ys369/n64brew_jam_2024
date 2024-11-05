@@ -42,41 +42,10 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorColl
 
 	// new code for collision detection /////////////////////////////////
 
-	actorContactData_clear(actor_contact);
-	actorCollider_setVertical(actor_collider, &actor->body.position);
-
-	// Check if the actor is neither jumping nor falling
-	if (actor->body.position.z != -2000.0f // magic number
-		&& actor->state != JUMP
-		&& actor->state != FALLING) {
-			
-		actor->state = FALLING;
-		actor->grounded = false;
-		actor->grounding_height = -2000.0f; // magic number
-        
+	for (int i = 0; i < ACTOR_COUNT; i++)
+	{
+		actorCollision_updateBoxes(&actor[i], actor_contact, actor_collider, box_collider, numBoxes);
 	}
-
-	
-
-	for (size_t i = 0; i < numBoxes; ++i) {
-		if (actorCollision_contactBox(actor_collider, &box_collider[i])) {
-			actorCollision_contactBoxSetData(actor_contact, actor_collider, &box_collider[i]);
-			actorCollision_setResponse(&actor[0], actor_contact, actor_collider);
-        
-			actor->hasCollided = true; // Set to true only if collision occurs
-			actor->grounded = true;    // Set grounded if we have a collision
-			actor->state = STAND_IDLE;
-			debugf("Grounding Height Updated to: %.2f\n", actor->grounding_height); // Debug output
-			break; // Exit after the first collision
-		} else {
-			actor->hasCollided = false;
-		}
-	}
-
-	// Call setState after processing collision responses
-	actor_setState(actor, actor->state);
-
-	if(actor->body.position.z <= -199.0f) actor->body.position = (Vector3){0.0f, 0.0f, 200.0f};
 
     
 	///////////////////////////////////////////////////////////////////

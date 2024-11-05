@@ -124,49 +124,44 @@ void actorCollision_collideWithPlayground(Actor* actor) {
 }
 
 // HEXAGON TEST
-bool actorCollision_checkCapsuleHexagonGround(Actor* actor, ActorContactData* contact, ActorCollider* collider, const Triangle* hexagon)
+void actorCollision_updateBoxes(Actor* actor, ActorContactData* actor_contact, ActorCollider* actor_collider, Box box_collider[], size_t numBoxes)
 {
+    actorContactData_clear(actor_contact);
+	actorCollider_setVertical(actor_collider, &actor->body.position);
 
-    // Step 1: Check if either end of the capsule is within any of the hexagon's triangles
-    for (int i = 0; i < 6; i++)
+	// Check if the actor is neither jumping nor falling
+	if (actor->body.position.z != -2000.0f // magic number
+		&& actor->state != JUMP
+		&& actor->state != FALLING) {
+			
+		actor->state = FALLING;
+		actor->grounded = false;
+		actor->grounding_height = -2000.0f; // magic number
+        
+	}
+
+	
+
+	for (size_t i = 0; i < numBoxes; ++i)
     {
-        // Check the start point of the capsule
-        if (triangle_containsPoint(&hexagon[i], &collider->body.start))
+		if (actorCollision_contactBox(actor_collider, &box_collider[i]))
         {
-            // Step 2: Check if the player's z position matches the hexagon's z position
-            if (fabsf(actor->body.position.z - hexagon[i].vertA.z) < TOLERANCE)
-            {
-                // Step 3: Set ground response
-                actorCollision_setGroundResponse(actor, contact, collider);
-                return true; // Capsule is within hexagon and ground response has been set
-            }
-        }
+			actorCollision_contactBoxSetData(actor_contact, actor_collider, &box_collider[i]);
+			actorCollision_setResponse(&actor[0], actor_contact, actor_collider);
+        
+			actor->hasCollided = true; // Set to true only if collision occurs
+			actor->grounded = true;    // Set grounded if we have a collision
+			actor->state = STAND_IDLE;
+			break; // Exit after the first collision
+		} else {
+			actor->hasCollided = false;
+		}
+	}
 
-        // Check the end point of the capsule if length is greater than zero
-        if (collider->body.length > 0 && triangle_containsPoint(&hexagon[i], &collider->body.end))
-        {
-            if (fabsf(actor->body.position.z - hexagon[i].vertA.z) < TOLERANCE)
-            {
-                actorCollision_setGroundResponse(actor, contact, collider);
-                return true;
-            }
-        }
-    }
-    
-    // Step 4: Check if the distance from the hexagon's edges intersects with the capsule's radius
-    for (int i = 0; i < 6; i++)
-    {
-        if (capsule_intersectsEdge(&collider->body, &hexagon[i].edge.start, &hexagon[i].edge.end))
-        {
-            if (fabsf(actor->body.position.z - hexagon[i].edge.start.z) < TOLERANCE)
-            {
-                actorCollision_setGroundResponse(actor, contact, collider);
-                return true;
-            }
-        }
-    }
+	// Call setState after processing collision responses
+	actor_setState(actor, actor->state);
 
-    return false; // Capsule is not within the hexagon or is at a different z level
+	if(actor->body.position.z <= -199.0f) actor->body.position = (Vector3){0.0f, 0.0f, 200.0f};
 }
 
 #endif
