@@ -37,13 +37,13 @@ void actorControl_moveWithStick(Actor *actor, ControllerData *control, float cam
     int deadzone = 6;
     float stick_magnitude = 0; 
 
-    if (fabs(control->input.stick_x) >= deadzone || fabs(control->input.stick_y) >= deadzone) {
+    if (fabsf(control->input.stick_x) >= deadzone || fabsf(control->input.stick_y) >= deadzone) {
 
         Vector2 stick = {control->input.stick_x, control->input.stick_y};
         
         stick_magnitude = vector2_magnitude(&stick);
         actor->horizontal_target_speed = stick_magnitude * 4;
-        actor->target_yaw = deg(atan2(control->input.stick_x, -control->input.stick_y) - rad(camera_angle_around - (0.5 * camera_offset)));
+        actor->target_yaw = deg(fm_atan2f(control->input.stick_x, -control->input.stick_y) - rad(camera_angle_around - (0.5 * camera_offset)));
     }
 
     

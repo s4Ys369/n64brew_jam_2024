@@ -208,16 +208,16 @@ bool quaternion_equals(const Quaternion* q, const Quaternion* r) {
 /* Initializes the quaternion using Euler angles. */
 void quaternion_setFromEulerAngles(Quaternion* quaternion, float angleX, float angleY, float angleZ) {
     float angle = angleX * 0.5f;
-    float sinX = sinf(angle);
-    float cosX = cosf(angle);
+    float sinX = fm_sinf(angle);
+    float cosX = fm_cosf(angle);
 
     angle = angleY * 0.5f;
-    float sinY = sinf(angle);
-    float cosY = cosf(angle);
+    float sinY = fm_sinf(angle);
+    float cosY = fm_cosf(angle);
 
     angle = angleZ * 0.5f;
-    float sinZ = sinf(angle);
-    float cosZ = cosf(angle);
+    float sinZ = fm_sinf(angle);
+    float cosZ = fm_cosf(angle);
 
     float cosYcosZ = cosY * cosZ;
     float sinYcosZ = sinY * cosZ;
@@ -389,11 +389,11 @@ Quaternion quaternion_slerp(const Quaternion* q, const Quaternion* r, float t) {
     float theta = acosf(cosineTheta);
 
     /* Compute sin(theta) */
-    float sineTheta = sinf(theta);
+    float sineTheta = fm_sinf(theta);
 
     /* Compute the two coefficients that are in the spherical linear interpolation formula */
-    float coeff1 = sinf((1.0f - t) * theta) / sineTheta;
-    float coeff2 = sinf(t * theta) / sineTheta * invert;
+    float coeff1 = fm_sinf((1.0f - t) * theta) / sineTheta;
+    float coeff2 = fm_sinf(t * theta) / sineTheta * invert;
 
     /* Compute and return the interpolated quaternion */
     Quaternion q1 = quaternion_returnScaled(q, coeff1);

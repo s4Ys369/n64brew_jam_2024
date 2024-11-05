@@ -34,7 +34,7 @@ void actorCollision_solvePenetration(Actor* actor, ActorContactData* contact, Ac
     float numerator = contact->displacement + collider->body.radius - vector3_returnDotProduct(&contact->data.point, &contact->data.normal);
 
     float t;
-    if (fabs(denominator) > 0.0001f) t = numerator / denominator;
+    if (fabsf(denominator) > 0.0001f) t = numerator / denominator;
     else return;
 
     Vector3 axis_closest_at_contact = contact->data.point;
@@ -64,7 +64,7 @@ void actorCollision_setGroundResponse(Actor* actor)
     actor->body.acceleration.z = 0;
     actor->body.velocity.z = 0;
     actor->grounding_height = actor->body.position.z;
-    actor_setState(actor, actor->previous_state);
+    actor->state = actor->previous_state;
 }
 
 void actorCollision_setCeilingResponse(Actor* actor, ActorContactData* contact)
@@ -78,7 +78,13 @@ void actorCollision_setCeilingResponse(Actor* actor, ActorContactData* contact)
         actor->body.velocity.x = 0.0f;
         actor->body.velocity.y = 0.0f;
     }
-    actor_setState(actor, FALLING);
+
+    // Possible fix for Sloped Ceilings forcing Player downwards
+    if(!(actor->grounded))
+    {
+        actor->state = FALLING;
+        actor->hasCollided = false;
+    }
 }
 
 void actorCollision_setResponse(Actor* actor, ActorContactData* contact, ActorCollider* collider)
@@ -86,7 +92,7 @@ void actorCollision_setResponse(Actor* actor, ActorContactData* contact, ActorCo
     actorContactData_setAngleOfIncidence(contact, &actor->body.velocity);
     actorCollision_solvePenetration(actor, contact, collider);
 
-    if (contact->slope > 0 && contact->slope < 50) {
+    if (contact->slope >= 0 && contact->slope < 50) {
         actorCollision_setGroundResponse(actor);
         actorCollision_collideAndSlide(actor, contact);
     }

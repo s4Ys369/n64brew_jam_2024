@@ -7,12 +7,12 @@
 void gameState_setIntro();
 void gameState_setMainMenu();
 
-void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery, PlayerData* player);
-void gameState_setPause(Game* game, Actor* actors, Scenery* scenery, PlayerData* player);
+void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerData* player, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[]);
+void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, PlayerData* player, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[]);
 
 void gameState_setGameOver();
 
-void game_play(Game* game, Actor* actors, Scenery* scenery, PlayerData* players);
+void game_play(Game* game, Actor* actor, Scenery* scenery, PlayerData* players, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[]);
 
 
 // function implementations
@@ -26,8 +26,7 @@ void gameState_setMainMenu()
     // code for the game over state
 }
 
-
-void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery, PlayerData* player)
+void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerData* player, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[])
 {
 	
 	// ======== Update ======== //
@@ -36,8 +35,37 @@ void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery, PlayerDa
 
 	for (int i = 0; i < core_get_playercount(); i++) {
 		controllerData_getInputs(player[i].port, game->control[i]);
-		actor_update(&actors[i], game->control[i], game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
+		actor_update(&actor[i], game->control[i], game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
 	}
+
+
+	// new code for collision detection /////////////////////////////////
+
+    actorContactData_clear(actor_contact);
+    actorCollider_setVertical(actor_collider, &actor->body.position);
+
+    if (actor->body.position.z != 0
+        && actor->state != JUMP) {
+
+        actor->grounding_height = 0.0f;
+        if(!(actor->hasCollided)) actor->state = FALLING;
+    }
+
+	for(int i = 0; i < SCENERY_COUNT -1; ++i) // Objects minus room
+	{
+		if (actorCollision_contactBox(actor_collider, &box_collider[i])) {
+    	    actorCollision_contactBoxSetData(actor_contact, actor_collider, &box_collider[i]);
+    	    actorCollision_setResponse(&actor[0], actor_contact, actor_collider);
+			actor->hasCollided = true;
+    	} else {
+			actor->hasCollided = false;
+		}
+	}
+
+	actor_setState(actor, actor->state);
+    
+	///////////////////////////////////////////////////////////////////
+
 
 	// CAM SWITCH TEST
 	static uint8_t camSwitch = 0;
@@ -49,9 +77,9 @@ void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery, PlayerDa
 	if (game->control[0]->btn.b && (!(game->control[0]->held.b)))
 	{
     		camSwitch ^= 1;
-			targetPosition = actors[camSwitch].body.position;
+			targetPosition = actor[camSwitch].body.position;
 	} else {
-			targetPosition = actors[camSwitch].body.position;
+			targetPosition = actor[camSwitch].body.position;
 	}
 
 	if (camOrbit.x != targetPosition.x || camOrbit.y != targetPosition.y || camOrbit.z != targetPosition.z)
@@ -77,23 +105,22 @@ void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery, PlayerDa
 	
 	for (int i = 0; i < ACTOR_COUNT; i++) {
 		
-		actor_draw(&actors[i]);
+		actor_draw(&actor[i]);
 	};
 
 	t3d_matrix_pop(1);
-
-	game->syncPoint = rspq_syncpoint_new();
-
 	ui_fps();
 	ui_printf("STATE %d", game->state);
 	ui_input_display(game->control[0]);
+
+	game->syncPoint = rspq_syncpoint_new();
 
 	rdpq_detach_show();
 	sound_update_buffer();
 }
 
 
-void gameState_setPause(Game* game, Actor* actors, Scenery* scenery, PlayerData* player)
+void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, PlayerData* player, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[])
 {
 	// ======== Update ======== //
 
@@ -101,7 +128,7 @@ void gameState_setPause(Game* game, Actor* actors, Scenery* scenery, PlayerData*
 	controllerData_getInputs(player[0].port, game->control[0]);
 
 	cameraControl_setOrbitalMovement(&game->scene.camera, game->control[0]);
-	camera_getMinigamePosition(&game->scene.camera, actors[0].body.position, game->timing.frame_time_s);
+	camera_getMinigamePosition(&game->scene.camera, actor[0].body.position, game->timing.frame_time_s);
 	camera_set(&game->scene.camera, &game->screen);
 
 	// ======== Draw ======== //
@@ -136,10 +163,8 @@ void gameState_setGameOver()
     // code for the game over state
 }
 
-void game_play(Game* game, Actor* actors, Scenery* scenery, PlayerData* players)
+void game_play(Game* game, Actor* actor, Scenery* scenery, PlayerData* players, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[])
 {
-	for(;;)
-	{
 		game_setControlData(game);
 		switch(game->state)
 		{
@@ -152,11 +177,11 @@ void game_play(Game* game, Actor* actors, Scenery* scenery, PlayerData* players)
 				break;
 			}
 			case GAMEPLAY:{
-				gameState_setGameplay(game, actors, scenery, players);
+				gameState_setGameplay(game, actor, scenery, players,actor_collider, actor_contact, box_collider);
 				break;
 			}
 			case PAUSE:{
-				gameState_setPause(game, actors, scenery, players);
+				gameState_setPause(game, actor, scenery, players,actor_collider, actor_contact, box_collider);
 				break;
 			}
 			case GAME_OVER:{
@@ -164,8 +189,7 @@ void game_play(Game* game, Actor* actors, Scenery* scenery, PlayerData* players)
 				break;
 			}
 		}
-		
-	}
+
 }
 
 #endif

@@ -33,7 +33,7 @@ void camera_orbit_withStick(Camera *camera, ControllerData *data)
     float stick_x = 0;
     float stick_y = 0;
 
-    if (fabs(data->input.stick_x) >= deadzone || fabs(data->input.stick_y) >= deadzone) {
+    if (fabsf(data->input.stick_x) >= deadzone || fabsf(data->input.stick_y) >= deadzone) {
         stick_x = data->input.stick_x;
         stick_y = data->input.stick_y;
     }
