@@ -75,11 +75,13 @@ ActorContactData actor_contact;
 Scenery scenery[SCENERY_COUNT];
 
 void minigame_init()
-{      
-	game_init(&minigame);
+{
+    game_init(&minigame);
+    //rdpq_debug_start();
+    profile_data.frame_count = 0;
+    rspq_profile_start();
 
     // actors
-
     for (int i = 0; i < ACTOR_COUNT; i++) {
         actors[i] = actor_create(i, "rom:/game/s4ys.t3dm");
         actor_init(&actors[i]);

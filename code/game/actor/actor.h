@@ -166,6 +166,8 @@ Actor actor_create(uint32_t id, const char *model_path)
 	actor.armature.blend = t3d_skeleton_clone(&actor.armature.main, false);
 
     rspq_block_begin();
+	rdpq_sync_pipe();
+	rdpq_set_mode_standard();
     rdpq_set_prim_color(RGBA32(255, 255, 255, 255));
     t3d_model_draw_skinned(actor.model, &actor.armature.main);
     actor.dl = rspq_block_end();

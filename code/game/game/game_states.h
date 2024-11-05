@@ -1,6 +1,9 @@
 #ifndef GAME_STATES_H
 #define GAME_STATES_H
 
+#include "rspq_profile.h"
+static rspq_profile_data_t profile_data;
+
 
 // function prototypes
 
@@ -26,13 +29,17 @@ void gameState_setMainMenu()
     // code for the game over state
 }
 
-
+static uint32_t frameCounter = 0;
 void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerData* player, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[], size_t numBoxes)
 {
 	
 	// ======== Update ======== //
+	rdpq_sync_pipe();
+	rdpq_set_mode_standard();
+    t3d_frame_start();
 
 	time_setData(&game->timing);
+	frameCounter++;
 
 	for (int i = 0; i < ACTOR_COUNT; i++)
 	{
@@ -50,26 +57,31 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 	
 	screen_clearDisplay(&game->screen);
 	light_set(&game->scene.light);
+	
 
 	for (int i = 0; i < ACTOR_COUNT; i++)
 	{
+		rspq_flush();
+		rspq_wait();
+		rdpq_sync_pipe();
+		rdpq_set_mode_standard();
 		screen_clearT3dViewport(&game->screen.gameplay_viewport[i]);
 
-		t3d_matrix_push_pos(1);
-
 		for (int i = 0; i < SCENERY_COUNT; i++) {
-
+			t3d_matrix_push_pos(1);
 			scenery_draw(&scenery[i]);
+			t3d_matrix_pop(1);
 		};
 	
 		for (int i = 0; i < ACTOR_COUNT; i++) {
-
+			t3d_matrix_push_pos(1);
 			actor_draw(&actor[i]);
+			t3d_matrix_pop(1);
 		};
 
-		t3d_matrix_pop(1);
 	}
 
+	
 	game->syncPoint = rspq_syncpoint_new();
 
 	int sizeX = display_get_width();
@@ -100,6 +112,16 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 
 	rdpq_detach_show();
 	sound_update_buffer();
+
+	rspq_profile_next_frame();
+	if(frameCounter > 29)
+	{
+		rspq_profile_dump();
+		rspq_profile_reset();
+		frameCounter = 0;
+	}
+    rspq_profile_get_data(&profile_data);
+
 }
 
 
