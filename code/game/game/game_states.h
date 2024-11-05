@@ -42,28 +42,11 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorColl
 
 	// new code for collision detection /////////////////////////////////
 
-    actorContactData_clear(actor_contact);
-    actorCollider_setVertical(actor_collider, &actor->body.position);
-
-    if (actor->body.position.z != 0
-        && actor->state != JUMP) {
-
-        actor->grounding_height = 0.0f;
-        if(!(actor->hasCollided)) actor->state = FALLING;
-    }
-
-	for(size_t i = 0; i < numBoxes; ++i)
+	for (int i = 0; i < ACTOR_COUNT; i++)
 	{
-		if (actorCollision_contactBox(actor_collider, &box_collider[i])) {
-    	    actorCollision_contactBoxSetData(actor_contact, actor_collider, &box_collider[i]);
-    	    actorCollision_setResponse(&actor[0], actor_contact, actor_collider);
-			actor->hasCollided = true;
-    	} else {
-			actor->hasCollided = false;
-		}
+		actorCollision_updateBoxes(&actor[i], actor_contact, actor_collider, box_collider, numBoxes);
 	}
 
-	actor_setState(actor, actor->state);
     
 	///////////////////////////////////////////////////////////////////
 

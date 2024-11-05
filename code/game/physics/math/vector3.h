@@ -333,4 +333,13 @@ inline Vector3 vector3_flip_up(Vector3 vec)
     return result;
 }
 
+// Function to convert T3D AABB coordinates to engine's format
+Vector3 vector3_from_int16(const int16_t int_arr[3]) {
+    Vector3 vec;
+    vec.x = (float)int_arr[0];
+    vec.y = -(float)int_arr[2];
+    vec.z = (float)int_arr[1];
+    return vec;
+}
+
 #endif

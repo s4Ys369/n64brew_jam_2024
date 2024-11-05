@@ -14,5 +14,6 @@
 #include "collision/shapes/plane.h"
 #include "collision/shapes/ray.h"
 #include "collision/shapes/capsule.h"
+#include "collision/shapes/triangle.h"
 
 #endif

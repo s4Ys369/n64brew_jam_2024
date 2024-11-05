@@ -46,7 +46,7 @@ void actorState_setJump(Actor *actor)
     if (actor->previous_state != FALLING && actor->state != JUMP) actor->previous_state = actor->state;
     actor->state = JUMP;
     actor->grounded = 0;
-    //actor->grounding_height = -FLT_MAX;
+    actor->grounding_height = -2000.0f; // magic number
 }
 
 void actorState_setFalling (Actor *actor)
@@ -55,7 +55,7 @@ void actorState_setFalling (Actor *actor)
 
     if (actor->state != FALLING && actor->state != JUMP) actor->previous_state = actor->state;
     actor->state = FALLING;
-    //actor->grounding_height = -FLT_MAX;
+    actor->grounding_height = -2000.0f; // magic number
 }
 
 void actor_setState(Actor *actor, uint8_t state) 

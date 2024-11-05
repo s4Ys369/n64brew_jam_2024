@@ -44,6 +44,9 @@
 #include "game/game_control.h"
 #include "game/game_states.h"
 
+#include "objects/level.h"
+#include "objects/platform.h"
+
 
 const MinigameDef minigame_def = {
     .gamename = "Fall Guys Clone",
@@ -65,47 +68,9 @@ ActorContactData actor_contact;
 
 Scenery scenery[SCENERY_COUNT];
 
-// @TODO: find a better place for this logic
-ShapeFileData shapeData = {0};
-
-Box* box_colliders = NULL;
-
-void level_parse(const char *text_path, Box **colliders, ShapeFileData *shapeData)
-{
-    // If text file is successfully parsed
-    if (parseFile(text_path, shapeData))
-    {
-        // Allocate dynamic shape memory
-        *colliders = (Box *)malloc(sizeof(Box) * shapeData->numShapes);
-
-        // @TODO: Add support for spheres
-        for (size_t shapes = 0; shapes < shapeData->numShapes; ++shapes) 
-        {
-
-            // Parse position, scale, and rotation
-            Vector3 tempPos = vector3_from_array(shapeData->shapes[shapes].info.pos);
-            Vector3 tempScale = vector3_from_array(shapeData->shapes[shapes].info.dim);
-            Quaternion tempRot = quat_from_array(shapeData->shapes[shapes].info.rot);
-
-            // To match the input for the physics engine, switch to Z up, and convert rotations radians to degrees
-            Vector3 pos = vector3_flip_up(tempPos);
-            Vector3 scale = vector3_flip_up(tempScale);
-			Vector3 rot = vector3_fromQuaternion(tempRot);
-			Vector3 colRot = vector3_flip_up(rot);
-            colRot.x = deg(colRot.x);
-            colRot.y = deg(colRot.y);
-            colRot.z = deg(colRot.z);
-
-			// Applying transformed values to box colliders
-            box_init(&(*colliders)[shapes], scale, pos, colRot, 500.0f); // If using `--base-scale=n` with T3D, enter n here as the scalar
-        }
-    }
-}
-
 void minigame_init()
 {      
 	game_init(&minigame);
-    level_parse("rom:/game/levels/testLevel.txt", &box_colliders, &shapeData);
 
     // actors
     actor[0] = actor_create(0, "rom:/game/wolfie.t3dm");
@@ -118,12 +83,14 @@ void minigame_init()
     actorCollider_init(&actor_collider);
     
     // scenery
-    scenery[0] = scenery_create(0, "rom:/game/testLevel.t3dm");
+    scenery[0] = scenery_create(0, "rom:/game/hex_platform.t3dm");
 
     for (int i = 0; i < SCENERY_COUNT; i++) {
 
         scenery_set(&scenery[i]);
     }
+
+    platform_init(&hexagon, scenery[0].model);
 
 }
 
@@ -131,11 +98,12 @@ void minigame_fixedloop(){}
 
 void minigame_loop()
 {	
-	game_play(&minigame, actor, scenery, &actor_collider, &actor_contact, box_colliders, shapeData.numShapes);
+	game_play(&minigame, actor, scenery, &actor_collider, &actor_contact, hexagon.collider->boxes, 3);
 }
 void minigame_cleanup()
 {
     destroyShapeFileData(&shapeData); // REMEMBER to destroy shape data when switch levels or ending minigame
+    platform_free(&hexagon);
 
 	for (int i = 0; i < SCENERY_COUNT; i++) {
 
