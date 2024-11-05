@@ -108,7 +108,7 @@ void minigame_init()
     level_parse("rom:/game/levels/testLevel.txt", &box_colliders, &shapeData);
 
     // actors
-    actor[0] = actor_create(0, "rom:/game/pipo.t3dm");
+    actor[0] = actor_create(0, "rom:/game/wolfie.t3dm");
 
     for (int i = 0; i < ACTOR_COUNT; i++) {
         actor_init(&actor[i]);
