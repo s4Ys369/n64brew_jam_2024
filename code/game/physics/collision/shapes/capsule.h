@@ -188,6 +188,25 @@ bool capsule_intersectionRay(const Capsule* capsule, const Ray* ray)
     return false;
 }
 
+bool capsule_intersectsEdge(const Capsule* capsule, const Vector3* edgeStart, const Vector3* edgeEnd) {
+    // Step 1: Find the closest point on the capsule's segment to the edge
+    Vector3 closestPointOnCapsule = segment_closestToPoint(&capsule->start, &capsule->end, edgeStart);
+    Vector3 closestPointOnEdge = segment_closestToPoint(edgeStart, edgeEnd, &capsule->start);
+    
+    // Step 2: Calculate the distance vector between these two closest points
+    Vector3 distanceVector = vector3_difference(&closestPointOnCapsule, &closestPointOnEdge);
+    
+    // Step 3: Calculate the squared distance
+    float distanceSquared = vector3_squaredMagnitude(&distanceVector);
+    
+    // Step 4: Calculate the combined radius
+    float combinedRadius = capsule->radius; // Adjust if the edge has its own thickness
+
+    // Step 5: Check for intersection
+    return distanceSquared <= combinedRadius * combinedRadius;
+}
+
+
 
 
 /*

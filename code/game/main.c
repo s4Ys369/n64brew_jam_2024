@@ -102,10 +102,25 @@ void level_parse(const char *text_path, Box **colliders, ShapeFileData *shapeDat
     }
 }
 
+// HEXAGON TEST
+Triangle hexagon[6];
+
+// Define the hexagon vertices and center
+Vector3 center = { 0.0f, 0.0f, 0.0f };
+Vector3 vertices[] = {
+    { 400.0f, 0.0f,  250.0f },
+    { 0.0f, 0.0f,  450.0f },
+    { -400.0f, 0.0f,  250.0f },
+    { -400.0f, 0.0f, -250.0f },
+    { 400.0f, 0.0f, -250.0f },
+    { 0.0f,  0.0f, -450.0f }
+};
+
 void minigame_init()
 {      
 	game_init(&minigame);
     level_parse("rom:/game/levels/testLevel.txt", &box_colliders, &shapeData);
+    hex_init(hexagon, &center, vertices);
 
     // actors
     actor[0] = actor_create(0, "rom:/game/pipo.t3dm");

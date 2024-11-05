@@ -123,4 +123,50 @@ void actorCollision_collideWithPlayground(Actor* actor) {
     if (actor->body.position.z < -2000.0f) actor->body.position.z = -2000.0f;
 }
 
+// HEXAGON TEST
+bool actorCollision_checkCapsuleHexagonGround(Actor* actor, ActorContactData* contact, ActorCollider* collider, const Triangle* hexagon)
+{
+
+    // Step 1: Check if either end of the capsule is within any of the hexagon's triangles
+    for (int i = 0; i < 6; i++)
+    {
+        // Check the start point of the capsule
+        if (triangle_containsPoint(&hexagon[i], &collider->body.start))
+        {
+            // Step 2: Check if the player's z position matches the hexagon's z position
+            if (fabsf(actor->body.position.z - hexagon[i].vertA.z) < TOLERANCE)
+            {
+                // Step 3: Set ground response
+                actorCollision_setGroundResponse(actor, contact, collider);
+                return true; // Capsule is within hexagon and ground response has been set
+            }
+        }
+
+        // Check the end point of the capsule if length is greater than zero
+        if (collider->body.length > 0 && triangle_containsPoint(&hexagon[i], &collider->body.end))
+        {
+            if (fabsf(actor->body.position.z - hexagon[i].vertA.z) < TOLERANCE)
+            {
+                actorCollision_setGroundResponse(actor, contact, collider);
+                return true;
+            }
+        }
+    }
+    
+    // Step 4: Check if the distance from the hexagon's edges intersects with the capsule's radius
+    for (int i = 0; i < 6; i++)
+    {
+        if (capsule_intersectsEdge(&collider->body, &hexagon[i].edge.start, &hexagon[i].edge.end))
+        {
+            if (fabsf(actor->body.position.z - hexagon[i].edge.start.z) < TOLERANCE)
+            {
+                actorCollision_setGroundResponse(actor, contact, collider);
+                return true;
+            }
+        }
+    }
+
+    return false; // Capsule is not within the hexagon or is at a different z level
+}
+
 #endif

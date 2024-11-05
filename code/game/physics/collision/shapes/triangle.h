@@ -1,12 +1,18 @@
 #ifndef TRIANGLE_H
 #define TRIANGLE_H
 
+typedef struct {
+    Vector3 start;
+    Vector3 end;
+} Edge;
+
 // Structure for a triangular plane
 typedef struct Triangle {
     Vector3 vertA;
     Vector3 vertB;
     Vector3 vertC;
     Vector3 normal;
+    Edge edge;
 } Triangle;
 
 
@@ -41,5 +47,25 @@ bool triangle_containsPoint(const Triangle* triangle, const Vector3* point)
     return fabsf(distance) < TOLERANCE;
 }
 
+// Initialize edges of the hexagon from vertices
+void hex_initEdges(Edge* edges, Vector3* vertices) {
+    for (int i = 0; i < 6; ++i) {
+        edges[i].start = vertices[i];
+        edges[i].end = vertices[(i + 1) % 6]; // Loop back to the first vertex
+    }
+}
+
+// Initialize each triangle in the hexagon
+void hex_init(Triangle* hexagon, Vector3* center, Vector3* vertices)
+{
+    triangle_setVertices(&hexagon[0], center, &vertices[0], &vertices[1]);
+    triangle_setVertices(&hexagon[1], center, &vertices[1], &vertices[2]);
+    triangle_setVertices(&hexagon[2], center, &vertices[2], &vertices[3]);
+    triangle_setVertices(&hexagon[3], center, &vertices[3], &vertices[4]);
+    triangle_setVertices(&hexagon[4], center, &vertices[4], &vertices[5]);
+    triangle_setVertices(&hexagon[5], center, &vertices[5], &vertices[0]);
+
+    hex_initEdges(&hexagon->edge, vertices);
+}
 
 #endif // TRIANGLE_H
