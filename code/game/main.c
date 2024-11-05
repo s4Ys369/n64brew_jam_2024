@@ -6,7 +6,7 @@
 #include <t3d/t3danim.h>
 #include <t3d/t3ddebug.h>
 
-#define ACTOR_COUNT 1
+#define ACTOR_COUNT 4
 #define SCENERY_COUNT 1
 
 #include "../../core.h"
@@ -79,9 +79,9 @@ void minigame_init()
 	game_init(&minigame);
 
     // actors
-    actors[0] = actor_create(0, "rom:/game/s4ys.t3dm");
 
     for (int i = 0; i < ACTOR_COUNT; i++) {
+        actors[i] = actor_create(i, "rom:/game/s4ys.t3dm");
         actor_init(&actors[i]);
     }
 

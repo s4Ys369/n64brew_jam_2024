@@ -3,7 +3,7 @@
 
 typedef struct
 {
-	Camera camera;
+	Camera camera[4];
 	LightData light;
 
 }Scene;
@@ -11,7 +11,8 @@ typedef struct
 
 void scene_init(Scene *scene)
 {
-    scene->camera = camera_create();
+    for(uint32_t i = 0; i < ACTOR_COUNT; i++)
+        scene->camera[i] = camera_create();
     scene->light = light_create();
 }
 

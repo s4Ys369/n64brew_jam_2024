@@ -34,40 +34,67 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 
 	time_setData(&game->timing);
 
-	for (int i = 0; i < core_get_playercount(); i++) {
+	for (int i = 0; i < ACTOR_COUNT; i++)
+	{
 		controllerData_getInputs(player[i].port, game->control[i]);
-		actor_update(&actor[i], game->control[i], game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
+		actor_update(&actor[i], game->control[i], game->timing.frame_time_s, game->scene.camera[i].angle_around_barycenter, game->scene.camera[i].offset_angle, &game->syncPoint);
+		cameraControl_setOrbitalMovement(&game->scene.camera[i], game->control[i]);
+		camera_getMinigamePosition(&game->scene.camera[i], actor[i].body.position, game->timing.frame_time_s);
+		camera_set(&game->scene.camera[i], &game->screen.gameplay_viewport[i]);
 	}
 
 	actorCollision_updateBoxes(&actor[0], actor_contact, actor_collider, box_collider, numBoxes);
-
-	cameraControl_setOrbitalMovement(&game->scene.camera, game->control[0]);
-	camera_getMinigamePosition(&game->scene.camera, actor[0].body.position, game->timing.frame_time_s);
-	camera_set(&game->scene.camera, &game->screen);
 
 
 	// ======== Draw ======== //
 	
 	screen_clearDisplay(&game->screen);
-	screen_clearT3dViewport(&game->screen);
-
 	light_set(&game->scene.light);
 
-	t3d_matrix_push_pos(1);
+	for (int i = 0; i < ACTOR_COUNT; i++)
+	{
+		screen_clearT3dViewport(&game->screen.gameplay_viewport[i]);
 
-	for (int i = 0; i < SCENERY_COUNT; i++) {
+		t3d_matrix_push_pos(1);
 
-		scenery_draw(&scenery[i]);
-	};
+		for (int i = 0; i < SCENERY_COUNT; i++) {
+
+			scenery_draw(&scenery[i]);
+		};
 	
-	for (int i = 0; i < ACTOR_COUNT; i++) {
-		
-		actor_draw(&actor[i]);
-	};
+		for (int i = 0; i < ACTOR_COUNT; i++) {
 
-	t3d_matrix_pop(1);
+			actor_draw(&actor[i]);
+		};
+
+		t3d_matrix_pop(1);
+	}
 
 	game->syncPoint = rspq_syncpoint_new();
+
+	int sizeX = display_get_width();
+    int sizeY = display_get_height();
+    rdpq_sync_pipe();
+    rdpq_set_scissor(0, 0, sizeX, sizeY);
+    rdpq_set_mode_standard();
+    rdpq_set_mode_fill(ui_color(BLACK));
+
+    // draw thick lines between the screens
+    switch (ACTOR_COUNT){
+      case 1:
+        break;
+      case 2:
+        rdpq_fill_rectangle(0, sizeY/2-1, sizeX, sizeY/2+1);
+        break;
+      case 3:
+        rdpq_fill_rectangle(0, sizeY/2-1, sizeX, sizeY/2+1);
+        rdpq_fill_rectangle(sizeX/2-1, sizeY/2, sizeX/2+1, sizeY);
+        break;
+      case 4:
+        rdpq_fill_rectangle(0, sizeY/2-1, sizeX, sizeY/2+1);
+        rdpq_fill_rectangle(sizeX/2-1, 0, sizeX/2+1, sizeY);
+        break;
+    }
 
 	ui_fps();
 
@@ -83,14 +110,14 @@ void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, PlayerData* 
 	time_setData(&game->timing);
 	controllerData_getInputs(player[0].port, game->control[0]);
 
-	cameraControl_setOrbitalMovement(&game->scene.camera, game->control[0]);
-	camera_getMinigamePosition(&game->scene.camera, actor[0].body.position, game->timing.frame_time_s);
-	camera_set(&game->scene.camera, &game->screen);
+	cameraControl_setOrbitalMovement(&game->scene.camera[0], game->control[0]);
+	camera_getMinigamePosition(&game->scene.camera[0], actor[0].body.position, game->timing.frame_time_s);
+	camera_set(&game->scene.camera[0], &game->screen.gameplay_viewport[0]);
 
 	// ======== Draw ======== //
 	
 	screen_clearDisplay(&game->screen);
-	screen_clearT3dViewport(&game->screen);
+	screen_clearT3dViewport(&game->screen.gameplay_viewport[0]);
 
 	light_set(&game->scene.light);
 
@@ -135,7 +162,7 @@ void game_play(Game* game, Actor* actor, Scenery* scenery, PlayerData* players, 
 				break;
 			}
 			case PAUSE:{
-				gameState_setPause(game, actor, scenery, players,actor_collider, actor_contact, box_collider);
+				//gameState_setPause(game, actor, scenery, players,actor_collider, actor_contact, box_collider);
 				break;
 			}
 			case GAME_OVER:{

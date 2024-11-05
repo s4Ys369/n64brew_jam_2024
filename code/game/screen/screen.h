@@ -5,9 +5,12 @@
 typedef struct {
 	
 	surface_t depthBuffer; 
-	T3DViewport gameplay_viewport;
+	T3DViewport gameplay_viewport[4];
 
 } Screen;
+
+#define SCREEN_WIDTH 320
+#define SCREEN_HEIGHT 240
 
 
 void screen_initDisplay(Screen* screen);
@@ -27,15 +30,42 @@ void screen_clearDisplay(Screen* screen)
 	t3d_screen_clear_depth();
 }
 
-void screen_initT3dViewport(Screen* screen)
-{
-	screen->gameplay_viewport = t3d_viewport_create();
-}
-
-void screen_clearT3dViewport(Screen* screen)
+void screen_clearT3dViewport(T3DViewport* vp)
 {
 	t3d_frame_start();
-	t3d_viewport_attach(&screen->gameplay_viewport);
+	t3d_viewport_attach(vp);
+}
+void screen_initT3dViewport(Screen* screen)
+{
+	if (ACTOR_COUNT > 1)
+	{
+    	if (ACTOR_COUNT == 2)
+		{
+			screen->gameplay_viewport[0] = t3d_viewport_create();
+			screen->gameplay_viewport[1] = t3d_viewport_create();
+			t3d_viewport_set_area(&screen->gameplay_viewport[0], 0,             0,               SCREEN_WIDTH,   SCREEN_HEIGHT/2);
+			t3d_viewport_set_area(&screen->gameplay_viewport[1], 0,             SCREEN_HEIGHT/2, SCREEN_WIDTH,   SCREEN_HEIGHT/2);
+    	} else if (ACTOR_COUNT == 3) {
+			screen->gameplay_viewport[0] = t3d_viewport_create();
+			screen->gameplay_viewport[1] = t3d_viewport_create();
+			screen->gameplay_viewport[2] = t3d_viewport_create();
+			t3d_viewport_set_area(&screen->gameplay_viewport[0], 0,              0,               SCREEN_WIDTH,     SCREEN_HEIGHT/2);
+			t3d_viewport_set_area(&screen->gameplay_viewport[1], 0,              SCREEN_HEIGHT/2, SCREEN_WIDTH/2,   SCREEN_HEIGHT/2-2);
+			t3d_viewport_set_area(&screen->gameplay_viewport[2], SCREEN_WIDTH/2, SCREEN_HEIGHT/2, SCREEN_WIDTH/2-2, SCREEN_HEIGHT/2-2);
+    	} else if (ACTOR_COUNT == 4) {
+			screen->gameplay_viewport[0] = t3d_viewport_create();
+			screen->gameplay_viewport[1] = t3d_viewport_create();
+			screen->gameplay_viewport[2] = t3d_viewport_create();
+			screen->gameplay_viewport[3] = t3d_viewport_create();
+			t3d_viewport_set_area(&screen->gameplay_viewport[0], 0,              0,               SCREEN_WIDTH/2,   SCREEN_HEIGHT/2);
+			t3d_viewport_set_area(&screen->gameplay_viewport[1], SCREEN_WIDTH/2, 0,               SCREEN_WIDTH/2-2, SCREEN_HEIGHT/2);
+			t3d_viewport_set_area(&screen->gameplay_viewport[2], 0,              SCREEN_HEIGHT/2, SCREEN_WIDTH/2,   SCREEN_HEIGHT/2-2);
+			t3d_viewport_set_area(&screen->gameplay_viewport[3], SCREEN_WIDTH/2, SCREEN_HEIGHT/2, SCREEN_WIDTH/2-2, SCREEN_HEIGHT/2-2);
+    	}
+	} else {
+		screen->gameplay_viewport[0] = t3d_viewport_create();
+		t3d_viewport_set_area(&screen->gameplay_viewport[0],   0,               0,              SCREEN_WIDTH,      SCREEN_HEIGHT);
+  	}
 }
 
 

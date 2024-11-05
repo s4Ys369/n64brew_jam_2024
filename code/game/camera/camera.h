@@ -86,7 +86,7 @@ typedef struct {
 
 Camera camera_create();
 void camera_getOrbitalPosition(Camera *camera, Vector3 barycenter, float frame_time);
-void camera_set(Camera *camera, Screen* screen);
+void camera_set(Camera *camera, T3DViewport* vp);
 
 
 // function implementations
@@ -229,17 +229,17 @@ void camera_getMinigamePosition(Camera *camera, Vector3 barycenter, float frame_
 }
 
 
-void camera_set(Camera *camera, Screen* screen)
+void camera_set(Camera *camera, T3DViewport* vp)
 {
     t3d_viewport_set_projection(
-        &screen->gameplay_viewport, 
+        vp, 
         T3D_DEG_TO_RAD(camera->field_of_view), 
         camera->near_clipping,
 		camera->far_clipping
     );
 
     t3d_viewport_look_at(
-        &screen->gameplay_viewport, 
+        vp, 
         &(T3DVec3){{camera->position.x, camera->position.y, camera->position.z}}, 
         &(T3DVec3){{camera->target.x, camera->target.y, camera->target.z}}, 
         &(T3DVec3){{0, 0, 1}}
