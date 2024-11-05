@@ -37,7 +37,7 @@ void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery, PlayerDa
 	for (int i = 0; i < core_get_playercount(); i++) {
 		controllerData_getInputs(player[i].port, game->control[i]);
 		actor_update(&actors[i], game->control[i], game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
-	};
+	}
 
 	// CAM SWITCH TEST
 	static uint8_t camSwitch = 0;
@@ -46,7 +46,7 @@ void gameState_setGameplay(Game* game, Actor* actors, Scenery* scenery, PlayerDa
 
 	cameraControl_setOrbitalMovement(&game->scene.camera, game->control[0]);
 
-	if (game->control[0]->pressed.b)
+	if (game->control[0]->btn.b && (!(game->control[0]->held.b)))
 	{
     		camSwitch ^= 1;
 			targetPosition = actors[camSwitch].body.position;
