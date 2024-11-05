@@ -4,8 +4,7 @@ DIALOG_DIR = $(ASSETS)/dialogs
 LEVEL_DIR = $(ASSETS)/levels
 UI_DIR = $(ASSETS)/ui
 
-TXT_FILES :=  $(LEVEL_DIR)/testLevel.txt \
-              $(LEVEL_DIR)/platform.txt
+TXT_FILES :=  $(LEVEL_DIR)/testLevel.txt
 
 T3DM_FILES := $(ASSETS)/capsule.t3dm \
               $(ASSETS)/n64logo.t3dm \
@@ -52,7 +51,7 @@ $(ASSETS)/cube.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/pipo.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/room.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
 $(ASSETS)/testLevel.t3dm: T3DM_FLAGS = --base-scale=500 --bvh
-$(ASSETS)/hex_platform.t3dm: T3DM_FLAGS = --base-scale=5 --bvh
+$(ASSETS)/hex_platform.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
 
 # font64 flags
 $(UI_DIR)/fonts/chunkysans.font64: MKFONT_FLAGS += --outline 2 --size 12
