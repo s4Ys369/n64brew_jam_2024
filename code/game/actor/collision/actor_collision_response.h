@@ -58,14 +58,24 @@ void actorCollision_collideAndSlide(Actor* actor, ActorContactData* contact)
     vector3_add(&actor->body.position, &projection);
 }
 
-void actorCollision_setGroundResponse(Actor* actor)
+void actorCollision_setGroundResponse(Actor* actor, ActorContactData* contact, ActorCollider* collider)
 {
     actor->grounded = true;
     actor->body.acceleration.z = 0;
     actor->body.velocity.z = 0;
     actor->grounding_height = actor->body.position.z;
     actor->state = actor->previous_state;
+
+    // Lower the ground height slightly when on a slope
+    if (contact->slope >= 1.0f && contact->slope < 50.0f && contact->ground_distance > 0.1f)
+    {
+        float slope_offset = 0.1f * contact->slope;
+        actor->grounding_height -= slope_offset;
+        if(actor->body.velocity.x != 0) actor->body.position.z = actor->grounding_height;
+        
+    } 
 }
+
 
 void actorCollision_setCeilingResponse(Actor* actor, ActorContactData* contact)
 {   
@@ -93,7 +103,7 @@ void actorCollision_setResponse(Actor* actor, ActorContactData* contact, ActorCo
     actorCollision_solvePenetration(actor, contact, collider);
 
     if (contact->slope >= 0 && contact->slope < 50) {
-        actorCollision_setGroundResponse(actor);
+        actorCollision_setGroundResponse(actor, contact, collider);
         actorCollision_collideAndSlide(actor, contact);
     }
     else if (contact->slope > 95 && actor->grounded == false) {
@@ -110,7 +120,48 @@ void actorCollision_collideWithPlayground(Actor* actor) {
     if (actor->body.position.x < -1870) actor->body.position.x = -1875;
     if (actor->body.position.y > 1870) actor->body.position.y = 1875;
     if (actor->body.position.y < -1870) actor->body.position.y = -1875;
-    if (actor->body.position.z < 0) actor->body.position.z = 0;
+    if (actor->body.position.z < -2000.0f) actor->body.position.z = -2000.0f;
+}
+
+// HEXAGON TEST
+void actorCollision_updateBoxes(Actor* actor, ActorContactData* actor_contact, ActorCollider* actor_collider, Box box_collider[], size_t numBoxes)
+{
+    actorContactData_clear(actor_contact);
+	actorCollider_setVertical(actor_collider, &actor->body.position);
+
+	// Check if the actor is neither jumping nor falling
+	if (actor->body.position.z != -2000.0f // magic number
+		&& actor->state != JUMP
+		&& actor->state != FALLING) {
+			
+		actor->state = FALLING;
+		actor->grounded = false;
+		actor->grounding_height = -2000.0f; // magic number
+        
+	}
+
+	
+
+	for (size_t i = 0; i < numBoxes; ++i)
+    {
+		if (actorCollision_contactBox(actor_collider, &box_collider[i]))
+        {
+			actorCollision_contactBoxSetData(actor_contact, actor_collider, &box_collider[i]);
+			actorCollision_setResponse(&actor[0], actor_contact, actor_collider);
+        
+			actor->hasCollided = true; // Set to true only if collision occurs
+			actor->grounded = true;    // Set grounded if we have a collision
+			actor->state = STAND_IDLE;
+			break; // Exit after the first collision
+		} else {
+			actor->hasCollided = false;
+		}
+	}
+
+	// Call setState after processing collision responses
+	actor_setState(actor, actor->state);
+
+	if(actor->body.position.z <= -199.0f) actor->body.position = (Vector3){0.0f, 0.0f, 200.0f};
 }
 
 #endif

@@ -64,6 +64,10 @@ bool vector3_lessThan(const Vector3* v, const Vector3* w);
 bool vector3_approxEquals(const Vector3* v, const Vector3* w);
 Vector3 vector3_lerp(const Vector3* v1, const Vector3* v2, float t);
 
+Vector3 vector3_from_array(float arr[3]);
+Vector3 vector3_flip_coords(Vector3 vec);
+Vector3 vector3_flip_up(Vector3 vec);
+
 
 inline void vector3_init(Vector3 *v) 
 {
@@ -312,6 +316,44 @@ inline Vector3 vector3_lerp(const Vector3* v1, const Vector3* v2, float t)
     result.y = v1->y + (v2->y - v1->y) * t;
     result.z = v1->z + (v2->z - v1->z) * t;
     return result;
+}
+
+inline Vector3 vector3_from_array(float arr[3])
+{
+    Vector3 result;
+    result.x = arr[0];
+    result.y = arr[1];
+    result.z = arr[2];
+    return result;
+}
+
+// Function to convert a vector from a right-handed Y-up coordinate system to a left-handed Z-up coordinate system
+inline Vector3 vector3_flip_coords(Vector3 vec)
+{
+    Vector3 result;
+    result.x = vec.x;   
+    result.y = vec.z;
+    result.z = -vec.y;
+    return result;
+}
+
+// Function to convert a vector from a right-handed Y-up coordinate system to a right-handed Z-up coordinate system
+inline Vector3 vector3_flip_up(Vector3 vec)
+{
+    Vector3 result;
+    result.x = vec.x;
+    result.y = -vec.z;
+    result.z = vec.y;
+    return result;
+}
+
+// Function to convert T3D AABB coordinates to engine's format
+inline Vector3 vector3_from_int16(const int16_t int_arr[3]) {
+    Vector3 vec;
+    vec.x = (float)int_arr[0];
+    vec.y = -(float)int_arr[2];
+    vec.z = (float)int_arr[1];
+    return vec;
 }
 
 #endif

@@ -6,13 +6,13 @@
 #include <t3d/t3danim.h>
 #include <t3d/t3ddebug.h>
 
-#include <stdbool.h>
-
-#define ACTOR_COUNT 2
-#define SCENERY_COUNT 4
+#define ACTOR_COUNT 1
+#define SCENERY_COUNT 1
 
 #include "../../core.h"
 #include "../../minigame.h"
+
+#include "txt/shapeParser.h"
 
 #include "screen/screen.h"
 #include "control/controls.h"
@@ -35,8 +35,6 @@
 
 #include "players/players.h"
 
-#include "players/players.h"
-
 #include "scene/scene.h"
 #include "scene/scenery.h"
 
@@ -47,6 +45,9 @@
 #include "game/game.h"
 #include "game/game_control.h"
 #include "game/game_states.h"
+
+#include "objects/level.h"
+#include "objects/platform.h"
 
 
 const MinigameDef minigame_def = {
@@ -73,26 +74,14 @@ ActorContactData actor_contact;
 
 Scenery scenery[SCENERY_COUNT];
 
-Box box_colliders[SCENERY_COUNT - 1]; // Objects minus room
-
-// Testing making the boxes' collisions larger than the model's 
-Vector3 boxSize =  {160.0f, 160.0f, 150.0f};
-Vector3 rampSize = {410.0f, 150.0f, 150.0f};
-
-void init_box(Box *box, Vector3 size, Vector3 center, Vector3 rotation) {
-        box->size = size;
-        box->center = center;
-        box->rotation = rotation;
-}
-
 void minigame_init()
 {      
 	game_init(&minigame);
 
     // actors
-	for (int i = 0; i < ACTOR_COUNT; i++)
-	{
-		actors[i] = actor_create(i, "rom:/game/pipo.t3dm");
+    actors[0] = actor_create(0, "rom:/game/s4ys.t3dm");
+
+    for (int i = 0; i < ACTOR_COUNT; i++) {
         actor_init(&actors[i]);
     }
 
@@ -100,29 +89,7 @@ void minigame_init()
     actorCollider_init(&actor_collider);
     
 	// scenery
-    scenery[0] = scenery_create(0, "rom:/game/testLevel.t3dm");
-
-    // Ceiling Test
-    scenery[1] = scenery_create(1, "rom:/game/cube.t3dm");
-    scenery[1].position = (Vector3){200.0f, 200.0f, 150.0f};
-    scenery[1].scale = (Vector3){1.5f, 1.5f, 1.5f};
-    scenery[1].rotation = (Vector3){0.0f, 0.0f, 0.0f};
-
-    // Box Test
-    scenery[2] = scenery_create(2, "rom:/game/cube.t3dm");
-    scenery[2].position = (Vector3){-170.0f, 200.0f, 60.0f};
-    scenery[2].scale = (Vector3){1.5f, 1.5f, 1.5f};
-    scenery[2].rotation = (Vector3){0.0f, 0.0f, 0.0f};
-
-    // Slope Test
-    scenery[3] = scenery_create(3, "rom:/game/cube.t3dm");
-    scenery[3].position = (Vector3){-200.0f, -200.0f, 25.0f};
-    scenery[3].scale =    (Vector3){4.0f, 1.5f, 1.5f};
-    scenery[3].rotation = (Vector3){0.0f, -30.0f, 20.0f};
-
-    init_box(&box_colliders[0], boxSize, (Vector3){200.0f, 200.0f, 150.0f}, (Vector3){0.0f, 0.0f, 0.0f}); // Ceiling
-    init_box(&box_colliders[1], boxSize, (Vector3){-170.0f, 200.0f, 60.0f}, (Vector3){0.0f, 0.0f, 0.0f}); // Box
-    init_box(&box_colliders[2], rampSize, (Vector3){-200.0f, -200.0f, 25.0f}, (Vector3){0.0f, 30.0f, -20.0f}); // Slope
+    scenery[0] = scenery_create(0, "rom:/game/hex_platform.t3dm");
 
     for (int i = 0; i < SCENERY_COUNT; i++)
 	{
@@ -134,6 +101,8 @@ void minigame_init()
 		player_init(p, actors[p], &players[p]);
 	}
 
+    platform_init(&hexagon, scenery[0].model);
+
 
 }
 
@@ -141,14 +110,18 @@ void minigame_fixedloop()
 {
 	for (int i = 0; i < core_get_playercount(); i++)
 		controllerData_getInputs(players[i].port, minigame.control[i]);
-}	
+
+}
 
 void minigame_loop()
 {
-	game_play(&minigame, actors, scenery, players, &actor_collider, &actor_contact, box_colliders);
+	game_play(&minigame, actors, scenery, players, &actor_collider, &actor_contact, hexagon.collider->boxes, 3);
 }
 void minigame_cleanup()
 {
+    //destroyShapeFileData(&shapeData); // REMEMBER to destroy shape data when switch levels or ending minigame
+    platform_free(&hexagon);
+
     // Step 1: Free subsystems
     sound_cleanup();
     ui_cleanup();
