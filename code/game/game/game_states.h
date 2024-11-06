@@ -39,9 +39,6 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 {
 	
 	// ======== Update ======== //
-	rdpq_sync_pipe();
-    t3d_frame_start();
-	rdpq_sync_tile();
 
 	time_setData(&game->timing);
 	frameCounter++;
@@ -52,51 +49,57 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 		actor_update(&actor[i], game->control[i], game->timing.frame_time_s, game->scene.camera[i].angle_around_barycenter, game->scene.camera[i].offset_angle, &game->syncPoint);
 		cameraControl_setOrbitalMovement(&game->scene.camera[i], game->control[i]);
 		camera_getMinigamePosition(&game->scene.camera[i], actor[i].body.position, game->timing.frame_time_s);
-		camera_set(&game->scene.camera[i], &game->screen.gameplay_viewport[i]);
+		actor_updateMat(&actor[i]);
 	}
 
 	actorCollision_updateBoxes(&actor[0], actor_contact, actor_collider, box_collider, numBoxes);
 
 
-	// ======== Draw ======== //
-	
+	// ======== Draw 3D ======== //
 	screen_clearDisplay(&game->screen);
 	light_set(&game->scene.light);
 	
 
+	// For each player
 	for (int i = 0; i < ACTOR_COUNT; i++)
 	{
-		rdpq_sync_pipe();
-		rdpq_sync_tile();
+		// Set projection and look at for each viewport based on player camera
+		camera_set(&game->scene.camera[i], &game->screen.gameplay_viewport[i]);
+
+		// Clear and attach player viewport
 		screen_clearT3dViewport(&game->screen.gameplay_viewport[i]);
 
 		t3d_matrix_push_pos(1);
 
+		// Draw updated scenery
 		for (int i = 0; i < SCENERY_COUNT; i++) {
 			
 			scenery_draw(&scenery[i]);
 		};
 	
+		// Draw updated players
 		for (int i = 0; i < ACTOR_COUNT; i++) {
 			actor_draw(&actor[i]);
 		};
 
 		t3d_matrix_pop(1);
 
-		game->syncPoint = rspq_syncpoint_new();
-
 	}
 
+	// Sync RSPQ after 3D
+	game->syncPoint = rspq_syncpoint_new();
+
+	// ======== Draw 2D ======== //
 
 	int sizeX = display_get_width();
-    int sizeY = display_get_height();
-    rdpq_sync_pipe();
-    rdpq_set_scissor(0, 0, sizeX, sizeY);
-    rdpq_set_mode_standard();
-    rdpq_set_mode_fill(ui_color(BLACK));
+	int sizeY = display_get_height();
+	rdpq_sync_pipe();
+	rdpq_set_scissor(0, 0, sizeX, sizeY);
+	rdpq_set_mode_standard();
+	rdpq_set_mode_fill(ui_color(BLACK));
 
-    // draw thick lines between the screens
-    switch (ACTOR_COUNT){
+	// draw thick lines between the screens
+	switch (ACTOR_COUNT){
       case 1:
         break;
       case 2:

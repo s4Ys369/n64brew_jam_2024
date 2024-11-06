@@ -166,9 +166,6 @@ Actor actor_create(uint32_t id, const char *model_path)
 	actor.armature.blend = t3d_skeleton_clone(&actor.armature.main, false);
 
     rspq_block_begin();
-	rdpq_sync_pipe();
-    rdpq_set_prim_color(RGBA32(255, 255, 255, 255));
-    rdpq_sync_tile();
     t3d_model_draw_skinned(actor.model, &actor.armature.main);
     actor.dl = rspq_block_end();
 
@@ -177,13 +174,20 @@ Actor actor_create(uint32_t id, const char *model_path)
     return actor;
 }
 
-void actor_draw(Actor *actor) 
-{	
+void actor_updateMat(Actor *actor)
+{
 	t3d_mat4fp_from_srt_euler(actor->modelMat,
 		(float[3]){actor->scale.x, actor->scale.y, actor->scale.z},
 		(float[3]){rad(actor->body.rotation.x), rad(actor->body.rotation.y), rad(actor->body.rotation.z)},
 		(float[3]){actor->body.position.x, actor->body.position.y, actor->body.position.z}
 	);
+}
+
+void actor_draw(Actor *actor) 
+{
+	t3d_matrix_set(actor->modelMat, true);
+	rdpq_sync_pipe();
+    rdpq_set_prim_color(RGBA32(255, 255, 255, 255));
 	t3d_matrix_set(actor->modelMat, true);
 	rspq_block_run(actor->dl);
 }

@@ -41,8 +41,6 @@ Scenery scenery_create(uint32_t id, const char *model_path)
     };
 
     rspq_block_begin();
-    rdpq_sync_pipe();
-    rdpq_sync_tile();
     t3d_model_draw(scenery.model);
     scenery.dl = rspq_block_end();
 
