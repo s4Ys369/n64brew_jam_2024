@@ -2,11 +2,12 @@
 #define PLATFORM_H
 
 // HEXAGON TEST
+#define NUM_HEXAGONS 19
+
 typedef struct {
   Box* boxes;
   AABB aabb;
 } PlatformCollider;
-
 
 typedef struct {
   Vector3 position;
@@ -14,9 +15,10 @@ typedef struct {
   bool despawned;
 } Platform;
 
-Platform hexagon;
+Platform hexagons[NUM_HEXAGONS];
 
 void platform_init(Platform* platform, T3DModel* model);
+void platform_init_grid(Platform* platform, T3DModel* model, float z);
 void platform_free(Platform* platform);
 
 void platform_init(Platform* platform, T3DModel* model)
@@ -51,6 +53,69 @@ void platform_init(Platform* platform, T3DModel* model)
   platform->collider->aabb.maxCoordinates = vector3_from_int16(model->aabbMax);
   platform->collider->aabb.minCoordinates = vector3_from_int16(model->aabbMin);
   platform->despawned = false;
+}
+
+// Generate a hexagonal grid of positions for the platforms
+void generate_hexagon_grid(Vector3* positions, float z)
+{
+  float x_offset = 255.0f;    // Horizontal distance between centers of adjacent columns
+  float y_offset = 225.0f;    // Vertical distance between centers of adjacent rows
+  float start_x = 0.0f;       // Starting X coordinate for the first row
+  float start_y = 0.0f;       // Starting Y coordinate for the first row
+
+  int rows[] = {3, 4, 5, 4, 3};  // Number of hexagons per row
+  int hexagon_index = 0;
+
+  for (int row_index = 0; row_index < 5; row_index++)
+  {
+    int hex_count = rows[row_index];
+    float row_start_x = start_x - (hex_count - 1) * x_offset / 2.0f;
+
+    for (int i = 0; i < hex_count; i++)
+    {
+      positions[hexagon_index].x = row_start_x + i * x_offset;
+      positions[hexagon_index].y = start_y + row_index * y_offset;
+      positions[hexagon_index].z = z;
+      hexagon_index++;
+    }
+  }
+}
+
+// Initialize each platform in the hexagonal grid
+void platform_init_grid(Platform* platforms, T3DModel* model, float z) {
+  Vector3 hex_positions[NUM_HEXAGONS];
+  generate_hexagon_grid(hex_positions, z);
+
+  for (int i = 0; i < NUM_HEXAGONS; i++)
+  {
+    Platform* platform = &platforms[i];
+    platform->collider = (PlatformCollider*)malloc(sizeof(PlatformCollider));
+    platform->collider->boxes = (Box*)malloc(3 * sizeof(Box));
+
+    // Set platform position based on hexagonal layout
+    platform->position = hex_positions[i];
+    
+    // Initialize model AABB for collision detection
+    platform->collider->aabb.maxCoordinates = vector3_from_int16(model->aabbMax);
+    platform->collider->aabb.minCoordinates = vector3_from_int16(model->aabbMin);
+    
+    // Initialize the three boxes for collision within each hexagon
+    for (int j = 0; j < 3; j++)
+    {
+      platform->collider->boxes[j] = (Box) {
+        .size = {150.0f, 258.0f, 25.0f},
+        .center = platform->position,
+        .rotation = { 
+          // Set the rotations explicitly
+          (j == 0) ? 180.0f : (j == 2) ? 180.0f : 0.0f, // X rotation for boxes[0] and boxes[2]
+          (j == 0) ? -180.0f : (j == 2) ? -180.0f : 0.0f, // Y rotation for boxes[0] and boxes[2]
+          (j == 0) ? 90.0f : (j == 1) ? 30.0f : 30.0f   // Z rotation for boxes[0], boxes[1], and boxes[2]
+        }
+      };
+    }
+    
+    platform->despawned = false;
+  }
 }
 
 void platform_free(Platform* platform)
