@@ -9,7 +9,7 @@
 #include <stdbool.h>
 
 #define ACTOR_COUNT 1
-#define SCENERY_COUNT 1
+#define SCENERY_COUNT 19
 
 #include "../../core.h"
 #include "../../minigame.h"
@@ -66,7 +66,7 @@ ActorCollider actor_collider = {
 };
 ActorContactData actor_contact;
 
-Scenery scenery[SCENERY_COUNT];
+Scenery *scenery = NULL;
 
 void minigame_init()
 {      
@@ -82,15 +82,19 @@ void minigame_init()
 
     actorCollider_init(&actor_collider);
     
-    // scenery
-    scenery[0] = scenery_create(0, "rom:/game/hex_platform.t3dm");
+    // Initialize the scenery objects (batched creation)
+    scenery = scenery_createBatch(SCENERY_COUNT, "rom:/game/hex_platform.t3dm");
 
-    for (int i = 0; i < SCENERY_COUNT; i++) {
+    // Initialize the platforms based on the hexagonal grid layout with desired height
+    platform_init_grid(hexagons, batchModel, -100.0f);
 
-        scenery_set(&scenery[i]);
+    // Now associate the scenery objects with the platforms
+    for (int i = 0; i < SCENERY_COUNT; i++)
+    {
+        // Linking scenery to the corresponding platform
+        scenery[i].position = hexagons[i].position;  // Set the position of scenery to match the platform
+        scenery_set(&scenery[i]);  // Set the scenery for rendering
     }
-
-    platform_init(&hexagon, scenery[0].model);
 
 }
 
@@ -98,17 +102,14 @@ void minigame_fixedloop(){}
 
 void minigame_loop()
 {	
-	game_play(&minigame, actor, scenery, &actor_collider, &actor_contact, hexagon.collider->boxes, 3);
+	game_play(&minigame, actor, scenery, &actor_collider, &actor_contact, hexagons[0].collider->boxes, 3);
 }
 void minigame_cleanup()
 {
     destroyShapeFileData(&shapeData); // REMEMBER to destroy shape data when switch levels or ending minigame
-    platform_free(&hexagon);
+    platform_free(hexagons);
 
-	for (int i = 0; i < SCENERY_COUNT; i++) {
-
-		scenery_delete(&scenery[i]);
-	};
+	scenery_deleteBatch(scenery, SCENERY_COUNT);
 
 	for (int i = 0; i < ACTOR_COUNT; i++) {
 

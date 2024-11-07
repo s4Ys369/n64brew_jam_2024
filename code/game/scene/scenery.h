@@ -17,7 +17,6 @@ typedef struct {
 
 } Scenery;
 
-
 // function prototypes
 
 Scenery scenery_create(uint32_t id, const char *model_path);
@@ -70,6 +69,70 @@ void scenery_delete(Scenery *scenery)
 	t3d_model_free(scenery->model);
 }
 
+
+// T3D MODEL DRAW BATCHING
+rspq_block_t *batchDL = NULL;
+T3DModel *batchModel = NULL;
+
+Scenery* scenery_createBatch(size_t batchSize, const char *model_path)
+{
+    // Dynamically allocate memory for the batch
+    Scenery* scenery = malloc(batchSize * sizeof(Scenery));
+    if (!scenery) {
+        return NULL; // Handle allocation failure
+    }
+
+    if(batchDL == NULL)
+    {
+        // Load model once for entire batch
+        if(batchModel == NULL) batchModel = t3d_model_load(model_path);
+
+        rspq_block_begin();
+
+        // Prepare the scenery objects
+        for (size_t i = 0; i < batchSize; i++)
+        {
+            scenery[i] = (Scenery) {
+                .id = i,
+                .dl = NULL, // Don't need for the batch
+                .model = NULL, // Don't need for the batch
+                .modelMat = malloc_uncached(sizeof(T3DMat4FP)), // Seems each object still needs its own matrix
+
+                .scale = {1.0f, 1.0f, 1.0f},
+                .position = {0.0f, 0.0f, 0.0f},
+                .rotation = {0.0f, 0.0f, 0.0f},
+            };
+
+            t3d_matrix_set(scenery[i].modelMat, true);
+            t3d_model_draw(batchModel);
+        }
+
+        // Store the batch drawing commands
+        batchDL = rspq_block_end();
+    }
+
+    return scenery;
+}
+
+void scenery_drawBatch(Scenery* scenery, size_t batchSize)
+{
+    // Run the batch draw call
+    rspq_block_run(batchDL);
+
+    // Optionally, iterate over individual objects
+    //for (size_t i = 0; i < batchSize; i++) t3d_model_draw(scenery[i].model);
+}
+
+void scenery_deleteBatch(Scenery* scenery, size_t batchSize)
+{
+    for (size_t i = 0; i < batchSize; i++) {
+        free_uncached(scenery[i].modelMat); // Free each model matrix
+    }
+
+    t3d_model_free(batchModel);
+    rspq_block_free(batchDL);
+    free(scenery); // Free the batch array itself
+}
 
 
 #endif

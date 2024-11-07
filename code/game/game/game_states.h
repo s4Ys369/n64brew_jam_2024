@@ -44,7 +44,7 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorColl
 
 	for (int i = 0; i < ACTOR_COUNT; i++)
 	{
-		actorCollision_updateBoxes(&actor[i], actor_contact, actor_collider, box_collider, numBoxes);
+		//actorCollision_updateBoxes(&actor[i], actor_contact, actor_collider, box_collider, numBoxes);
 	}
 
     
@@ -65,10 +65,7 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorColl
 
 	t3d_matrix_push_pos(1);
 
-	for (int i = 0; i < SCENERY_COUNT; i++) {
-
-		scenery_draw(&scenery[i]);
-	};
+	scenery_drawBatch(scenery, SCENERY_COUNT);
 	
 	for (int i = 0; i < ACTOR_COUNT; i++) {
 		
@@ -118,10 +115,7 @@ void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, ActorCollide
 
 	t3d_matrix_push_pos(1);
 
-	for (int i = 0; i < SCENERY_COUNT; i++) {
-
-		scenery_draw(&scenery[i]);
-	}
+	scenery_drawBatch(scenery, SCENERY_COUNT);
 
 	t3d_matrix_pop(1);
 
