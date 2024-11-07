@@ -82,10 +82,10 @@ void minigame_init()
 
     actorCollider_init(&actor_collider);
     
-    // Initialize the scenery objects (batched creation)
-    scenery = scenery_createBatch(SCENERY_COUNT, "rom:/game/hex_platform.t3dm");
+    // Initialize the scenery objects (batched creation of object, matrices, RSPQ blocks, etc.)
+    rspqBlocks = scenery_createBatch(SCENERY_COUNT, "rom:/game/hex_platform.t3dm");
 
-    // Initialize the platforms based on the hexagonal grid layout with desired height
+    // Initialize the platforms of a certain model, based on the hexagonal grid layout with desired height
     platform_init_grid(hexagons, batchModel, -100.0f);
 
     // Now associate the scenery objects with the platforms
@@ -93,7 +93,7 @@ void minigame_init()
     {
         // Linking scenery to the corresponding platform
         scenery[i].position = hexagons[i].position;  // Set the position of scenery to match the platform
-        scenery_set(&scenery[i]);  // Set the scenery for rendering
+        scenery_set(&scenery[i]);  // Construct the objects' matrices
     }
 
 }
@@ -109,7 +109,7 @@ void minigame_cleanup()
     destroyShapeFileData(&shapeData); // REMEMBER to destroy shape data when switch levels or ending minigame
     platform_free(hexagons);
 
-	scenery_deleteBatch(scenery, SCENERY_COUNT);
+	scenery_deleteBatch(scenery, SCENERY_COUNT, rspqBlocks, blockCount);
 
 	for (int i = 0; i < ACTOR_COUNT; i++) {
 

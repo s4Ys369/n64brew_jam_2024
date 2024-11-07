@@ -63,9 +63,9 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorColl
 
 	light_set(&game->scene.light);
 
-	t3d_matrix_push_pos(1);
+	scenery_drawBatch(rspqBlocks, blockCount);
 
-	scenery_drawBatch(scenery, SCENERY_COUNT);
+	t3d_matrix_push_pos(1);
 	
 	for (int i = 0; i < ACTOR_COUNT; i++) {
 		
@@ -73,20 +73,11 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, ActorColl
 	};
 
 	t3d_matrix_pop(1);
+
 	ui_fps();
 	ui_printf(
-		"cState %d\n"
-		"pState %d\n"
-		"Contact %d\n"
-		"gHeight %.2f\n"
-		"Actor Z %.2f\n"
-		"Grounded %d",
-		actor->state,
-		actor->previous_state,
-		actor->hasCollided,
-		actor->grounding_height,
-		actor->body.position.z,
-		actor->grounded
+		"blocks %d",
+		blockCount	
 	);
 
 	game->syncPoint = rspq_syncpoint_new();
@@ -113,11 +104,7 @@ void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, ActorCollide
 
 	light_set(&game->scene.light);
 
-	t3d_matrix_push_pos(1);
-
-	scenery_drawBatch(scenery, SCENERY_COUNT);
-
-	t3d_matrix_pop(1);
+	scenery_drawBatch(rspqBlocks, blockCount);
 
 	game->syncPoint = rspq_syncpoint_new();
 
