@@ -33,6 +33,8 @@ void game_init(Game *game)
 
 	t3d_init((T3DInitParams){});
 
+	display_set_fps_limit(30.0f);
+
 	time_init(&game->timing);
 
     scene_init(&game->scene);

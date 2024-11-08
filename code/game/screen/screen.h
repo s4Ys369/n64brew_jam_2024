@@ -28,11 +28,13 @@ void screen_clearDisplay(Screen* screen)
 	rdpq_attach(display_get(), &screen->depthBuffer);
 	t3d_frame_start();
 	t3d_screen_clear_color(RGBA32(154, 181, 198, 0xFF));
-	t3d_screen_clear_depth();
+	
 }
 
 void screen_clearT3dViewport(T3DViewport* vp)
 {
+	t3d_frame_start();
+	t3d_screen_clear_depth();
 	t3d_viewport_attach(vp);
 }
 

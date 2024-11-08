@@ -15,12 +15,12 @@ static rspq_profile_data_t profile_data;
 void gameState_setIntro();
 void gameState_setMainMenu();
 
-void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerData* player, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[], size_t numBoxes);
-void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, PlayerData* player, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[]);
+void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerData* player, ActorCollider* actor_collider, ActorContactData* actor_contact, Platform* platform);
+void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, PlayerData* player, ActorCollider* actor_collider, ActorContactData* actor_contact, Platform* platform);
 
 void gameState_setGameOver();
 
-void game_play(Game* game, Actor* actor, Scenery* scenery, PlayerData* players, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[], size_t numBoxes);
+void game_play(Game* game, Actor* actor, Scenery* scenery, PlayerData* players, ActorCollider* actor_collider, ActorContactData* actor_contact, Platform* platform);
 
 
 // function implementations
@@ -35,7 +35,7 @@ void gameState_setMainMenu()
 }
 
 static uint32_t frameCounter = 0;
-void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerData* player, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[], size_t numBoxes)
+void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerData* player, ActorCollider* actor_collider, ActorContactData* actor_contact, Platform* platform)
 {
 	
 	// ======== Update ======== //
@@ -46,13 +46,23 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 	for (int i = 0; i < ACTOR_COUNT; i++)
 	{
 		controllerData_getInputs(player[i].port, game->control[i]);
+		if(game->control[i]->pressed.a) sound_wav_bounce();
 		actor_update(&actor[i], game->control[i], game->timing.frame_time_s, game->scene.camera[i].angle_around_barycenter, game->scene.camera[i].offset_angle, &game->syncPoint);
 		cameraControl_setOrbitalMovement(&game->scene.camera[i], game->control[i]);
 		camera_getMinigamePosition(&game->scene.camera[i], actor[i].body.position, game->timing.frame_time_s);
 		actor_updateMat(&actor[i]);
 	}
 
-	actorCollision_updateBoxes(&actor[0], actor_contact, actor_collider, box_collider, numBoxes);
+	Box allBoxes[90];
+    size_t boxIndex = 0;
+
+    for (int i = 0; i < 30; i++) {
+        for (int j = 0; j < 3; j++) {
+            allBoxes[boxIndex++] = platform[i].collider->boxes[j];
+        }
+    }
+
+	for (int i = 0; i < ACTOR_COUNT; i++) actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], allBoxes, boxIndex);
 
 
 	// ======== Draw 3D ======== //
@@ -71,34 +81,31 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 
 		t3d_matrix_push_pos(1);
 
-		// Draw updated scenery
-		for (int i = 0; i < SCENERY_COUNT; i++) {
-			
-			scenery_draw(&scenery[i]);
-		};
-	
-		// Draw updated players
-		for (int i = 0; i < ACTOR_COUNT; i++) {
-			actor_draw(&actor[i]);
-		};
-
+			scenery_drawBatch(rspqBlocks, blockCount);
+		
+			// Draw updated players
+			actor_draw(&actor[0]);
+			actor_draw(&actor[1]);
+		
 		t3d_matrix_pop(1);
-
 	}
+	
 
-	// Sync RSPQ after 3D
 	game->syncPoint = rspq_syncpoint_new();
 
 	// ======== Draw 2D ======== //
 
-	int sizeX = display_get_width();
-	int sizeY = display_get_height();
 	rdpq_sync_pipe();
-	rdpq_set_scissor(0, 0, sizeX, sizeY);
 	rdpq_set_mode_standard();
-	rdpq_set_mode_fill(ui_color(BLACK));
+	rdpq_set_scissor(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+	ui_fps();
+	ui_printf("v0.1");
+	ui_input_display(game->control[0]);
 
 	// draw thick lines between the screens
+	rdpq_set_mode_fill(ui_color(BLACK));
+	int sizeX = SCREEN_WIDTH; int sizeY = SCREEN_HEIGHT;
 	switch (ACTOR_COUNT){
       case 1:
         break;
@@ -114,8 +121,6 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
         rdpq_fill_rectangle(sizeX/2-1, 0, sizeX/2+1, sizeY);
         break;
     }
-
-	ui_fps();
 
 	rdpq_detach_show();
 	sound_update_buffer();
@@ -134,7 +139,7 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 }
 
 
-void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, PlayerData* player, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[])
+void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, PlayerData* player, ActorCollider* actor_collider, ActorContactData* actor_contact, Platform* platform)
 {
 	// ======== Update ======== //
 
@@ -152,14 +157,7 @@ void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, PlayerData* 
 
 	light_set(&game->scene.light);
 
-	t3d_matrix_push_pos(1);
-
-	for (int i = 0; i < SCENERY_COUNT; i++) {
-
-		scenery_draw(&scenery[i]);
-	}
-
-	t3d_matrix_pop(1);
+	scenery_drawBatch(rspqBlocks, blockCount);
 
 	game->syncPoint = rspq_syncpoint_new();
 
@@ -173,7 +171,7 @@ void gameState_setGameOver()
     // code for the game over state
 }
 
-void game_play(Game* game, Actor* actor, Scenery* scenery, PlayerData* players, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[], size_t numBoxes)
+void game_play(Game* game, Actor* actor, Scenery* scenery, PlayerData* players, ActorCollider* actor_collider, ActorContactData* actor_contact, Platform* platform)
 {
 	for(;;)
 	{
@@ -189,11 +187,11 @@ void game_play(Game* game, Actor* actor, Scenery* scenery, PlayerData* players, 
 				break;
 			}
 			case GAMEPLAY:{
-				gameState_setGameplay(game, actor, scenery, players,actor_collider, actor_contact, box_collider, numBoxes);
+				gameState_setGameplay(game, actor, scenery, players, actor_collider, actor_contact, platform);
 				break;
 			}
 			case PAUSE:{
-				//gameState_setPause(game, actor, scenery, players,actor_collider, actor_contact, box_collider);
+				gameState_setPause(game, actor, scenery, players, actor_collider, actor_contact, platform);
 				break;
 			}
 			case GAME_OVER:{

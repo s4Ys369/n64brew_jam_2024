@@ -17,7 +17,6 @@ typedef struct {
 
 } Scenery;
 
-
 // function prototypes
 
 Scenery scenery_create(uint32_t id, const char *model_path);
@@ -72,5 +71,91 @@ void scenery_delete(Scenery *scenery)
 }
 
 
+// T3D MODEL DRAW BATCHING
+T3DModel *batchModel = NULL;
+Scenery* scenery;
+rspq_block_t** rspqBlocks;
+size_t blockCount;
+
+#define BATCH_LIMIT 30  // Maximum number of objects per rspq block
+
+rspq_block_t** scenery_createBatch(size_t batchSize, const char *model_path)
+{
+    // Calculate the number of rspq blocks needed
+    blockCount = (batchSize + BATCH_LIMIT - 1) / BATCH_LIMIT;
+    
+    // Allocate memory for the scenery objects and rspq block pointers
+    scenery = malloc_uncached(batchSize * sizeof(Scenery));
+    rspqBlocks = malloc_uncached(blockCount * sizeof(rspq_block_t*));
+
+    if (!scenery || !rspqBlocks) return NULL;  // Handle allocation failure
+
+
+    // Load model once for entire batch
+    if(batchModel == NULL) batchModel = t3d_model_load(model_path);
+
+    // Initialize the rspq block index and start a new rspq block
+    size_t blockIndex = 0;
+    rspq_block_begin();
+
+    for (size_t i = 0; i < batchSize; i++)
+    {
+        scenery[i] = (Scenery) {
+            .id = i,
+            .modelMat = malloc_uncached(sizeof(T3DMat4FP)),
+            .model = NULL,
+            .dl = NULL,
+            .scale = {1.0f, 1.0f, 1.0f},
+            .position = {0.0f, 0.0f, 0.0f},
+            .rotation = {0.0f, 0.0f, 0.0f},
+        };
+
+        // Set the model matrix and draw
+        t3d_matrix_set(scenery[i].modelMat, true);
+        t3d_model_draw(batchModel);
+
+        // End the current rspq block and start a new one every n objects
+        if ((i + 1) % BATCH_LIMIT == 0 || i == batchSize - 1)
+        {
+            rspqBlocks[blockIndex++] = rspq_block_end();  // Store the completed rspq block
+            if (i < batchSize - 1) rspq_block_begin();  // Start a new rspq block if more objects remain
+        }
+    }
+
+    return rspqBlocks;  // Return the list of rspq blocks
+}
+
+// Iterate through and run RSPQ blocks
+void scenery_drawBatch(rspq_block_t** rspqBlocks, size_t blockCount)
+{
+    for (size_t i = 0; i < blockCount; i++)
+    {
+        rspq_block_run(rspqBlocks[i]);
+    }
+}
+
+// Iterate through and run Scenery objects
+void scenery_drawBatch2(Scenery* scenery, size_t batchSize)
+{
+    for (size_t i = 0; i < batchSize; i++)
+    {
+        // Set the model matrix and draw
+        t3d_matrix_set(scenery[i].modelMat, true);
+        t3d_model_draw(batchModel);
+    }
+}
+
+void scenery_deleteBatch(Scenery* scenery, size_t batchSize, rspq_block_t** rspqBlocks, size_t blockCount)
+{
+    for (size_t i = 0; i < batchSize; i++)
+        if (scenery[i].modelMat) free_uncached(scenery[i].modelMat); // Free the object's matrices
+
+    t3d_model_free(batchModel); // Free the batch's model
+
+    for (size_t i = 0; i < blockCount; i++) rspq_block_free(rspqBlocks[i]); // Free the rspq blocks
+
+    free_uncached(scenery);       // Free the scenery array
+    free_uncached(rspqBlocks);    // Free the rspq blocks array
+}
 
 #endif
