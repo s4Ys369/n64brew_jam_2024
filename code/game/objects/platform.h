@@ -12,6 +12,7 @@ typedef struct {
 typedef struct {
   Vector3 position;
   PlatformCollider* collider;
+  bool contact;
   bool despawned;
 } Platform;
 
@@ -52,6 +53,7 @@ void platform_init(Platform* platform, T3DModel* model)
   platform->position = (Vector3){0.0f, 0.0f, 0.0f};
   platform->collider->aabb.maxCoordinates = vector3_from_int16(model->aabbMax);
   platform->collider->aabb.minCoordinates = vector3_from_int16(model->aabbMin);
+  platform->contact = false;
   platform->despawned = false;
 }
 
@@ -125,6 +127,10 @@ void platform_init_grid(Platform* platforms, T3DModel* model, float z) {
     // Initialize model AABB for collision detection
     platform->collider->aabb.maxCoordinates = vector3_from_int16(model->aabbMax);
     platform->collider->aabb.minCoordinates = vector3_from_int16(model->aabbMin);
+
+    // Offset model AABB's center to actual position
+    vector3_add(&platform->collider->aabb.maxCoordinates, &platform->position);
+    vector3_add(&platform->collider->aabb.minCoordinates, &platform->position);
     
     // Initialize the three boxes for collision within each hexagon
     for (int j = 0; j < 3; j++)
@@ -140,7 +146,7 @@ void platform_init_grid(Platform* platforms, T3DModel* model, float z) {
         }
       };
     }
-    
+    platform->contact = false;
     platform->despawned = false;
   }
 }
@@ -153,6 +159,74 @@ void platform_free(Platform* platform)
     free(platform->collider);         // Free the collider itself
     platform->collider = NULL;
   }
+}
+
+// VISUAL COLLISION FEEDBACK
+color_t platformColor[NUM_HEXAGONS];
+
+// Quick and dirty unsigned 8-bit integer linear interpolation 
+uint8_t u8_lerp(uint8_t start, uint8_t end, float t)
+{
+  return (uint8_t)(start + t * (end - start));
+}
+
+// Use sine wave for to oscillate between white and red
+void color_oscillateRed(uint8_t *r, uint8_t *g, uint8_t *b, float time)
+{
+  float t = (fm_sinf(time) + 1) / 2; // Map sine wave from [-1, 1] to [0, 1]
+
+  uint8_t start = 200;
+  uint8_t end = 20;
+
+  *r = start;
+	*g = u8_lerp(start, end, t);
+	*b = u8_lerp(start, end, t);
+}
+
+color_t color_get(float speed)
+{
+	static uint8_t r, g, b;
+	static float time = 0.0f;
+
+	color_oscillateRed(&r, &g, &b, time);
+	time += speed;
+	return RGBA32(r,g,b,255);
+}
+
+bool colors_are_equal(color_t c1, color_t c2)
+{
+  return (c1.r == c2.r && c1.g == c2.g && c1.b == c2.b && c1.a == c2.a);
+}
+
+void platform_collideCheck(Platform* platform, Actor* actor)
+{
+  float offset = 30.0f; // Size of the actor's collider
+
+  // If actor is within AABB
+  if (actor->body.position.x >= platform->collider->aabb.minCoordinates.x - offset &&
+      actor->body.position.x <= platform->collider->aabb.maxCoordinates.x + offset &&
+      actor->body.position.y >= platform->collider->aabb.minCoordinates.y - offset &&
+      actor->body.position.y <= platform->collider->aabb.maxCoordinates.y + offset &&
+      actor->grounded)
+  {
+    platform->contact = true;
+  }
+}
+
+void platform_getColor(Platform* platform)
+{
+  for (int i = 0; i < NUM_HEXAGONS; i++)
+	{
+				
+		if(platform[i].contact)
+		{
+			platformColor[i] = color_get(0.2f);
+		} 
+		else if (!colors_are_equal(platformColor[i], ui_color(WHITE)))
+		{
+			platformColor[i] = ui_color(WHITE);
+		}
+	}
 }
 
 #endif // PLATFORM_H

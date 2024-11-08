@@ -72,7 +72,7 @@ void minigame_init()
     game_init(&minigame);
 
 #ifdef PROFILING
-    //rdpq_debug_start();
+    rdpq_debug_start();
     profile_data.frame_count = 0;
     rspq_profile_start();
 #endif

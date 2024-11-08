@@ -134,15 +134,25 @@ void scenery_drawBatch(rspq_block_t** rspqBlocks, size_t blockCount)
     }
 }
 
-// Iterate through and run Scenery objects
-void scenery_drawBatch2(Scenery* scenery, size_t batchSize)
+// Iterate through and run Scenery objects with added prim color
+void scenery_drawBatch2(Scenery* scenery, size_t batchSize, color_t* prim)
 {
     for (size_t i = 0; i < batchSize; i++)
     {
         // Set the model matrix and draw
+        rdpq_set_prim_color(prim[i]);
         t3d_matrix_set(scenery[i].modelMat, true);
         t3d_model_draw(batchModel);
     }
+}
+
+// Draw single object with added prim color
+void scenery_drawBatched(Scenery* scenery, int objIdx, color_t prim)
+{
+    // Set the model matrix and draw
+    rdpq_set_prim_color(prim);
+    t3d_matrix_set(scenery[objIdx].modelMat, true);
+    t3d_model_draw(batchModel);
 }
 
 void scenery_deleteBatch(Scenery* scenery, size_t batchSize, rspq_block_t** rspqBlocks, size_t blockCount)

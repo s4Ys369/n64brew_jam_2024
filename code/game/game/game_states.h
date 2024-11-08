@@ -2,7 +2,7 @@
 #define GAME_STATES_H
 
 // Comment out to disable RSPQ Profiling
-#define PROFILING
+//#define PROFILING
 
 #ifdef PROFILING
 #include "rspq_profile.h"
@@ -62,65 +62,52 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
         }
     }
 
-	for (int i = 0; i < ACTOR_COUNT; i++) actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], allBoxes, boxIndex);
+	for (int i = 0; i < ACTOR_COUNT; i++)
+	{
+		actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], allBoxes, boxIndex);
+		// Checks for actor collision with T3D AABB and assigns color
+		for (int j = 0; j < NUM_HEXAGONS; j++) platform_collideCheck(&hexagons[j], &actor[i]);
+	}
+
+	platform_getColor(hexagons);
+
+	// Set projection and look at for each viewport based on player camera
+	camera_set(&game->scene.camera[0], &game->screen.gameplay_viewport[0]);
 
 
 	// ======== Draw 3D ======== //
 	screen_clearDisplay(&game->screen);
+
+	// Clear and attach player viewport
+	screen_clearT3dViewport(&game->screen.gameplay_viewport[0]);
+
 	light_set(&game->scene.light);
-	
 
-	// For each player
-	for (int i = 0; i < ACTOR_COUNT; i++)
-	{
-		// Set projection and look at for each viewport based on player camera
-		camera_set(&game->scene.camera[i], &game->screen.gameplay_viewport[i]);
+	t3d_matrix_push_pos(1);
 
-		// Clear and attach player viewport
-		screen_clearT3dViewport(&game->screen.gameplay_viewport[i]);
+		//scenery_drawBatch(rspqBlocks, blockCount);
 
-		t3d_matrix_push_pos(1);
+		scenery_drawBatch2(scenery, SCENERY_COUNT, platformColor);
 
-			scenery_drawBatch(rspqBlocks, blockCount);
-		
-			// Draw updated players
-			actor_draw(&actor[0]);
-			actor_draw(&actor[1]);
-		
-		t3d_matrix_pop(1);
-	}
+
+
+		// Draw updated players
+		for (int i = 0; i < ACTOR_COUNT; i++) actor_draw(&actor[i]);
+
+	t3d_matrix_pop(1);
 	
 
 	game->syncPoint = rspq_syncpoint_new();
 
 	// ======== Draw 2D ======== //
 
-	rdpq_sync_pipe();
-	rdpq_set_mode_standard();
-	rdpq_set_scissor(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+	//rdpq_sync_pipe();
+	//rdpq_set_mode_standard();
+	//rdpq_set_scissor(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	ui_fps();
-	ui_printf("v0.1");
+	ui_printf("Visual Feedback - Collision");
 	ui_input_display(game->control[0]);
-
-	// draw thick lines between the screens
-	rdpq_set_mode_fill(ui_color(BLACK));
-	int sizeX = SCREEN_WIDTH; int sizeY = SCREEN_HEIGHT;
-	switch (ACTOR_COUNT){
-      case 1:
-        break;
-      case 2:
-        rdpq_fill_rectangle(0, sizeY/2-1, sizeX, sizeY/2+1);
-        break;
-      case 3:
-        rdpq_fill_rectangle(0, sizeY/2-1, sizeX, sizeY/2+1);
-        rdpq_fill_rectangle(sizeX/2-1, sizeY/2, sizeX/2+1, sizeY);
-        break;
-      case 4:
-        rdpq_fill_rectangle(0, sizeY/2-1, sizeX, sizeY/2+1);
-        rdpq_fill_rectangle(sizeX/2-1, 0, sizeX/2+1, sizeY);
-        break;
-    }
 
 	rdpq_detach_show();
 	sound_update_buffer();
@@ -135,6 +122,8 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 	}
     rspq_profile_get_data(&profile_data);
 #endif // PROFILING
+
+	for (int i = 0; i < NUM_HEXAGONS; i++) platform[i].contact = false;
 
 }
 
