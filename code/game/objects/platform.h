@@ -200,7 +200,7 @@ bool colors_are_equal(color_t c1, color_t c2)
 
 void platform_collideCheck(Platform* platform, Actor* actor)
 {
-  float offset = 30.0f; // Size of the actor's collider
+  float offset = 15.0f; // Size of the actor's collider
 
   // If actor is within AABB
   if (actor->body.position.x >= platform->collider->aabb.minCoordinates.x - offset &&
@@ -227,6 +227,31 @@ void platform_getColor(Platform* platform)
 			platformColor[i] = ui_color(WHITE);
 		}
 	}
+}
+
+#define blinkTime 3 // Number of seconds to blink
+
+uint32_t blinkFrames = 30 * blinkTime;
+uint32_t counter[NUM_HEXAGONS];
+void platform_despawn(int counterIdx, Platform* platform)
+{
+  counter[counterIdx]++;
+  if(counter[counterIdx] >= blinkFrames)
+  {
+    if(platform->contact)
+    {
+      platform->despawned = true;
+
+      // @TODO: super hacky, not sure how remove collision from list, so just make it really small and far away
+      for (int i = 0; i < 3; i++)
+      {
+        platform->collider->boxes[i].size = (Vector3){0.001f,0.001f,0.001f};
+        platform->collider->boxes[i].center.z = -100.0f;
+      }
+    }
+    counter[counterIdx] = 0;
+  }
+
 }
 
 #endif // PLATFORM_H

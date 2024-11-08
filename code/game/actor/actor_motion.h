@@ -45,6 +45,8 @@ void actorMotion_setStopingAcceleration (Actor *actor)
 void actorMotiion_setJumpAcceleration(Actor *actor, float target_speed, float acceleration_rate)
 {
     actor->body.acceleration.z = acceleration_rate * (target_speed - actor->body.velocity.z);
+    if (fabsf(actor->body.velocity.z) < 10.0f) actor->body.velocity.x = 10.0f;
+
 }
 
 

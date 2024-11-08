@@ -43,13 +43,13 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 	time_setData(&game->timing);
 	frameCounter++;
 
+	camera_getMinigamePosition(&game->scene.camera[0], (Vector3){-200.0f,-400.0f,400.0f}, game->timing.frame_time_s);
+
 	for (int i = 0; i < ACTOR_COUNT; i++)
 	{
 		controllerData_getInputs(player[i].port, game->control[i]);
 		if(game->control[i]->pressed.a) sound_wav_bounce();
-		actor_update(&actor[i], game->control[i], game->timing.frame_time_s, game->scene.camera[i].angle_around_barycenter, game->scene.camera[i].offset_angle, &game->syncPoint);
-		cameraControl_setOrbitalMovement(&game->scene.camera[i], game->control[i]);
-		camera_getMinigamePosition(&game->scene.camera[i], actor[i].body.position, game->timing.frame_time_s);
+		actor_update(&actor[i], game->control[i], game->timing.frame_time_s, game->scene.camera[0].angle_around_barycenter, game->scene.camera[0].offset_angle, &game->syncPoint);
 		actor_updateMat(&actor[i]);
 	}
 
@@ -66,7 +66,16 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 	{
 		actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], allBoxes, boxIndex);
 		// Checks for actor collision with T3D AABB and assigns color
-		for (int j = 0; j < NUM_HEXAGONS; j++) platform_collideCheck(&hexagons[j], &actor[i]);
+		for (int j = 0; j < NUM_HEXAGONS; j++)
+		{
+			platform_collideCheck(&hexagons[j], &actor[i]);
+		}
+	}
+
+	for (int j = 0; j < NUM_HEXAGONS; j++)
+	{
+		platform_despawn(j, &hexagons[j]);
+		despawn[j] = hexagons[j].despawned;
 	}
 
 	platform_getColor(hexagons);
@@ -87,9 +96,7 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 
 		//scenery_drawBatch(rspqBlocks, blockCount);
 
-		scenery_drawBatch2(scenery, SCENERY_COUNT, platformColor);
-
-
+		scenery_drawBatch2(scenery, SCENERY_COUNT, platformColor, despawn);
 
 		// Draw updated players
 		for (int i = 0; i < ACTOR_COUNT; i++) actor_draw(&actor[i]);
@@ -106,7 +113,7 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 	//rdpq_set_scissor(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	ui_fps();
-	ui_printf("Visual Feedback - Collision");
+	ui_printf("v0.1.%d - %s", 2, "Platform Despawn");
 	ui_input_display(game->control[0]);
 
 	rdpq_detach_show();
@@ -122,8 +129,6 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 	}
     rspq_profile_get_data(&profile_data);
 #endif // PROFILING
-
-	for (int i = 0; i < NUM_HEXAGONS; i++) platform[i].contact = false;
 
 }
 
