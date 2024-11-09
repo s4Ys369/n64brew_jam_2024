@@ -99,7 +99,7 @@ Camera camera_create()
         .angle_around_barycenter = 15,
         .pitch = 18,
         .offset_angle = 0,
-        .offset_height = 140,
+        .offset_height = 120,
 		.field_of_view = 60,
 		.near_clipping = 100,
 		.far_clipping = 10000,
