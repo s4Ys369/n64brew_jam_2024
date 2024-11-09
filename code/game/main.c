@@ -79,7 +79,7 @@ void minigame_init()
 	game_init(&minigame);
 
     // actors
-    actors[0] = actor_create(0, "rom:/game/s4ys.t3dm");
+    actors[0] = actor_create(0, "rom:/game/dogman.t3dm");
 
     for (int i = 0; i < ACTOR_COUNT; i++) {
         actor_init(&actors[i]);

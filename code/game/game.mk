@@ -12,6 +12,8 @@ T3DM_FILES := $(ASSETS)/capsule.t3dm \
               $(ASSETS)/pipo.t3dm \
               $(ASSETS)/wolfie.t3dm \
               $(ASSETS)/s4ys.t3dm \
+              $(ASSETS)/dogman.t3dm \
+              $(ASSETS)/mew.t3dm \
               $(ASSETS)/room.t3dm \
               $(ASSETS)/cube.t3dm \
               $(ASSETS)/hex_platform.t3dm \
@@ -29,7 +31,14 @@ SPRITE_FILES := $(ASSETS)/black_filled_tile.sprite \
                 $(ASSETS)/grey_tile.sprite \
                 $(ASSETS)/red_tile.sprite \
                 $(ASSETS)/yellow_tile.sprite \
-                $(ASSETS)/n64brew.sprite
+                $(ASSETS)/n64brew.sprite \
+                $(ASSETS)/mew_eye.sprite \
+                $(ASSETS)/mew_ear.sprite \
+                $(ASSETS)/jam_logo.sprite \
+                $(ASSETS)/dogman_eye.sprite \
+                $(ASSETS)/dogman_eyebrow.sprite \
+                $(ASSETS)/dogman_mouth.sprite \
+                $(ASSETS)/fast64.sprite \
 
 SOUND_FILES := $(SOUND_DIR)/ene.xm64 \
                $(SOUND_DIR)/boing.wav64
@@ -53,7 +62,7 @@ FONT_FILES := $(UI_DIR)/fonts/chunkysans.font64 \
               $(UI_DIR)/fonts/TitanOne-Regular.font64
 
 # Final assets list
-ASSETS_LIST += $(JSON_FILES) $(T3DM_FILES) $(SPRITE_FILES) $(SOUND_FILES) $(UI_SPRITE_FILES) $(FONT_FILES)
+ASSETS_LIST += $(TXT_FILES) $(T3DM_FILES) $(SPRITE_FILES) $(SOUND_FILES) $(UI_SPRITE_FILES) $(FONT_FILES)
 
 # t3d flags
 $(ASSETS)/capsule.t3dm: T3DM_FLAGS = --base-scale=1
@@ -62,6 +71,8 @@ $(ASSETS)/cube.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/pipo.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/s4ys.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/wolfie.t3dm: T3DM_FLAGS = --base-scale=1
+$(ASSETS)/dogman.t3dm: T3DM_FLAGS = --base-scale=1
+$(ASSETS)/mew.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/room.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
 $(ASSETS)/testLevel.t3dm: T3DM_FLAGS = --base-scale=500 --bvh
 $(ASSETS)/hex_platform.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
