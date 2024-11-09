@@ -6,12 +6,17 @@ ASSETS_LIST += \
 	filesystem/game/capsule.t3dm \
 	filesystem/game/n64logo.t3dm \
 	filesystem/game/pipo.t3dm \
+	filesystem/game/dogman.t3dm \
 	filesystem/game/room.t3dm \
 	filesystem/game/testLevel.t3dm \
 	filesystem/game/black_filled_tile.sprite \
 	filesystem/game/black_tile.sprite \
 	filesystem/game/capsule_skin.sprite \
 	filesystem/game/eye.sprite \
+	filesystem/game/dogman_eye.sprite \
+	filesystem/game/dogman_eyebrow.sprite \
+	filesystem/game/dogman_mouth.sprite \
+	filesystem/game/fast64.sprite \
 	filesystem/game/green_tile.sprite \
 	filesystem/game/grey_tile.sprite \
 	filesystem/game/mui.sprite \
@@ -24,6 +29,7 @@ ASSETS_LIST += \
 filesystem/game/capsule.t3dm: GLTF_FLAGS = --base-scale=1
 filesystem/game/n64logo.t3dm: GLTF_FLAGS = --base-scale=1
 filesystem/game/pipo.t3dm: GLTF_FLAGS = --base-scale=1
+filesystem/game/dogman.t3dm: GLTF_FLAGS = --base-scale=1
 filesystem/game/room.t3dm: GLTF_FLAGS = --base-scale=1 --bvh
 filesystem/game/testLevel.t3dm: GLTF_FLAGS = --base-scale=1 --bvh
 

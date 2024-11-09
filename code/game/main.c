@@ -55,7 +55,7 @@ Game minigame;
 Actor actor[ACTOR_COUNT];
 ActorCollider actor_collider = {
         settings: {
-            body_radius: 25,
+            body_radius: 35,
             body_height: 100,
         }
 };
@@ -74,7 +74,7 @@ void minigame_init()
 	game_init(&minigame);
 
     // actors
-    actor[0] = actor_create(0, "rom:/game/pipo.t3dm");
+    actor[0] = actor_create(0, "rom:/game/dogman.t3dm");
 
     for (int i = 0; i < ACTOR_COUNT; i++) {
         actor_init(&actor[i]);
