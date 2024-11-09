@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_SHAPES 20
-#define MAX_TAGS 20
+#define MAX_SHAPES 39
+#define MAX_TAGS 39
 
 typedef struct
 {

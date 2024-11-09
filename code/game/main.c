@@ -77,6 +77,7 @@ Scenery scenery[SCENERY_COUNT];
 void minigame_init()
 {      
 	game_init(&minigame);
+    level_parse("rom:/game/levels/levelA.txt", &box_colliders, &shapeData);
 
     // actors
     actors[0] = actor_create(0, "rom:/game/dogman.t3dm");
@@ -89,7 +90,7 @@ void minigame_init()
     actorCollider_init(&actor_collider);
     
 	// scenery
-    scenery[0] = scenery_create(0, "rom:/game/hex_platform.t3dm");
+    scenery[0] = scenery_create(0, "rom:/game/levelA.t3dm");
 
     for (int i = 0; i < SCENERY_COUNT; i++)
 	{
@@ -100,8 +101,6 @@ void minigame_init()
 	{
 		player_init(p, actors[p], &players[p]);
 	}
-
-    platform_init(&hexagon, scenery[0].model);
 
 
 }
@@ -115,7 +114,7 @@ void minigame_fixedloop()
 
 void minigame_loop()
 {
-	game_play(&minigame, actors, scenery, players, &actor_collider, &actor_contact, hexagon.collider->boxes, 3);
+	game_play(&minigame, actors, scenery, players, &actor_collider, &actor_contact, box_colliders, shapeData.numShapes);
 }
 void minigame_cleanup()
 {

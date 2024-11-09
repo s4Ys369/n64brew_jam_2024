@@ -5,7 +5,7 @@ LEVEL_DIR = $(ASSETS)/levels
 SOUND_DIR = $(ASSETS)/sound
 UI_DIR = $(ASSETS)/ui
 
-TXT_FILES :=  $(LEVEL_DIR)/testLevel.txt
+TXT_FILES :=  $(LEVEL_DIR)/levelA.txt
 
 T3DM_FILES := $(ASSETS)/capsule.t3dm \
               $(ASSETS)/n64logo.t3dm \
@@ -17,7 +17,7 @@ T3DM_FILES := $(ASSETS)/capsule.t3dm \
               $(ASSETS)/room.t3dm \
               $(ASSETS)/cube.t3dm \
               $(ASSETS)/hex_platform.t3dm \
-              $(ASSETS)/testLevel.t3dm
+              $(ASSETS)/levelA.t3dm
 
 SPRITE_FILES := $(ASSETS)/black_filled_tile.sprite \
                 $(ASSETS)/black_tile.sprite \
@@ -74,7 +74,7 @@ $(ASSETS)/wolfie.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/dogman.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/mew.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/room.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
-$(ASSETS)/testLevel.t3dm: T3DM_FLAGS = --base-scale=500 --bvh
+$(ASSETS)/levelA.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
 $(ASSETS)/hex_platform.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
 
 # audioconv flags
