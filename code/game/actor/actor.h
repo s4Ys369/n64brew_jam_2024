@@ -23,6 +23,8 @@ typedef struct {
 	float run_to_roll_target_speed;
 	float sprint_to_roll_target_speed;
 	float jump_target_speed;
+
+	float fall_max_speed;
 	
 	float jump_timer_max;
 
@@ -158,6 +160,7 @@ Actor actor_create(uint32_t id, const char *model_path)
 			.run_to_roll_target_speed = 780,
 			.sprint_to_roll_target_speed = 980,
 			.jump_target_speed = 600, 
+			.fall_max_speed = -600.0f,
 			.jump_timer_max = 0.13
         },
     };

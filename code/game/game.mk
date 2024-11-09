@@ -12,6 +12,8 @@ T3DM_FILES := $(ASSETS)/capsule.t3dm \
               $(ASSETS)/pipo.t3dm \
               $(ASSETS)/wolfie.t3dm \
               $(ASSETS)/s4ys.t3dm \
+              $(ASSETS)/dogman.t3dm \
+              $(ASSETS)/mew.t3dm \
               $(ASSETS)/room.t3dm \
               $(ASSETS)/cube.t3dm \
               $(ASSETS)/hex_platform.t3dm \
@@ -20,6 +22,13 @@ T3DM_FILES := $(ASSETS)/capsule.t3dm \
 SPRITE_FILES := $(ASSETS)/black_filled_tile.sprite \
                 $(ASSETS)/black_tile.sprite \
                 $(ASSETS)/capsule_skin.sprite \
+                $(ASSETS)/mew_eye.sprite \
+                $(ASSETS)/mew_ear.sprite \
+                $(ASSETS)/jam_logo.sprite \
+                $(ASSETS)/dogman_eye.sprite \
+                $(ASSETS)/dogman_eyebrow.sprite \
+                $(ASSETS)/dogman_mouth.sprite \
+                $(ASSETS)/fast64.sprite \
                 $(ASSETS)/eye.sprite \
                 $(ASSETS)/wolf_eye.sprite \
                 $(ASSETS)/frog_eye.sprite \
@@ -60,6 +69,8 @@ $(ASSETS)/capsule.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/n64logo.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/cube.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/pipo.t3dm: T3DM_FLAGS = --base-scale=1
+$(ASSETS)/dogman.t3dm: T3DM_FLAGS = --base-scale=1
+$(ASSETS)/mew.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/s4ys.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/wolfie.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/room.t3dm: T3DM_FLAGS = --base-scale=1 --bvh

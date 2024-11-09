@@ -34,6 +34,14 @@ void gameState_setMainMenu()
     // code for the game over state
 }
 
+const char* modelNames[5] = {
+    "All",
+    "Wolfie",
+	"s4ys",
+	"Dogman",
+	"Mew"
+};
+
 static uint32_t frameCounter = 0;
 void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerData* player, ActorCollider* actor_collider, ActorContactData* actor_contact, Platform* platform)
 {
@@ -43,15 +51,51 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 	time_setData(&game->timing);
 	frameCounter++;
 
-	camera_getMinigamePosition(&game->scene.camera[0], (Vector3){-200.0f,-400.0f,400.0f}, game->timing.frame_time_s);
-
 	for (int i = 0; i < ACTOR_COUNT; i++)
 	{
 		controllerData_getInputs(player[i].port, game->control[i]);
 		if(game->control[i]->pressed.a) sound_wav_bounce();
 		actor_update(&actor[i], game->control[i], game->timing.frame_time_s, game->scene.camera[0].angle_around_barycenter, game->scene.camera[0].offset_angle, &game->syncPoint);
 		actor_updateMat(&actor[i]);
+
+		// Temp for testing Jump animations
+		if (actor[i].body.position.z != 225.0f // magic number
+		&& actor[i].state != JUMP
+		&& actor[i].state != FALLING)
+		{
+			
+			actor[i].state = FALLING;
+			actor[i].grounded = false;
+			actor[i].grounding_height = 225.0f;
+        
+		}
 	}
+
+	// CAM SWITCH TEST
+	static uint8_t camSwitch = 0;
+	const Vector3 camCenter = (Vector3){-200.0f,-200.0f,300.0f};
+	static Vector3 camOrbit; 
+	static Vector3 targetPosition;
+
+	if (game->control[0]->pressed.b)
+	{
+		if(camSwitch < 4)
+		{
+			camSwitch += 1;
+		} else {
+			camSwitch = 0;
+		}
+	}
+
+	targetPosition = (camSwitch == 0) ? camCenter : actor[camSwitch-1].body.position;
+
+	if (camOrbit.x != targetPosition.x || camOrbit.y != targetPosition.y || camOrbit.z != targetPosition.z)
+		camOrbit = vector3_lerp(&camOrbit, &targetPosition, 0.2f);
+
+	camera_getMinigamePosition(&game->scene.camera[0], camOrbit, game->timing.frame_time_s);
+	cameraControl_setOrbitalMovement(&game->scene.camera[0], game->control[0]);
+
+	/* @TODO: Collisions need lots of work, CPU bottleneck
 
 	Box allBoxes[90];
     size_t boxIndex = 0;
@@ -78,7 +122,10 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 		despawn[j] = hexagons[j].despawned;
 	}
 
+	*/
+
 	platform_getColor(hexagons);
+	
 
 	// Set projection and look at for each viewport based on player camera
 	camera_set(&game->scene.camera[0], &game->screen.gameplay_viewport[0]);
@@ -113,8 +160,9 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 	//rdpq_set_scissor(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	ui_fps();
-	ui_printf("v0.1.%d - %s", 2, "Platform Despawn");
-	ui_input_display(game->control[0]);
+	ui_printf("Press B to Switch Camera Focus\n"
+				"Current: %s", 
+				modelNames[camSwitch]);
 
 	rdpq_detach_show();
 	sound_update_buffer();

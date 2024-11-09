@@ -6,7 +6,7 @@
 #include <t3d/t3danim.h>
 #include <t3d/t3ddebug.h>
 
-#define ACTOR_COUNT 2
+#define ACTOR_COUNT 4
 #define SCENERY_COUNT 30
 
 #include "../../core.h"
@@ -72,7 +72,7 @@ void minigame_init()
     game_init(&minigame);
 
 #ifdef PROFILING
-    rdpq_debug_start();
+    //rdpq_debug_start();
     profile_data.frame_count = 0;
     rspq_profile_start();
 #endif
@@ -80,11 +80,29 @@ void minigame_init()
     // actors
     actors[0] = actor_create(0, "rom:/game/wolfie.t3dm");
     actors[1] = actor_create(1, "rom:/game/s4ys.t3dm");
+    actors[2] = actor_create(2, "rom:/game/dogman.t3dm");
+    actors[3] = actor_create(3, "rom:/game/mew.t3dm");
     for (int i = 0; i < ACTOR_COUNT; i++) {
         actor_init(&actors[i]);
         actor_collider[i].settings.body_height = 110.0f;
         actor_collider[i].settings.body_radius = 30.0f;
         actorCollider_init(&actor_collider[i]);
+
+        // Individual Character Placement
+        switch(i)
+        {
+            case 0:
+                actors[i].body.position.x = -300.0f;
+                break;
+            case 1:
+                actors[i].body.position.x = -150.0f;
+                break;
+            case 2:
+                break;
+            case 3:
+                actors[i].body.position.x = 150.0f;
+                break;
+        }
     }
 
     
