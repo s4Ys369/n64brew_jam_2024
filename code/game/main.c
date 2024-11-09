@@ -77,6 +77,7 @@ Scenery scenery[SCENERY_COUNT];
 void minigame_init()
 {      
 	game_init(&minigame);
+    display_set_fps_limit(30.0f);
     level_parse("rom:/game/levels/levelA.txt", &box_colliders, &shapeData);
 
     // actors
