@@ -79,9 +79,9 @@ void minigame_init()
 
     // actors
     actors[0] = actor_create(0, "rom:/game/wolfie.t3dm");
-    actors[1] = actor_create(1, "rom:/game/s4ys.t3dm");
-    actors[2] = actor_create(2, "rom:/game/dogman.t3dm");
-    actors[3] = actor_create(3, "rom:/game/mew.t3dm");
+    actors[1] = actor_create(1, "rom:/game/dogman.t3dm");
+    actors[2] = actor_create(2, "rom:/game/mew.t3dm");
+    actors[3] = actor_create(3, "rom:/game/s4ys.t3dm");
     for (int i = 0; i < ACTOR_COUNT; i++) {
         actor_init(&actors[i]);
         actor_collider[i].settings.body_height = 110.0f;

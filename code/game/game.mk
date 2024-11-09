@@ -32,6 +32,8 @@ SPRITE_FILES := $(ASSETS)/black_filled_tile.sprite \
                 $(ASSETS)/eye.sprite \
                 $(ASSETS)/wolf_eye.sprite \
                 $(ASSETS)/frog_eye.sprite \
+                $(ASSETS)/frog_belly.sprite \
+                $(ASSETS)/frog_arm.sprite \
                 $(ASSETS)/libdragon_logo.sprite \
                 $(ASSETS)/nose.sprite \
                 $(ASSETS)/green_tile.sprite \
