@@ -7,6 +7,7 @@
 #include <t3d/t3ddebug.h>
 
 #define ACTOR_COUNT 1
+#define PLAYER_COUNT 1
 #define SCENERY_COUNT 1
 
 #include "../../core.h"
@@ -61,7 +62,7 @@ Game minigame = {
 	.state = GAMEPLAY
 };
 
-PlayerData players[MAXPLAYERS];
+PlayerData players[PLAYER_COUNT];
 
 Actor actors[ACTOR_COUNT];
 ActorCollider actor_collider = {
@@ -83,7 +84,7 @@ void minigame_init()
     // actors
     actors[0] = actor_create(0, "rom:/game/dogman.t3dm");
 
-    for (int i = 0; i < ACTOR_COUNT; i++) {
+    for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
         actor_init(&actors[i]);
     }
 
@@ -93,30 +94,29 @@ void minigame_init()
 	// scenery
     scenery[0] = scenery_create(0, "rom:/game/levelA.t3dm");
 
-    for (int i = 0; i < SCENERY_COUNT; i++)
+    for (uint8_t i = 0; i < SCENERY_COUNT; i++)
 	{
         scenery_set(&scenery[i]);
     }
 
-	for (size_t p = 0; p < ACTOR_COUNT; ++p)
+	for (uint8_t i = 0; i < ACTOR_COUNT; i++)
 	{
-		player_init(p, actors[p], &players[p]);
+		player_init(i, actors[i], &players[i]);
 	}
-
-
 }
+
 
 void minigame_fixedloop()
 {
-	for (int i = 0; i < core_get_playercount(); i++)
-		controllerData_getInputs(players[i].port, minigame.control[i]);
-
+	game_play(&minigame, actors, scenery, players, &actor_collider, &actor_contact, box_colliders, shapeData.numShapes);
 }
+
 
 void minigame_loop()
 {
-	game_play(&minigame, actors, scenery, players, &actor_collider, &actor_contact, box_colliders, shapeData.numShapes);
 }
+
+
 void minigame_cleanup()
 {
     //destroyShapeFileData(&shapeData); // REMEMBER to destroy shape data when switch levels or ending minigame
@@ -131,24 +131,19 @@ void minigame_cleanup()
     rspq_wait();
 
     // Step 3: Destroy Tiny3D models, matrices, animations and RSPQ blocks
-	for (int i = 0; i < ACTOR_COUNT; i++) {
+	for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
 
 		actor_delete(&actors[i]);
 	};
 
-    for (int i = 0; i < SCENERY_COUNT; i++) {
+    for (uint8_t i = 0; i < SCENERY_COUNT; i++) {
 
 		scenery_delete(&scenery[i]);
 	}
     t3d_destroy(); // Then destroy library
 
-    // Step 4: Free controller data
-    for (size_t p = 0; p < MAXPLAYERS; ++p)
-	{
-		free(minigame.control[p]);
-	}
-
     // Step 5: Free allocated surface buffers
     surface_free(&minigame.screen.depthBuffer);
-	display_close();
+	
+    display_close();
 }

@@ -6,10 +6,13 @@
 
 void game_setControlData(Game *game)
 {
-    if (game->control[0]->released.start) {
+    for (uint8_t i = 0; i < PLAYER_COUNT; i++) {
 
-        if (game->state == PAUSE) game->state = GAMEPLAY;
-        else if (game->state == GAMEPLAY) game->state = PAUSE;
+        if (game->control[i].pressed.start) {
+
+            if (game->state == PAUSE) game->state = GAMEPLAY;
+            else if (game->state == GAMEPLAY) game->state = PAUSE;
+        }
     }
 }
 

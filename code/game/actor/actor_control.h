@@ -13,7 +13,7 @@ void actor_setControlData(Actor* actor, ControllerData *control, float frame_tim
 
 void actorControl_setJump(Actor* actor, ControllerData *control, float frame_time)
 {    
-    if (control->btn.a && actor->state != JUMP && actor->state != FALLING) {
+    if (control->pressed.a && actor->state != JUMP && actor->state != FALLING) {
         
         actor->input.jump_hold = true;
         actor->input.jump_released = false;

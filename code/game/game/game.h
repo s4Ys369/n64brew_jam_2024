@@ -13,8 +13,8 @@ typedef struct
 
     uint8_t state;
     Screen screen;
-    ControllerData* control[MAXPLAYERS];
     TimeData timing;
+    ControllerData control[PLAYER_COUNT];
   	rspq_syncpoint_t syncPoint;
 
     Scene scene;
@@ -36,14 +36,12 @@ void game_init(Game *game)
 	time_init(&game->timing);
 
     scene_init(&game->scene);
+
+	//
 	ui_init();
 	sound_load();
-
-	for (size_t p = 0; p < MAXPLAYERS; ++p)
-	{
-		game->control[p] = malloc(sizeof(ControllerData));
-	}
-
+	//
+	
   	game->syncPoint = 0;
 	game->state = GAMEPLAY;
 }

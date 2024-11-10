@@ -33,15 +33,15 @@ void gameState_setGameplay(Game* game, Actor* actor, Scenery* scenery, PlayerDat
 	// ======== Update ======== //
 
 	time_setData(&game->timing);
+	controllerData_getInputs(game->control);
 
-	for (int i = 0; i < core_get_playercount(); i++) {
-		controllerData_getInputs(player[i].port, game->control[i]);
-		actor_update(&actor[i], game->control[i], game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
+	for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
+		actor_update(&actor[i], &game->control[i], game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
 	}
 
 	actorCollision_updateBoxes(&actor[0], actor_contact, actor_collider, box_collider, numBoxes);
 
-	cameraControl_setOrbitalMovement(&game->scene.camera, game->control[0]);
+	cameraControl_setOrbitalMovement(&game->scene.camera, &game->control[0]);
 	camera_getMinigamePosition(&game->scene.camera, actor[0].body.position, game->timing.frame_time_s);
 	camera_set(&game->scene.camera, &game->screen);
 
@@ -81,9 +81,9 @@ void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, PlayerData* 
 	// ======== Update ======== //
 
 	time_setData(&game->timing);
-	controllerData_getInputs(player[0].port, game->control[0]);
+	controllerData_getInputs(game->control);
 
-	cameraControl_setOrbitalMovement(&game->scene.camera, game->control[0]);
+	cameraControl_setOrbitalMovement(&game->scene.camera, &game->control[0]);
 	camera_getMinigamePosition(&game->scene.camera, actor[0].body.position, game->timing.frame_time_s);
 	camera_set(&game->scene.camera, &game->screen);
 
@@ -100,6 +100,12 @@ void gameState_setPause(Game* game, Actor* actor, Scenery* scenery, PlayerData* 
 
 		scenery_draw(&scenery[i]);
 	}
+	
+	for (int i = 0; i < ACTOR_COUNT; i++) {
+		
+		actor_draw(&actor[i]);
+	};
+
 
 	t3d_matrix_pop(1);
 
