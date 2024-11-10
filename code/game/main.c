@@ -10,6 +10,11 @@
 #define PLAYER_COUNT 2
 #define SCENERY_COUNT 1
 
+#define S4YS 0
+#define WOLFIE 1
+#define MEW 2
+#define DOGMAN 3
+
 #include "../../core.h"
 #include "../../minigame.h"
 
@@ -34,7 +39,7 @@
 #include "actor/collision/actor_collision_detection.h"
 #include "actor/collision/actor_collision_response.h"
 
-#include "players/players.h"
+#include "player/player.h"
 
 #include "scene/scene.h"
 #include "scene/scenery.h"
@@ -62,18 +67,22 @@ Game minigame = {
 	.state = GAMEPLAY
 };
 
-PlayerData players[PLAYER_COUNT];
+Player player[PLAYER_COUNT];
 
 Actor actors[ACTOR_COUNT];
+
 ActorCollider actor_collider = {
-        settings: {
-            body_radius: 35.0f, // Testing large Player capsule
-            body_height: 190.0f,
-        }
+
+    settings: {
+        body_radius: 35.0f,
+        body_height: 190.0f,
+    }
 };
+
 ActorContactData actor_contact;
 
 Scenery scenery[SCENERY_COUNT];
+
 
 void minigame_init()
 {      
@@ -91,7 +100,6 @@ void minigame_init()
         actor_init(&actors[i]);
     }
 
-
     actorCollider_init(&actor_collider);
     
 	// scenery
@@ -101,24 +109,18 @@ void minigame_init()
 	{
         scenery_set(&scenery[i]);
     }
-
-	for (uint8_t i = 0; i < ACTOR_COUNT; i++)
-	{
-		player_init(i, actors[i], &players[i]);
-	}
 }
 
 
 void minigame_fixedloop()
 {
-	game_play(&minigame, actors, scenery, players, &actor_collider, &actor_contact, box_colliders, shapeData.numShapes);
+	game_play(&minigame, player, actors, scenery, &actor_collider, &actor_contact, box_colliders, shapeData.numShapes);
 }
 
 
 void minigame_loop()
 {
 }
-
 
 void minigame_cleanup()
 {

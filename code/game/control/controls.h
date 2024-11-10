@@ -12,19 +12,14 @@ typedef struct {
 } ControllerData;
 
 
-void controllerData_getInputs(ControllerData* data);
+void controllerData_getInputs(ControllerData*data, uint8_t port);
 
-void controllerData_getInputs(ControllerData* data)
+void controllerData_getInputs(ControllerData* data, uint8_t port)
 {
-    joypad_poll();
-    
-    for (int i = 0; i < PLAYER_COUNT; i++) {
-        
-        data[i].pressed = joypad_get_buttons_pressed(i);
-        data[i].held = joypad_get_buttons_held(i);
-        data[i].released = joypad_get_buttons_released(i);
-        data[i].input = joypad_get_inputs(i); 
-    }
+    data->pressed = joypad_get_buttons_pressed(port);
+    data->held = joypad_get_buttons_held(port);
+    data->released = joypad_get_buttons_released(port);
+    data->input = joypad_get_inputs(port); 
 }
 
 #endif

@@ -4,11 +4,11 @@
 
 
 
-void game_setControlData(Game *game)
+void game_setControlData(Game* game, Player *player)
 {
     for (uint8_t i = 0; i < PLAYER_COUNT; i++) {
 
-        if (game->control[i].pressed.start) {
+        if (player[i].control.pressed.start) {
 
             if (game->state == PAUSE) game->state = GAMEPLAY;
             else if (game->state == GAMEPLAY) game->state = PAUSE;

@@ -14,7 +14,6 @@ typedef struct
     uint8_t state;
     Screen screen;
     TimeData timing;
-    ControllerData control[PLAYER_COUNT];
   	rspq_syncpoint_t syncPoint;
 
     Scene scene;

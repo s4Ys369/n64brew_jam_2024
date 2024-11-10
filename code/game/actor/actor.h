@@ -112,7 +112,7 @@ typedef struct {
 // function prototypes
 
 Actor actor_create(uint32_t id, const char *model_path);
-void actor_init(Actor* actor);
+
 void actor_draw(Actor *actor);
 void actor_delete(Actor *actor);
 
@@ -177,13 +177,16 @@ Actor actor_create(uint32_t id, const char *model_path)
 
 void actor_draw(Actor *actor) 
 {	
-	t3d_mat4fp_from_srt_euler(actor->modelMat,
-		(float[3]){actor->scale.x, actor->scale.y, actor->scale.z},
-		(float[3]){rad(actor->body.rotation.x), rad(actor->body.rotation.y), rad(actor->body.rotation.z)},
-		(float[3]){actor->body.position.x, actor->body.position.y, actor->body.position.z}
-	);
-	t3d_matrix_set(actor->modelMat, true);
-	rspq_block_run(actor->dl);
+	for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
+				
+		t3d_mat4fp_from_srt_euler(actor[i].modelMat,
+			(float[3]){actor[i].scale.x, actor[i].scale.y, actor[i].scale.z},
+			(float[3]){rad(actor[i].body.rotation.x), rad(actor[i].body.rotation.y), rad(actor[i].body.rotation.z)},
+			(float[3]){actor[i].body.position.x, actor[i].body.position.y, actor[i].body.position.z}
+		);
+		t3d_matrix_set(actor[i].modelMat, true);
+		rspq_block_run(actor[i].dl);
+	};
 }
 
 void actor_delete(Actor *actor) 

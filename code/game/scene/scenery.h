@@ -50,7 +50,8 @@ Scenery scenery_create(uint32_t id, const char *model_path)
 }
 
 void scenery_set(Scenery *scenery)
-{
+{   
+    
     t3d_mat4fp_from_srt_euler(scenery->modelMat,
         (float[3]){scenery->scale.x, scenery->scale.y, scenery->scale.z},
         (float[3]){rad(scenery->rotation.x), rad(scenery->rotation.y), rad(scenery->rotation.z)},
@@ -60,8 +61,11 @@ void scenery_set(Scenery *scenery)
 
 void scenery_draw(Scenery *scenery)
 {
-    t3d_matrix_set(scenery->modelMat, true);
-    rspq_block_run(scenery->dl);
+    for (int i = 0; i < SCENERY_COUNT; i++) {
+
+        t3d_matrix_set(scenery[i].modelMat, true);
+        rspq_block_run(scenery[i].dl);
+	};
 }
 
 void scenery_delete(Scenery *scenery)
