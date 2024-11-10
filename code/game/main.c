@@ -6,8 +6,8 @@
 #include <t3d/t3danim.h>
 #include <t3d/t3ddebug.h>
 
-#define ACTOR_COUNT 1
-#define PLAYER_COUNT 1
+#define ACTOR_COUNT 2
+#define PLAYER_COUNT 2
 #define SCENERY_COUNT 1
 
 #include "../../core.h"
@@ -67,8 +67,8 @@ PlayerData players[PLAYER_COUNT];
 Actor actors[ACTOR_COUNT];
 ActorCollider actor_collider = {
         settings: {
-            body_radius: 30.0f, // Testing large Player capsule
-            body_height: 110.0f,
+            body_radius: 35.0f, // Testing large Player capsule
+            body_height: 190.0f,
         }
 };
 ActorContactData actor_contact;
@@ -78,11 +78,14 @@ Scenery scenery[SCENERY_COUNT];
 void minigame_init()
 {      
 	game_init(&minigame);
+
     display_set_fps_limit(30.0f);
+
     level_parse("rom:/game/levels/levelA.txt", &box_colliders, &shapeData);
 
     // actors
     actors[0] = actor_create(0, "rom:/game/dogman.t3dm");
+    actors[1] = actor_create(1, "rom:/game/mew.t3dm");
 
     for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
         actor_init(&actors[i]);

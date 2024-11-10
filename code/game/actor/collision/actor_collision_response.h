@@ -115,13 +115,6 @@ void actorCollision_setResponse(Actor* actor, ActorContactData* contact, ActorCo
     actorCollider_setVertical(collider, &actor->body.position);
 }
 
-void actorCollision_collideWithPlayground(Actor* actor) {
-    if (actor->body.position.x > 1870) actor->body.position.x = 1875;
-    if (actor->body.position.x < -1870) actor->body.position.x = -1875;
-    if (actor->body.position.y > 1870) actor->body.position.y = 1875;
-    if (actor->body.position.y < -1870) actor->body.position.y = -1875;
-    if (actor->body.position.z < -2000.0f) actor->body.position.z = -2000.0f;
-}
 
 // HEXAGON TEST
 void actorCollision_updateBoxes(Actor* actor, ActorContactData* actor_contact, ActorCollider* actor_collider, Box box_collider[], size_t numBoxes)
