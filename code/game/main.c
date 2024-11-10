@@ -103,7 +103,7 @@ void minigame_init()
     actorCollider_init(&actor_collider);
     
 	// scenery
-    scenery[0] = scenery_create(0, "rom:/game/levelA.t3dm");
+    scenery[0] = scenery_create(0, "rom:/game/room.t3dm");
 
     for (uint8_t i = 0; i < SCENERY_COUNT; i++)
 	{

@@ -39,6 +39,11 @@ SPRITE_FILES := $(ASSETS)/black_filled_tile.sprite \
                 $(ASSETS)/dogman_eyebrow.sprite \
                 $(ASSETS)/dogman_mouth.sprite \
                 $(ASSETS)/fast64.sprite \
+                $(ASSETS)/brick24.i8.sprite \
+                $(ASSETS)/bricks48.i8.sprite \
+                $(ASSETS)/gate01.ci8.sprite \
+                $(ASSETS)/lava00.rgba16.sprite \
+                $(ASSETS)/lava08.rgba16.sprite \
 
 SOUND_FILES := $(SOUND_DIR)/ene.xm64 \
                $(SOUND_DIR)/boing.wav64
@@ -73,7 +78,6 @@ $(ASSETS)/s4ys.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/wolfie.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/dogman.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/mew.t3dm: T3DM_FLAGS = --base-scale=1
-$(ASSETS)/room.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
 $(ASSETS)/levelA.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
 $(ASSETS)/hex_platform.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
 
