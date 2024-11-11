@@ -57,13 +57,14 @@ void scenery_set(Scenery *scenery)
         (float[3]){rad(scenery->rotation.x), rad(scenery->rotation.y), rad(scenery->rotation.z)},
         (float[3]){scenery->position.x, scenery->position.y, scenery->position.z}
     );
+
 }
 
 void scenery_draw(Scenery *scenery)
 {
     for (int i = 0; i < SCENERY_COUNT; i++) {
 
-        t3d_matrix_set(scenery[i].modelMat, true);
+        t3d_matrix_set(scenery->modelMat, true);
         rspq_block_run(scenery[i].dl);
 	};
 }

@@ -8,7 +8,8 @@
 
 #define ACTOR_COUNT 2
 #define PLAYER_COUNT 2
-#define SCENERY_COUNT 1
+#define SCENERY_COUNT 2
+#define ANIMATED_SCENERY_COUNT 1
 
 #define S4YS 0
 #define WOLFIE 1
@@ -82,6 +83,7 @@ ActorCollider actor_collider = {
 ActorContactData actor_contact;
 
 Scenery scenery[SCENERY_COUNT];
+Scenery animated_scenery[ANIMATED_SCENERY_COUNT];
 
 
 void minigame_init()
@@ -104,6 +106,7 @@ void minigame_init()
     
 	// scenery
     scenery[0] = scenery_create(0, "rom:/game/room.t3dm");
+    scenery[1] = scenery_create(1, "rom:/game/lava.t3dm");
 
     for (uint8_t i = 0; i < SCENERY_COUNT; i++)
 	{
