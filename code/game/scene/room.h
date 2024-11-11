@@ -16,17 +16,18 @@ void tile_scroll(void* userData, rdpq_texparms_t *tileParams, rdpq_tile_t tile)
     }
 }
 
-void move_lava(T3Model* model)
+void move_lava(Scenery *scenery)
 {
-    transformOffset += 0.0042f;
+    
+    scenery[1].transform_offset += 0.42f;
 
     // returns the global vertex buffer for a model.
     // If you have multiple models and want to only update one, you have to manually iterate over the objects.
     // see the implementation of t3d_model_draw_custom in that case.
-    T3DVertPacked* verts = t3d_model_get_vertices(model);
-    float globalHeight = fm_sinf(transformOffset * 2.5f) * 30.0f;
+    T3DVertPacked* verts = t3d_model_get_vertices(scenery[1].model);
+    float globalHeight = fm_sinf(scenery[1].transform_offset * 2.5f) * 30.0f;
 
-    for(uint16_t i=0; i < model->totalVertCount; ++i)
+    for(uint16_t i=0; i < scenery[1].model->totalVertCount; ++i)
     {
     // To better handle the interleaved vertex format,
     // t3d provides a few helper functions to access attributes
@@ -34,7 +35,7 @@ void move_lava(T3Model* model)
 
     // water-like wobble effect
     float height = fm_sinf(
-        transformOffset * 4.5f
+        scenery[1].transform_offset * 4.5f
         + pos[0] * 30.1f
         + pos[2] * 20.1f
     );
@@ -50,16 +51,24 @@ void move_lava(T3Model* model)
     }
 
     // Don't forget to flush the cache again! (or use an uncached buffer in the first place)
-    data_cache_hit_writeback(verts, sizeof(T3DVertPacked) * model->totalVertCount / 2);
+    data_cache_hit_writeback(verts, sizeof(T3DVertPacked) * scenery[1].model->totalVertCount / 2);
 }
 
-bool scrollEnabled = true;
-bool transformEnabled = true;
 
+void room_draw(Scenery *scenery)
+{   
+    t3d_matrix_set(scenery[0].modelMat, true);
+    rspq_block_run(scenery[0].dl);
 
-float tileOffset = 0.0f;
-float transformOffset = 0.0f;
+    scenery[1].tile_offset += 0.1f;
 
+    t3d_matrix_set(scenery[1].modelMat, true);
+    t3d_model_draw_custom(scenery[1].model, (T3DModelDrawConf){
+        .userData = &scenery[1].tile_offset,
+        .tileCb = tile_scroll,
+    });
+    
+}
 
 
 #endif

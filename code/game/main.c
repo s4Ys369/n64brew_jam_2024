@@ -9,7 +9,6 @@
 #define ACTOR_COUNT 2
 #define PLAYER_COUNT 2
 #define SCENERY_COUNT 2
-#define ANIMATED_SCENERY_COUNT 1
 
 #define S4YS 0
 #define WOLFIE 1
@@ -44,6 +43,7 @@
 
 #include "scene/scene.h"
 #include "scene/scenery.h"
+#include "scene/room.h"
 
 #include "sound/sound.h"
 
@@ -83,7 +83,6 @@ ActorCollider actor_collider = {
 ActorContactData actor_contact;
 
 Scenery scenery[SCENERY_COUNT];
-Scenery animated_scenery[ANIMATED_SCENERY_COUNT];
 
 
 void minigame_init()

@@ -52,8 +52,10 @@ void gameState_setGameplay(Game* game, Player* player, Actor* actor, Scenery* sc
 
 	t3d_matrix_push_pos(1);
 
-	scenery_draw(scenery);
-	
+	//scenery_draw(scenery);
+	move_lava(scenery);
+	room_draw(scenery);
+
 	actor_draw(actor);
 
 	t3d_matrix_pop(1);

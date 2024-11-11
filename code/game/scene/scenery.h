@@ -10,6 +10,9 @@ typedef struct {
 	rspq_block_t *dl;
 	T3DMat4FP *modelMat;
 	T3DModel *model;
+
+    float tile_offset;
+    float transform_offset;
     
 	Vector3 scale;
 	Vector3 position;
@@ -64,7 +67,7 @@ void scenery_draw(Scenery *scenery)
 {
     for (int i = 0; i < SCENERY_COUNT; i++) {
 
-        t3d_matrix_set(scenery->modelMat, true);
+        t3d_matrix_set(scenery[i].modelMat, true);
         rspq_block_run(scenery[i].dl);
 	};
 }
