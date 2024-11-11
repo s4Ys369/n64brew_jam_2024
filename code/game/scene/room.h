@@ -19,7 +19,7 @@ void tile_scroll(void* userData, rdpq_texparms_t *tileParams, rdpq_tile_t tile)
 void move_lava(Scenery *scenery)
 {
     
-    scenery[1].transform_offset += 0.42f;
+    scenery[1].transform_offset += 0.01f;
 
     // returns the global vertex buffer for a model.
     // If you have multiple models and want to only update one, you have to manually iterate over the objects.
@@ -37,9 +37,9 @@ void move_lava(Scenery *scenery)
     float height = fm_sinf(
         scenery[1].transform_offset * 4.5f
         + pos[0] * 30.1f
-        + pos[2] * 20.1f
+        + pos[1] * 20.1f
     );
-    pos[1] = 20.0f * height + globalHeight;
+    pos[2] = 20.0f * height + globalHeight;
 
     // make lower parts darker, and higher parts brighter
     float color = height * 0.25f + 0.75f;
