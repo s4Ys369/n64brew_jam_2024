@@ -2,7 +2,7 @@
 #define ACTOR_MOVEMENT_H
 
 
-#define ACTOR_GRAVITY -2000
+#define ACTOR_GRAVITY -1500
 
 
 // function prototypes

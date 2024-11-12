@@ -9,6 +9,7 @@
 #define ACTOR_COUNT 2
 #define PLAYER_COUNT 2
 #define SCENERY_COUNT 2
+#define PLATFORM_COUNT 1
 
 #define S4YS 0
 #define WOLFIE 1
@@ -17,8 +18,6 @@
 
 #include "../../core.h"
 #include "../../minigame.h"
-
-#include "txt/shapeParser.h"
 
 #include "screen/screen.h"
 #include "control/controls.h"
@@ -43,6 +42,7 @@
 
 #include "scene/scene.h"
 #include "scene/scenery.h"
+#include "scene/platform.h"
 #include "scene/room.h"
 
 #include "sound/sound.h"
@@ -52,9 +52,6 @@
 #include "game/game.h"
 #include "game/game_control.h"
 #include "game/game_states.h"
-
-#include "objects/level.h"
-#include "objects/platform.h"
 
 
 const MinigameDef minigame_def = {
@@ -91,8 +88,6 @@ void minigame_init()
 
     display_set_fps_limit(30.0f);
 
-    level_parse("rom:/game/levels/levelA.txt", &box_colliders, &shapeData);
-
     // actors
     actors[0] = actor_create(0, "rom:/game/dogman.t3dm");
     actors[1] = actor_create(1, "rom:/game/mew.t3dm");
@@ -116,7 +111,7 @@ void minigame_init()
 
 void minigame_fixedloop()
 {
-	game_play(&minigame, player, actors, scenery, &actor_collider, &actor_contact, box_colliders, shapeData.numShapes);
+	game_play(&minigame, player, actors, scenery, &actor_collider, &actor_contact);
 }
 
 

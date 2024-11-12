@@ -19,7 +19,8 @@ void tile_scroll(void* userData, rdpq_texparms_t *tileParams, rdpq_tile_t tile)
 void move_lava(Scenery *scenery)
 {
     
-    scenery[1].transform_offset += 0.01f;
+    scenery[1].transform_offset += 0.008f;
+    scenery[1].tile_offset += 0.1f;
 
     // returns the global vertex buffer for a model.
     // If you have multiple models and want to only update one, you have to manually iterate over the objects.
@@ -39,7 +40,7 @@ void move_lava(Scenery *scenery)
         + pos[0] * 30.1f
         + pos[1] * 20.1f
     );
-    pos[2] = 20.0f * height + globalHeight;
+    pos[2] = 40.0f * height + globalHeight;
 
     // make lower parts darker, and higher parts brighter
     float color = height * 0.25f + 0.75f;
@@ -59,8 +60,6 @@ void room_draw(Scenery *scenery)
 {   
     t3d_matrix_set(scenery[0].modelMat, true);
     rspq_block_run(scenery[0].dl);
-
-    scenery[1].tile_offset += 0.1f;
 
     t3d_matrix_set(scenery[1].modelMat, true);
     t3d_model_draw_custom(scenery[1].model, (T3DModelDrawConf){
