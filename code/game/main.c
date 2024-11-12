@@ -8,7 +8,7 @@
 
 #define ACTOR_COUNT 2
 #define PLAYER_COUNT 2
-#define SCENERY_COUNT 1
+#define SCENERY_COUNT 2
 
 #define S4YS 0
 #define WOLFIE 1
@@ -43,6 +43,7 @@
 
 #include "scene/scene.h"
 #include "scene/scenery.h"
+#include "scene/room.h"
 
 #include "sound/sound.h"
 
@@ -103,7 +104,8 @@ void minigame_init()
     actorCollider_init(&actor_collider);
     
 	// scenery
-    scenery[0] = scenery_create(0, "rom:/game/levelA.t3dm");
+    scenery[0] = scenery_create(0, "rom:/game/room.t3dm");
+    scenery[1] = scenery_create(1, "rom:/game/lava.t3dm");
 
     for (uint8_t i = 0; i < SCENERY_COUNT; i++)
 	{

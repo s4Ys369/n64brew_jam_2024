@@ -10,6 +10,9 @@ typedef struct {
 	rspq_block_t *dl;
 	T3DMat4FP *modelMat;
 	T3DModel *model;
+
+    float tile_offset;
+    float transform_offset;
     
 	Vector3 scale;
 	Vector3 position;
@@ -57,6 +60,7 @@ void scenery_set(Scenery *scenery)
         (float[3]){rad(scenery->rotation.x), rad(scenery->rotation.y), rad(scenery->rotation.z)},
         (float[3]){scenery->position.x, scenery->position.y, scenery->position.z}
     );
+
 }
 
 void scenery_draw(Scenery *scenery)
