@@ -6,8 +6,8 @@
 #include <t3d/t3danim.h>
 #include <t3d/t3ddebug.h>
 
-#define ACTOR_COUNT 2
-#define PLAYER_COUNT 2
+#define ACTOR_COUNT 4
+#define PLAYER_COUNT 4
 #define SCENERY_COUNT 2
 #define PLATFORM_COUNT 30
 
@@ -85,12 +85,31 @@ void minigame_init()
     // actors
     actors[0] = actor_create(0, "rom:/game/dogman.t3dm");
     actors[1] = actor_create(1, "rom:/game/mew.t3dm");
+    actors[2] = actor_create(2, "rom:/game/wolfie.t3dm");
+    actors[3] = actor_create(3, "rom:/game/s4ys.t3dm");
 
     for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
         actor_init(&actors[i]);
         actorCollider_init(&actor_collider[i]);
         actor_collider[i].settings.body_radius = 35.0f;
         actor_collider[i].settings.body_height = 190.f;
+        actors[i].body.position.z = 300.0f;
+
+        // Individual Character Placement
+        switch(i)
+        {
+            case 0:
+                actors[i].body.position.x = -300.0f;
+                break;
+            case 1:
+                actors[i].body.position.x = -150.0f;
+                break;
+            case 2:
+                break;
+            case 3:
+                actors[i].body.position.x = 150.0f;
+                break;
+        }
     }
     
 	// scenery
@@ -103,7 +122,7 @@ void minigame_init()
     }
 
     // platforms
-    platform_hexagonGrid(hexagons, t3d_model_load("rom:/game/platform.t3dm"), -100.0f, ui_color(YELLOW));
+    platform_hexagonGrid(hexagons, t3d_model_load("rom:/game/platform.t3dm"), 100.0f, ui_color(YELLOW));
 
 }
 
