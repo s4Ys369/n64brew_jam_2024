@@ -30,14 +30,12 @@ void gameState_setGameplay(Game* game, Player* player, Actor* actor, Scenery* sc
 	time_setData(&game->timing);
 	player_setControlData(player);
 
-	Box allBoxes[PLATFORM_COUNT * 3];
+	Box allBoxes[PLATFORM_COUNT];
     size_t boxIndex = 0;
 
     for (size_t i = 0; i < PLATFORM_COUNT; i++) {
 		platform_loop(&hexagons[i], i);
-        for (size_t j = 0; j < 3; j++) {
-            allBoxes[boxIndex++] = hexagons[i].collider.boxes[j];
-        }
+		allBoxes[boxIndex++] = hexagons[i].collider.box;
     }
 
 	for (uint8_t i = 0; i < ACTOR_COUNT; i++) {

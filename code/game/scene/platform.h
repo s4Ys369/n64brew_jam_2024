@@ -3,8 +3,7 @@
 
 typedef struct {
 
-  Box boxes[3];
-  AABB aabb;
+  Box box;
 
 } PlatformCollider;
 
@@ -29,7 +28,6 @@ void platform_loop(Platform* platform, size_t index);
 void platform_drawBatch(void);
 void platform_hexagonGrid(Platform* platform, T3DModel* model, float z, color_t color);
 void platform_destroy(Platform* platform);
-bool platform_collideCheck(Platform* platform, Actor* actor);
 
 // Definitions
 
@@ -43,27 +41,12 @@ void platform_init(Platform* platform, T3DModel* model, Vector3 position, color_
   platform->position = position;
 
   // Initialize the three boxes for collision within each hexagon
-  for (size_t b = 0; b < 3; b++)
-  {
-    platform->collider.boxes[b] = (Box) {
-      .size = {175.0f, 275.0f, 30.0f},
-      .center = platform->position,
-      .rotation = { 
-        // Set the rotations explicitly
-        (b == 0) ?  180.0f : (b == 2) ?  180.0f :  0.0f, // X rotation for boxes[0] and boxes[2]
-        (b == 0) ? -180.0f : (b == 2) ? -180.0f :  0.0f, // Y rotation for boxes[0] and boxes[2]
-        (b == 0) ?   90.0f : (b == 1) ?   30.0f : 30.0f  // Z rotation for boxes[0], boxes[1], and boxes[2]
-      }
-    };
-  }
 
-  // Initialize model AABB for collision detection
-  platform->collider.aabb.maxCoordinates = vector3_from_int16(model->aabbMax);
-  platform->collider.aabb.minCoordinates = vector3_from_int16(model->aabbMin);
-
-  // Offset model AABB's center to actual position
-  vector3_add(&platform->collider.aabb.maxCoordinates, &platform->position);
-  vector3_add(&platform->collider.aabb.minCoordinates, &platform->position);
+  platform->collider.box = (Box) {
+    .size = {275.0f, 275.0f, 30.0f},
+    .center = platform->position,
+    .rotation = {0,0,0}
+  };
 
   platform->color = color; // Set color
 
@@ -96,10 +79,8 @@ void platform_loop(Platform* platform, size_t index)
   // Run behaviors
   platform_updateHeight(platform, timeElapsed, index);
 
-  // Translate collisions
-  vector3_add(&platform->collider.aabb.maxCoordinates, &platform->position);
-  vector3_add(&platform->collider.aabb.minCoordinates, &platform->position);
-  for (size_t b = 0; b < 3; b++) platform->collider.boxes[b].center = platform->position;
+  // Translate collision
+  platform->collider.box.center = platform->position;
 
   // Update matrix
   t3d_mat4fp_from_srt_euler(
@@ -117,7 +98,7 @@ void platform_loop(Platform* platform, size_t index)
 
 // T3D MODEL DRAW BATCHING
 #define BATCH_LIMIT 8      // Number of objects per rspq block
-#define BLOCK_COUNT 4     // Pre-calculated block count
+#define BLOCK_COUNT 3     // Pre-calculated block count
 
 T3DModel *batchModel = NULL;
 rspq_block_t* rspqBlocks[BLOCK_COUNT] = {NULL};  // Static array of rspq block pointers
@@ -167,21 +148,20 @@ inline void platform_drawBatch(void)
 // Generate a hexagonal grid of 30 platforms at desired height, with desired model and color
 void platform_hexagonGrid(Platform* platform, T3DModel* model, float z, color_t color)
 {
-  float x_offset = 255.0f;    // Horizontal distance between centers of adjacent columns
-  float y_offset = 225.0f;    // Vertical distance between centers of adjacent rows
+  float x_offset = 300.0f;    // Horizontal distance between centers of adjacent columns
+  float y_offset = 300.0f;    // Vertical distance between centers of adjacent rows
   float start_x = 0.0f;       // Starting X coordinate for the first row
   float start_y = 0.0f;       // Starting Y coordinate for the first row
 
-  // Updated pattern for a larger hexagonal grid (30 platforms)
-  uint8_t rows[] = {3, 4, 5, 6, 5, 4, 3};  // Number of hexagons per row
-  uint8_t hexagon_index = 0;
+  int rows[] = {3, 4, 5, 4, 3};  // Number of hexagons per row
+  int hexagon_index = 0;
 
-  for (uint8_t row_index = 0; row_index < 7; row_index++)
+  for (int row_index = 0; row_index < 5; row_index++)
   {
-    uint8_t hex_count = rows[row_index];
+    int hex_count = rows[row_index];
     float row_start_x = start_x - (hex_count - 1) * x_offset / 2.0f;
 
-    for (uint8_t i = 0; i < hex_count; i++)
+    for (int i = 0; i < hex_count; i++)
     {
       platform[hexagon_index].position.x = row_start_x + i * x_offset;
       platform[hexagon_index].position.y = start_y + row_index * y_offset;
@@ -214,23 +194,6 @@ void platform_destroy(Platform* platform)
   }
 
   if(batchModel != NULL) t3d_model_free(batchModel);
-}
-
-// Use T3D AABB as broad phase
-bool platform_collideCheck(Platform* platform, Actor* actor)
-{
-
-  // If actor is within AABB
-  if (actor->body.position.x >= platform->collider.aabb.minCoordinates.x &&
-      actor->body.position.x <= platform->collider.aabb.maxCoordinates.x &&
-      actor->body.position.y >= platform->collider.aabb.minCoordinates.y &&
-      actor->body.position.y <= platform->collider.aabb.maxCoordinates.y)
-  {
-    return true;
-  } else {
-    return false;
-  }
-
 }
 
 #endif // PLATFORM_H

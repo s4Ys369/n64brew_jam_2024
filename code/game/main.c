@@ -9,7 +9,7 @@
 #define ACTOR_COUNT 4
 #define PLAYER_COUNT 4
 #define SCENERY_COUNT 2
-#define PLATFORM_COUNT 30
+#define PLATFORM_COUNT 19
 
 #define S4YS 0
 #define WOLFIE 1
