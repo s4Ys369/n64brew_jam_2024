@@ -9,7 +9,7 @@
 #define ACTOR_COUNT 2
 #define PLAYER_COUNT 2
 #define SCENERY_COUNT 2
-#define PLATFORM_COUNT 1
+#define PLATFORM_COUNT 30
 
 #define S4YS 0
 #define WOLFIE 1
@@ -69,15 +69,9 @@ Player player[PLAYER_COUNT];
 
 Actor actors[ACTOR_COUNT];
 
-ActorCollider actor_collider = {
+ActorCollider actor_collider[PLAYER_COUNT];
 
-    settings: {
-        body_radius: 35.0f,
-        body_height: 190.0f,
-    }
-};
-
-ActorContactData actor_contact;
+ActorContactData actor_contact[PLAYER_COUNT];
 
 Scenery scenery[SCENERY_COUNT];
 
@@ -86,7 +80,7 @@ void minigame_init()
 {      
 	game_init(&minigame);
 
-    display_set_fps_limit(30.0f);
+    display_set_fps_limit(30.0f); // @TODO: There's a CPU race condition for multiple actor collisions, why the limiter is required
 
     // actors
     actors[0] = actor_create(0, "rom:/game/dogman.t3dm");
@@ -94,9 +88,10 @@ void minigame_init()
 
     for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
         actor_init(&actors[i]);
+        actorCollider_init(&actor_collider[i]);
+        actor_collider[i].settings.body_radius = 35.0f;
+        actor_collider[i].settings.body_height = 190.f;
     }
-
-    actorCollider_init(&actor_collider);
     
 	// scenery
     scenery[0] = scenery_create(0, "rom:/game/room.t3dm");
@@ -106,12 +101,16 @@ void minigame_init()
 	{
         scenery_set(&scenery[i]);
     }
+
+    // platforms
+    platform_hexagonGrid(hexagons, t3d_model_load("rom:/game/platform.t3dm"), -100.0f, ui_color(YELLOW));
+
 }
 
 
 void minigame_fixedloop()
 {
-	game_play(&minigame, player, actors, scenery, &actor_collider, &actor_contact);
+	game_play(&minigame, player, actors, scenery, actor_collider, actor_contact);
 }
 
 
@@ -122,7 +121,6 @@ void minigame_loop()
 void minigame_cleanup()
 {
     //destroyShapeFileData(&shapeData); // REMEMBER to destroy shape data when switch levels or ending minigame
-    platform_free(&hexagon);
 
     // Step 1: Free subsystems
     sound_cleanup();
@@ -142,6 +140,7 @@ void minigame_cleanup()
 
 		scenery_delete(&scenery[i]);
 	}
+    platform_destroy(hexagons);
     t3d_destroy(); // Then destroy library
 
     // Step 5: Free allocated surface buffers

@@ -144,6 +144,12 @@ void actorCollision_updateBoxes(Actor* actor, ActorContactData* actor_contact, A
         
 			actor->hasCollided = true; // Set to true only if collision occurs
 			actor->grounded = true;    // Set grounded if we have a collision
+
+            // Adjust actor height based on box (cheap platform displacement)
+            float height = box_collider[i].center.z + (box_collider[i].size.z * 0.35f);
+            actor->grounding_height = t3d_lerp(actor->grounding_height, height, 0.9f);
+            actor->body.position.z = t3d_lerp(actor->body.position.z, height, 0.9f);
+
 			actor->state = STAND_IDLE;
 			break; // Exit after the first collision
 		} else {
@@ -154,7 +160,7 @@ void actorCollision_updateBoxes(Actor* actor, ActorContactData* actor_contact, A
 	// Call setState after processing collision responses
 	actor_setState(actor, actor->state);
 
-	if(actor->body.position.z <= 0.0f) actor->body.position = (Vector3){0.0f, 0.0f, 500.0f};
+	if(actor->body.position.z <= -20.0f) actor->body.position = (Vector3){0.0f, 0.0f, 500.0f};
 }
 
 #endif

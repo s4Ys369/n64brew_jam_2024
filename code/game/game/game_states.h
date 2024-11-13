@@ -30,8 +30,19 @@ void gameState_setGameplay(Game* game, Player* player, Actor* actor, Scenery* sc
 	time_setData(&game->timing);
 	player_setControlData(player);
 
+	Box allBoxes[PLATFORM_COUNT * 3];
+    size_t boxIndex = 0;
+
+    for (size_t i = 0; i < PLATFORM_COUNT; i++) {
+		platform_loop(&hexagons[i], i);
+        for (size_t j = 0; j < 3; j++) {
+            allBoxes[boxIndex++] = hexagons[i].collider.boxes[j];
+        }
+    }
+
 	for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
-		
+
+		actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], allBoxes, boxIndex);
 		actor_update(&actor[i], &player[i].control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
 	
 	}
@@ -53,6 +64,7 @@ void gameState_setGameplay(Game* game, Player* player, Actor* actor, Scenery* sc
 	//scenery_draw(scenery);
 	move_lava(scenery);
 	room_draw(scenery);
+	platform_drawBatch();
 
 	actor_draw(actor);
 

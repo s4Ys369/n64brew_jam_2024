@@ -11,6 +11,7 @@ T3DM_FILES := $(ASSETS)/wolfie.t3dm \
               $(ASSETS)/s4ys.t3dm \
               $(ASSETS)/dogman.t3dm \
               $(ASSETS)/mew.t3dm \
+              $(ASSETS)/platform.t3dm \
               $(ASSETS)/room.t3dm \
               $(ASSETS)/lava.t3dm \
 
@@ -61,6 +62,7 @@ $(ASSETS)/s4ys.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/wolfie.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/dogman.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/mew.t3dm: T3DM_FLAGS = --base-scale=1
+$(ASSETS)/platform.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
 $(ASSETS)/room.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/lava.t3dm: T3DM_FLAGS = --base-scale=1
 
