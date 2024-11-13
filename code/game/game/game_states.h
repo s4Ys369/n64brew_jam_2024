@@ -30,6 +30,10 @@ void gameState_setGameplay(Game* game, Player* player, Actor* actor, Scenery* sc
 	time_setData(&game->timing);
 	player_setControlData(player);
 
+	// RUMBLE
+	if(player[0].control.held.a) controllerData_rumbleFrames(&player[0].control, 0, 3); // Call in a loop
+	if(player[0].control.released.a) controllerData_rumbleStop(&player[0].control, 0); // and then stop
+
 	for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
 		
 		actor_update(&actor[i], &player[i].control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
@@ -61,6 +65,13 @@ void gameState_setGameplay(Game* game, Player* player, Actor* actor, Scenery* sc
 	game->syncPoint = rspq_syncpoint_new();
 
 	ui_fps();
+	ui_printf(
+		"Rumble:\n"
+		"Detected: %d\n"
+		"Active: %d",
+		joypad_get_rumble_supported(0),
+		player[0].control.rumble_active
+	);
 
 	rdpq_detach_show();
 	sound_update_buffer();
