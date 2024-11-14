@@ -9,6 +9,10 @@ typedef struct Vector3 {
     float z;  
 } Vector3;
 
+// Macros to use t3dmath if necessary
+#define T3DVec3_to_Vector3(t3dVec) ((Vector3){(t3dVec).v[0], (t3dVec).v[1], (t3dVec).v[2]})
+#define Vector3_to_T3DVec3(vec) ((T3DVec3){{(vec).x, (vec).y, (vec).z}})
+
 // function prototypes
 
 void vector3_init(Vector3 *v);
@@ -58,6 +62,7 @@ bool vector3_equals(const Vector3* v, const Vector3* w);
 bool vector3_notEquals(const Vector3* v, const Vector3* w);
 bool vector3_lessThan(const Vector3* v, const Vector3* w);
 bool vector3_approxEquals(const Vector3* v, const Vector3* w);
+Vector3 vector3_lerp(const Vector3* v1, const Vector3* v2, float t);
 
 Vector3 vector3_from_array(float arr[3]);
 Vector3 vector3_flip_coords(Vector3 vec);
@@ -304,6 +309,15 @@ inline float vector3_returnMaxValue(const Vector3* v)
     return max3(v->x, v->y, v->z);
 }
 
+inline Vector3 vector3_lerp(const Vector3* v1, const Vector3* v2, float t) 
+{
+    Vector3 result;
+    result.x = v1->x + (v2->x - v1->x) * t;
+    result.y = v1->y + (v2->y - v1->y) * t;
+    result.z = v1->z + (v2->z - v1->z) * t;
+    return result;
+}
+
 inline Vector3 vector3_from_array(float arr[3])
 {
     Vector3 result;
@@ -334,7 +348,7 @@ inline Vector3 vector3_flip_up(Vector3 vec)
 }
 
 // Function to convert T3D AABB coordinates to engine's format
-Vector3 vector3_from_int16(const int16_t int_arr[3]) {
+inline Vector3 vector3_from_int16(const int16_t int_arr[3]) {
     Vector3 vec;
     vec.x = (float)int_arr[0];
     vec.y = -(float)int_arr[2];

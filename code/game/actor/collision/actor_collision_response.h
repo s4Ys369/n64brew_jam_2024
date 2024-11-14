@@ -115,13 +115,6 @@ void actorCollision_setResponse(Actor* actor, ActorContactData* contact, ActorCo
     actorCollider_setVertical(collider, &actor->body.position);
 }
 
-void actorCollision_collideWithPlayground(Actor* actor) {
-    if (actor->body.position.x > 1870) actor->body.position.x = 1875;
-    if (actor->body.position.x < -1870) actor->body.position.x = -1875;
-    if (actor->body.position.y > 1870) actor->body.position.y = 1875;
-    if (actor->body.position.y < -1870) actor->body.position.y = -1875;
-    if (actor->body.position.z < -2000.0f) actor->body.position.z = -2000.0f;
-}
 
 // HEXAGON TEST
 void actorCollision_updateBoxes(Actor* actor, ActorContactData* actor_contact, ActorCollider* actor_collider, Box box_collider[], size_t numBoxes)
@@ -151,6 +144,12 @@ void actorCollision_updateBoxes(Actor* actor, ActorContactData* actor_contact, A
         
 			actor->hasCollided = true; // Set to true only if collision occurs
 			actor->grounded = true;    // Set grounded if we have a collision
+
+            // Adjust actor height based on box (cheap platform displacement)
+            float height = box_collider[i].center.z + (box_collider[i].size.z * 0.35f);
+            actor->grounding_height = t3d_lerp(actor->grounding_height, height, 0.9f);
+            actor->body.position.z = t3d_lerp(actor->body.position.z, height, 0.9f);
+
 			actor->state = STAND_IDLE;
 			break; // Exit after the first collision
 		} else {
@@ -161,7 +160,7 @@ void actorCollision_updateBoxes(Actor* actor, ActorContactData* actor_contact, A
 	// Call setState after processing collision responses
 	actor_setState(actor, actor->state);
 
-	if(actor->body.position.z <= -199.0f) actor->body.position = (Vector3){0.0f, 0.0f, 200.0f};
+	if(actor->body.position.z <= -50.0f) actor->body.position = (Vector3){0.0f, 0.0f, 300.0f};
 }
 
 #endif

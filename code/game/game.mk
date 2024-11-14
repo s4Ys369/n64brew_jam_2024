@@ -2,33 +2,39 @@
 ASSETS = filesystem/game
 DIALOG_DIR = $(ASSETS)/dialogs
 LEVEL_DIR = $(ASSETS)/levels
+SOUND_DIR = $(ASSETS)/sound
 UI_DIR = $(ASSETS)/ui
 
-TXT_FILES :=  $(LEVEL_DIR)/testLevel.txt
+TXT_FILES :=  $(LEVEL_DIR)/levelA.txt
 
-T3DM_FILES := $(ASSETS)/capsule.t3dm \
-              $(ASSETS)/n64logo.t3dm \
-              $(ASSETS)/pipo.t3dm \
-              $(ASSETS)/wolfie.t3dm \
+T3DM_FILES := $(ASSETS)/wolfie.t3dm \
               $(ASSETS)/s4ys.t3dm \
+              $(ASSETS)/dogman.t3dm \
+              $(ASSETS)/mew.t3dm \
+              $(ASSETS)/platform.t3dm \
               $(ASSETS)/room.t3dm \
-              $(ASSETS)/cube.t3dm \
-              $(ASSETS)/hex_platform.t3dm \
-              $(ASSETS)/testLevel.t3dm
+              $(ASSETS)/lava.t3dm \
 
-SPRITE_FILES := $(ASSETS)/black_filled_tile.sprite \
-                $(ASSETS)/black_tile.sprite \
-                $(ASSETS)/capsule_skin.sprite \
-                $(ASSETS)/eye.sprite \
-                $(ASSETS)/wolf_eye.sprite \
+SPRITE_FILES := $(ASSETS)/wolf_eye.sprite \
                 $(ASSETS)/frog_eye.sprite \
                 $(ASSETS)/libdragon_logo.sprite \
                 $(ASSETS)/nose.sprite \
-                $(ASSETS)/green_tile.sprite \
-                $(ASSETS)/grey_tile.sprite \
-                $(ASSETS)/red_tile.sprite \
-                $(ASSETS)/yellow_tile.sprite \
-                $(ASSETS)/n64brew.sprite
+                $(ASSETS)/n64brew.sprite \
+                $(ASSETS)/mew_eye.sprite \
+                $(ASSETS)/mew_ear.sprite \
+                $(ASSETS)/jam_logo.sprite \
+                $(ASSETS)/dogman_eye.sprite \
+                $(ASSETS)/dogman_eyebrow.sprite \
+                $(ASSETS)/dogman_mouth.sprite \
+                $(ASSETS)/fast64.sprite \
+                $(ASSETS)/brick24.i8.sprite \
+                $(ASSETS)/bricks48.i8.sprite \
+                $(ASSETS)/gate01.ci8.sprite \
+                $(ASSETS)/lava00.rgba16.sprite \
+                $(ASSETS)/lava08.rgba16.sprite \
+
+SOUND_FILES := $(SOUND_DIR)/ene.xm64 \
+               $(SOUND_DIR)/boing.wav64
 
 UI_SPRITE_FILES := $(UI_DIR)/buttons/control_stick.ia8.sprite \
                    $(UI_DIR)/buttons/d_pad_triggers.ia8.sprite \
@@ -49,18 +55,20 @@ FONT_FILES := $(UI_DIR)/fonts/chunkysans.font64 \
               $(UI_DIR)/fonts/TitanOne-Regular.font64
 
 # Final assets list
-ASSETS_LIST += $(TXT_FILES) $(T3DM_FILES) $(SPRITE_FILES) $(UI_SPRITE_FILES) $(FONT_FILES)
+ASSETS_LIST += $(TXT_FILES) $(T3DM_FILES) $(SPRITE_FILES) $(SOUND_FILES) $(UI_SPRITE_FILES) $(FONT_FILES)
 
 # t3d flags
-$(ASSETS)/capsule.t3dm: T3DM_FLAGS = --base-scale=1
-$(ASSETS)/n64logo.t3dm: T3DM_FLAGS = --base-scale=1
-$(ASSETS)/cube.t3dm: T3DM_FLAGS = --base-scale=1
-$(ASSETS)/pipo.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/s4ys.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/wolfie.t3dm: T3DM_FLAGS = --base-scale=1
-$(ASSETS)/room.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
-$(ASSETS)/testLevel.t3dm: T3DM_FLAGS = --base-scale=500 --bvh
-$(ASSETS)/hex_platform.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
+$(ASSETS)/dogman.t3dm: T3DM_FLAGS = --base-scale=1
+$(ASSETS)/mew.t3dm: T3DM_FLAGS = --base-scale=1
+$(ASSETS)/platform.t3dm: T3DM_FLAGS = --base-scale=1 --bvh
+$(ASSETS)/room.t3dm: T3DM_FLAGS = --base-scale=1
+$(ASSETS)/lava.t3dm: T3DM_FLAGS = --base-scale=1
+
+# audioconv flags
+$(ASSETS)/ene.xm64: AUDIOCONV_FLAGS = ''
+$(ASSETS)/boing.wav64: AUDIOCONV_FLAGS = ''
 
 # font64 flags
 $(UI_DIR)/fonts/chunkysans.font64: MKFONT_FLAGS += --outline 2 --size 12

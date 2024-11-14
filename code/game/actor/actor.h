@@ -26,6 +26,8 @@ typedef struct {
 	
 	float jump_timer_max;
 
+	float fall_max_speed;
+
 }ActorSettings;
 
 
@@ -96,6 +98,7 @@ typedef struct {
 	float horizontal_speed;
 	bool grounded;
 	float grounding_height;
+	float fall_max_speed;
 
 	bool hasCollided; // Testing a collision boolean
 
@@ -112,7 +115,7 @@ typedef struct {
 // function prototypes
 
 Actor actor_create(uint32_t id, const char *model_path);
-void actor_init(Actor* actor);
+
 void actor_draw(Actor *actor);
 void actor_delete(Actor *actor);
 
@@ -134,8 +137,8 @@ Actor actor_create(uint32_t id, const char *model_path)
 		.locomotion_state = 1,
 
 		.body = {
-            .position = {0.0f, 0.0f, 200.0f},
-            .velocity = {0.0f, 0.0f, -10.0f},
+            .position = {0.0f, 0.0f, 0.0f},
+            .velocity = {0.0f, 0.0f, 0.0f},
             .rotation = {0.0f, 0.0f, 0.0f},
         },
         
@@ -158,7 +161,8 @@ Actor actor_create(uint32_t id, const char *model_path)
 			.run_to_roll_target_speed = 780,
 			.sprint_to_roll_target_speed = 980,
 			.jump_target_speed = 600, 
-			.jump_timer_max = 0.13
+			.jump_timer_max = 0.13,
+			.fall_max_speed = -2650.0f
         },
     };
 
@@ -177,21 +181,38 @@ Actor actor_create(uint32_t id, const char *model_path)
 
 void actor_draw(Actor *actor) 
 {	
-	t3d_mat4fp_from_srt_euler(actor->modelMat,
-		(float[3]){actor->scale.x, actor->scale.y, actor->scale.z},
-		(float[3]){rad(actor->body.rotation.x), rad(actor->body.rotation.y), rad(actor->body.rotation.z)},
-		(float[3]){actor->body.position.x, actor->body.position.y, actor->body.position.z}
-	);
-	t3d_matrix_set(actor->modelMat, true);
-	rspq_block_run(actor->dl);
+	for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
+				
+		t3d_mat4fp_from_srt_euler(actor[i].modelMat,
+			(float[3]){actor[i].scale.x, actor[i].scale.y, actor[i].scale.z},
+			(float[3]){rad(actor[i].body.rotation.x), rad(actor[i].body.rotation.y), rad(actor[i].body.rotation.z)},
+			(float[3]){actor[i].body.position.x, actor[i].body.position.y, actor[i].body.position.z}
+		);
+		t3d_matrix_set(actor[i].modelMat, true);
+		rspq_block_run(actor[i].dl);
+	};
 }
 
 void actor_delete(Actor *actor) 
 {
 	free_uncached(actor->modelMat);
+
 	t3d_skeleton_destroy(&actor->armature.main);
+	t3d_anim_destroy(&actor->animation.main.breathing_idle);
+	t3d_anim_destroy(&actor->animation.main.running_left);
+	t3d_anim_destroy(&actor->animation.main.falling_left);
+	//t3d_anim_destroy(&actor->animation.main.jump_left);
+	//t3d_anim_destroy(&actor->animation.main.land_left);
+	
 	t3d_skeleton_destroy(&actor->armature.blend);
+	t3d_anim_destroy(&actor->animation.blend.breathing_idle);
+	t3d_anim_destroy(&actor->animation.blend.running_left);
+	t3d_anim_destroy(&actor->animation.blend.falling_left);
+	//t3d_anim_destroy(&actor->animation.blend.jump_left);
+	//t3d_anim_destroy(&actor->animation.blend.land_left);
+	
 	t3d_model_free(actor->model);
+	rspq_block_free(actor->dl);
 }
 
 

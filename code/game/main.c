@@ -6,15 +6,18 @@
 #include <t3d/t3danim.h>
 #include <t3d/t3ddebug.h>
 
-#include <stdbool.h>
+#define ACTOR_COUNT 4
+#define PLAYER_COUNT 4
+#define SCENERY_COUNT 2
+#define PLATFORM_COUNT 19
 
-#define ACTOR_COUNT 1
-#define SCENERY_COUNT 19
+#define S4YS 0
+#define WOLFIE 1
+#define MEW 2
+#define DOGMAN 3
 
 #include "../../core.h"
 #include "../../minigame.h"
-
-#include "txt/shapeParser.h"
 
 #include "screen/screen.h"
 #include "control/controls.h"
@@ -35,17 +38,20 @@
 #include "actor/collision/actor_collision_detection.h"
 #include "actor/collision/actor_collision_response.h"
 
+#include "player/player.h"
+
 #include "scene/scene.h"
 #include "scene/scenery.h"
+#include "scene/platform.h"
+#include "scene/room.h"
+
+#include "sound/sound.h"
 
 #include "ui/ui.h"
 
 #include "game/game.h"
 #include "game/game_control.h"
 #include "game/game_states.h"
-
-#include "objects/level.h"
-#include "objects/platform.h"
 
 
 const MinigameDef minigame_def = {
@@ -55,68 +61,110 @@ const MinigameDef minigame_def = {
     .instructions = "Press A to win."
 };
 
-Game minigame;
-
-Actor actor[ACTOR_COUNT];
-ActorCollider actor_collider = {
-        settings: {
-            body_radius: 30.0f, // Testing large Player capsule
-            body_height: 110.0f,
-        }
+Game minigame = {
+	.state = GAMEPLAY
 };
-ActorContactData actor_contact;
 
-Scenery *scenery = NULL;
+Player player[PLAYER_COUNT];
+
+Actor actors[ACTOR_COUNT];
+
+ActorCollider actor_collider[PLAYER_COUNT];
+
+ActorContactData actor_contact[PLAYER_COUNT];
+
+Scenery scenery[SCENERY_COUNT];
+
 
 void minigame_init()
 {      
 	game_init(&minigame);
 
+    display_set_fps_limit(30.0f); // @TODO: There's a CPU race condition for multiple actor collisions, why the limiter is required
+
     // actors
-    actor[0] = actor_create(0, "rom:/game/wolfie.t3dm");
+    actors[0] = actor_create(0, "rom:/game/dogman.t3dm");
+    actors[1] = actor_create(1, "rom:/game/mew.t3dm");
+    actors[2] = actor_create(2, "rom:/game/wolfie.t3dm");
+    actors[3] = actor_create(3, "rom:/game/s4ys.t3dm");
 
-    for (int i = 0; i < ACTOR_COUNT; i++) {
-        actor_init(&actor[i]);
+    for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
+        actor_init(&actors[i]);
+        actorCollider_init(&actor_collider[i]);
+        actor_collider[i].settings.body_radius = 35.0f;
+        actor_collider[i].settings.body_height = 190.f;
+        actors[i].body.position.z = 300.0f;
+
+        // Individual Character Placement
+        switch(i)
+        {
+            case 0:
+                actors[i].body.position.x = -300.0f;
+                break;
+            case 1:
+                actors[i].body.position.x = -150.0f;
+                break;
+            case 2:
+                break;
+            case 3:
+                actors[i].body.position.x = 150.0f;
+                break;
+        }
     }
-
-
-    actorCollider_init(&actor_collider);
     
-    // Initialize the scenery objects (batched creation of object, matrices, RSPQ blocks, etc.)
-    rspqBlocks = scenery_createBatch(SCENERY_COUNT, "rom:/game/hex_platform.t3dm");
+	// scenery
+    scenery[0] = scenery_create(0, "rom:/game/room.t3dm");
+    scenery[1] = scenery_create(1, "rom:/game/lava.t3dm");
 
-    // Initialize the platforms of a certain model, based on the hexagonal grid layout with desired height
-    platform_init_grid(hexagons, batchModel, -100.0f);
-
-    // Now associate the scenery objects with the platforms
-    for (int i = 0; i < SCENERY_COUNT; i++)
-    {
-        // Linking scenery to the corresponding platform
-        scenery[i].position = hexagons[i].position;  // Set the position of scenery to match the platform
-        scenery_set(&scenery[i]);  // Construct the objects' matrices
+    for (uint8_t i = 0; i < SCENERY_COUNT; i++)
+	{
+        scenery_set(&scenery[i]);
     }
+
+    // platforms
+    platform_hexagonGrid(hexagons, t3d_model_load("rom:/game/platform.t3dm"), 100.0f, ui_color(YELLOW));
 
 }
 
-void minigame_fixedloop(){}
+
+
+void minigame_fixedloop()
+{
+	game_play(&minigame, player, actors, scenery, actor_collider, actor_contact);
+}
+
 
 void minigame_loop()
-{	
-	game_play(&minigame, actor, scenery, &actor_collider, &actor_contact, hexagons[0].collider->boxes, 3);
+{
 }
+
 void minigame_cleanup()
 {
-    destroyShapeFileData(&shapeData); // REMEMBER to destroy shape data when switch levels or ending minigame
-    platform_free(hexagons);
+    //destroyShapeFileData(&shapeData); // REMEMBER to destroy shape data when switch levels or ending minigame
 
-	scenery_deleteBatch(scenery, SCENERY_COUNT, rspqBlocks, blockCount);
+    // Step 1: Free subsystems
+    sound_cleanup();
+    ui_cleanup();
 
-	for (int i = 0; i < ACTOR_COUNT; i++) {
+    // Step 2: Flush and execute all remaining RSPQ commands
+    rspq_flush();
+    rspq_wait();
 
-		actor_delete(&actor[i]);
+    // Step 3: Destroy Tiny3D models, matrices, animations and RSPQ blocks
+	for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
+
+		actor_delete(&actors[i]);
 	};
 
-	t3d_destroy();
-    
-	return;
+    for (uint8_t i = 0; i < SCENERY_COUNT; i++) {
+
+		scenery_delete(&scenery[i]);
+	}
+    platform_destroy(hexagons);
+    t3d_destroy(); // Then destroy library
+
+    // Step 5: Free allocated surface buffers
+    surface_free(&minigame.screen.depthBuffer);
+	
+    display_close();
 }

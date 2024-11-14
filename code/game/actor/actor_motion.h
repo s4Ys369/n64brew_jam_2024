@@ -2,7 +2,7 @@
 #define ACTOR_MOVEMENT_H
 
 
-#define ACTOR_GRAVITY -2000
+#define ACTOR_GRAVITY -1500
 
 
 // function prototypes
@@ -13,7 +13,7 @@ void actorMotion_setHorizontalInertiaAcceleration (Actor *actor, float target_sp
 
 void actorMotion_setStopingAcceleration (Actor *actor);
 
-void actorMotiion_setJumpAcceleration (Actor *actor, float target_speed, float acceleration_rate);
+void actorMotion_setJumpAcceleration (Actor *actor, float target_speed, float acceleration_rate);
 
 void actorMotion_integrate (Actor *actor, float frame_time);
 
@@ -42,7 +42,7 @@ void actorMotion_setStopingAcceleration (Actor *actor)
     actor->body.acceleration.y = actor->settings.idle_acceleration_rate * (0 - actor->body.velocity.y);
 }
 
-void actorMotiion_setJumpAcceleration(Actor *actor, float target_speed, float acceleration_rate)
+void actorMotion_setJumpAcceleration(Actor *actor, float target_speed, float acceleration_rate)
 {
     actor->body.acceleration.z = acceleration_rate * (target_speed - actor->body.velocity.z);
 }
@@ -60,8 +60,11 @@ void actorMotion_integrate (Actor *actor, float frame_time)
 		actor->body.velocity.y = 0;
 	}
 
-    if (actor->body.velocity.x != 0 || actor->body.velocity.y != 0 || actor->body.velocity.z != 0) 
+    if (actor->body.velocity.x != 0 || actor->body.velocity.y != 0 || actor->body.velocity.z != 0)
+    {
         vector3_addScaledVector(&actor->body.position, &actor->body.velocity, frame_time);
+        if (actor->body.velocity.z < actor->settings.fall_max_speed) actor->body.velocity.z = actor->settings.fall_max_speed;
+    }
 
     if (actor->body.velocity.x != 0 || actor->body.velocity.y != 0) {
 
@@ -95,7 +98,7 @@ void actorMotion_setJump(Actor *actor)
           
     if (actor->input.jump_hold && !actor->input.jump_released && actor->input.jump_time_held < actor->settings.jump_timer_max){
 
-        actorMotiion_setJumpAcceleration (actor, actor->settings.jump_target_speed, actor->settings.jump_acceleration_rate);
+        actorMotion_setJumpAcceleration (actor, actor->settings.jump_target_speed, actor->settings.jump_acceleration_rate);
         actorMotion_setHorizontalAcceleration (actor, actor->horizontal_speed, actor->settings.aerial_control_rate);
     } 
     

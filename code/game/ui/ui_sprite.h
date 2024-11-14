@@ -127,6 +127,8 @@ void ui_spriteCleanup(void)
     sprite_free(sprite_bubbleGrid);
     sprite_free(sprite_tessalate);
     sprite_free(sprite_star);
+    surface_free(&surf_UIpanels);
+    surface_free(&surf_UIsprites);
 }
 
 #ifdef __cplusplus

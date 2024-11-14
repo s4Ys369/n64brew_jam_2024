@@ -13,7 +13,6 @@ typedef struct
 
     uint8_t state;
     Screen screen;
-    ControllerData control;
     TimeData timing;
   	rspq_syncpoint_t syncPoint;
 
@@ -27,25 +26,21 @@ void game_init(Game *game);
 
 void game_init(Game *game)
 {
-    debug_init_isviewer();
-	debug_init_usblog();
-	asset_init_compression(2);
-
-	dfs_init(DFS_DEFAULT_LOCATION);
-	rdpq_init();
 
 	screen_initDisplay(&game->screen);
 	screen_initT3dViewport(&game->screen);
 
 	t3d_init((T3DInitParams){});
 
-	joypad_init();
-
 	time_init(&game->timing);
 
     scene_init(&game->scene);
-	ui_init();
 
+	//
+	ui_init();
+	sound_load();
+	//
+	
   	game->syncPoint = 0;
 	game->state = GAMEPLAY;
 }

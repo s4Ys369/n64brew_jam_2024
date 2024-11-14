@@ -88,11 +88,12 @@ void ui_main_menu(ControllerData* control)
 
     ui_spriteDrawPanel(TILE4, sprite_star, YELLOW, 100, 74, 132, 106, 0, 0, 64, 64);
     ui_spriteDrawPanel(TILE4, sprite_star, YELLOW, 187, 74, 219, 106, 0, 0, 64, 64);
-    if(control->pressed.a || control->held.a)
+
+    if(control->pressed.start || control->held.start)
     {
-        ui_spriteDraw(TILE3, sprite_faceButtons1, aHeld, 170, 108);
+        ui_spriteDraw(TILE3, sprite_faceButtons0, 1, 170, 108);
     } else {
-        ui_spriteDraw(TILE3, sprite_faceButtons0, aIdle, 170, 108);
+        ui_spriteDraw(TILE3, sprite_faceButtons0, 0, 170, 108);
     }
 }
 
@@ -101,10 +102,10 @@ void ui_input_display(ControllerData* control)
 {
     int s = 24;
     int t = 164;
-    controllerData_getInputs(control);
 
     // First row: Triggers
-    ui_spriteDraw(TILE0, sprite_dPadTriggers, 6, s, t);
+    if(control->pressed.l || control->held.l)
+        ui_spriteDraw(TILE0, sprite_dPadTriggers, 6, s, t);
     if(control->pressed.z || control->held.z)
         ui_spriteDraw(TILE1, sprite_dPadTriggers, 5, s+spriteWidth, t);
     if(control->pressed.r || control->held.r)

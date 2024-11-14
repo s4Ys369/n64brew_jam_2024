@@ -2,25 +2,24 @@
 #define CONTROLS_H
 
 
-
 typedef struct {
 
     joypad_buttons_t pressed;
     joypad_buttons_t held;
+    joypad_buttons_t released;
     joypad_inputs_t input;
 
 } ControllerData;
 
 
-void controllerData_getInputs(ControllerData* data);
+void controllerData_getInputs(ControllerData*data, uint8_t port);
 
-
-void controllerData_getInputs(ControllerData* data)
+void controllerData_getInputs(ControllerData* data, uint8_t port)
 {
-    joypad_poll();
-    data->pressed = joypad_get_buttons_pressed(JOYPAD_PORT_1);
-    data->held = joypad_get_buttons_held(JOYPAD_PORT_1);
-    data->input = joypad_get_inputs(JOYPAD_PORT_1); 
+    data->pressed = joypad_get_buttons_pressed(port);
+    data->held = joypad_get_buttons_held(port);
+    data->released = joypad_get_buttons_released(port);
+    data->input = joypad_get_inputs(port); 
 }
 
 #endif

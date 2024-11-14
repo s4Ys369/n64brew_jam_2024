@@ -11,7 +11,7 @@ void camera_orbit_withStick(Camera *camera, ControllerData *data);
 void camera_orbit_withCButtons(Camera *camera, ControllerData *data);
 void camera_aim(Camera *camera, ControllerData *data);
 
-void cameraControl_setOrbitalMovement(Camera *camera, ControllerData *data_0);
+void cameraControl_setOrbitalMovement(Camera *camera, ControllerData *data);
 
 
 
@@ -77,12 +77,12 @@ void camera_aim(Camera *camera, ControllerData *data)
 }
 
 
-void cameraControl_setOrbitalMovement(Camera *camera, ControllerData *data_0)
+void cameraControl_setOrbitalMovement(Camera *camera, ControllerData *data)
 {
     //camera_orbit_withStick(camera, data_1);
-    camera_orbit_withCButtons(camera, data_0);
+    camera_orbit_withCButtons(camera, data);
     camera_setState(camera, MINIGAME);
-    //camera_aim(camera, data_0);
+    //camera_aim(camera, data);
 }
 
 #endif

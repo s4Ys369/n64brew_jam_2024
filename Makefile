@@ -14,7 +14,7 @@ filesystem/squarewave.font64: MKFONT_FLAGS += --outline 1 --range all
 ###
 
 include $(N64_INST)/include/n64.mk
-include $(T3D_INST)/t3d.mk
+include $(N64_INST)/include/t3d.mk
 
 MINIGAMES_LIST = $(notdir $(wildcard $(MINIGAME_DIR)/*))
 DSO_LIST = $(addprefix $(MINIGAMEDSO_DIR)/, $(addsuffix .dso, $(MINIGAMES_LIST)))
@@ -71,6 +71,7 @@ SRC_$(1) = \
 	$$(wildcard $$(MINIGAME_DIR)/$(1)/**/*.c) \
 	$$(wildcard $$(MINIGAME_DIR)/$(1)/*.cpp) \
 	$$(wildcard $$(MINIGAME_DIR)/$(1)/**/*.cpp)
+$$(MINIGAMEDSO_DIR)/$(1).dso: $$(SRC_$(1):%.cpp=$$(BUILD_DIR)/%.o)
 $$(MINIGAMEDSO_DIR)/$(1).dso: $$(SRC_$(1):%.c=$$(BUILD_DIR)/%.o)
 -include $$(MINIGAME_DIR)/$(1)/$(1).mk
 endef
