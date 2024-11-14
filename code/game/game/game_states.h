@@ -7,12 +7,12 @@
 void gameState_setIntro();
 void gameState_setMainMenu();
 
-void gameState_setGameplay(Game* game, Player* player, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact);
+void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact);
 void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scenery);
 
 void gameState_setGameOver();
 
-void game_play(Game* game, Player* player, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact);
+void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact);
 
 
 void gameState_setIntro()
@@ -22,7 +22,7 @@ void gameState_setMainMenu()
 {
 }
 
-void gameState_setGameplay(Game* game, Player* player, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact)
+void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact)
 {
 	
 	// ======== Update ======== //
@@ -38,9 +38,14 @@ void gameState_setGameplay(Game* game, Player* player, Actor* actor, Scenery* sc
 		allBoxes[boxIndex++] = hexagons[i].collider.box;
     }
 
+	// @TODO: need a function to determine the amount of human players versus AI players
+	for (size_t i = 1; i < 4; i++) {
+		ai_generateControlData(&ai[i], &player[i].control, &actor[i], hexagons, PLATFORM_COUNT, game->scene.camera.offset_angle);
+	}
+
 	for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
 
-		actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], allBoxes, boxIndex);
+		//actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], allBoxes, boxIndex);
 		actor_update(&actor[i], &player[i].control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
 	
 	}
@@ -115,7 +120,7 @@ void gameState_setGameOver()
     // code for the game over state
 }
 
-void game_play(Game* game, Player* player, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact)
+void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact)
 {
 	for(;;)
 	{
@@ -131,7 +136,7 @@ void game_play(Game* game, Player* player, Actor* actor, Scenery* scenery, Actor
 				break;
 			}
 			case GAMEPLAY:{
-				gameState_setGameplay(game, player, actor, scenery, actor_collider, actor_contact);
+				gameState_setGameplay(game, player, ai, actor, scenery, actor_collider, actor_contact);
 				break;
 			}
 			case PAUSE:{

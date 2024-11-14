@@ -8,6 +8,7 @@
 
 #define ACTOR_COUNT 4
 #define PLAYER_COUNT 4
+
 #define SCENERY_COUNT 2
 #define PLATFORM_COUNT 19
 
@@ -69,11 +70,13 @@ Game minigame = {
 
 Player player[PLAYER_COUNT];
 
+AI aiPlayer[PLAYER_COUNT];
+
 Actor actors[ACTOR_COUNT];
 
-ActorCollider actor_collider[PLAYER_COUNT];
+ActorCollider actor_collider[ACTOR_COUNT];
 
-ActorContactData actor_contact[PLAYER_COUNT];
+ActorContactData actor_contact[ACTOR_COUNT];
 
 Scenery scenery[SCENERY_COUNT];
 
@@ -113,6 +116,11 @@ void minigame_init()
                 break;
         }
     }
+
+    // AI
+    for (uint8_t i = 1; i < ACTOR_COUNT; i++) {
+        ai_init(&aiPlayer[i], core_get_aidifficulty());
+    }
     
 	// scenery
     scenery[0] = scenery_create(0, "rom:/game/room.t3dm");
@@ -132,7 +140,7 @@ void minigame_init()
 
 void minigame_fixedloop()
 {
-	game_play(&minigame, player, actors, scenery, actor_collider, actor_contact);
+	game_play(&minigame, player, aiPlayer, actors, scenery, actor_collider, actor_contact);
 }
 
 
