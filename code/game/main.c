@@ -45,6 +45,8 @@
 #include "scene/platform.h"
 #include "scene/room.h"
 
+#include "player/ai.h"
+
 #include "sound/sound.h"
 
 #include "ui/ui.h"
