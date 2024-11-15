@@ -67,6 +67,7 @@ Vector3 vector3_lerp(const Vector3* v1, const Vector3* v2, float t);
 Vector3 vector3_from_array(float arr[3]);
 Vector3 vector3_flip_coords(Vector3 vec);
 Vector3 vector3_flip_up(Vector3 vec);
+float vector3_distance(const Vector3* v, const Vector3* w);
 
 
 inline void vector3_init(Vector3 *v) 
@@ -354,6 +355,12 @@ inline Vector3 vector3_from_int16(const int16_t int_arr[3]) {
     vec.y = -(float)int_arr[2];
     vec.z = (float)int_arr[1];
     return vec;
+}
+
+inline float vector3_distance(const Vector3* v, const Vector3* w) {
+    return sqrtf((w->x - v->x) * (w->x -v->x) +
+                 (w->y - v->y) * (w->y -v->y) +
+                 (w->z - v->z) * (w->z -v->z));
 }
 
 #endif

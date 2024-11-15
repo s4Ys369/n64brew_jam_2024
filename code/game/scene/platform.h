@@ -3,7 +3,7 @@
 
 typedef struct {
 
-  Box box;
+  Box box[3];
 
 } PlatformCollider;
 
@@ -13,9 +13,11 @@ typedef struct {
   uint32_t id;
   T3DMat4FP *mat;
   Vector3 position;
+  Vector3 home;
   PlatformCollider collider;
   color_t color;
   uint32_t platformTimer;
+  bool contact;
 
 } Platform;
 
@@ -24,7 +26,7 @@ Platform hexagons[PLATFORM_COUNT];
 // Forward Declarations
 
 void platform_init(Platform* platform, T3DModel* model, Vector3 position, color_t color);
-void platform_loop(Platform* platform, size_t index);
+void platform_loop(Platform* platform, Actor* actor);
 void platform_drawBatch(void);
 void platform_hexagonGrid(Platform* platform, T3DModel* model, float z, color_t color);
 void platform_destroy(Platform* platform);
@@ -39,18 +41,28 @@ void platform_init(Platform* platform, T3DModel* model, Vector3 position, color_
   platform->id = platformIdx;
   platform->mat = malloc_uncached(sizeof(T3DMat4FP)); // needed for t3d
   platform->position = position;
+  platform->home = position;
 
   // Initialize the three boxes for collision within each hexagon
-
-  platform->collider.box = (Box) {
-    .size = {275.0f, 275.0f, 30.0f},
-    .center = platform->position,
-    .rotation = {0,0,0}
-  };
+  for (int j = 0; j < 3; j++)
+  {
+    platform->collider.box[j] = (Box) {
+      .size = {175.0f, 275.0f, 55.0f},
+      .center = platform->position,
+      .rotation = { 
+        // Set the rotations explicitly
+        (j == 0) ? 180.0f : (j == 2) ? 180.0f : 0.0f, // X rotation for boxes[0] and boxes[2]
+        (j == 0) ? -180.0f : (j == 2) ? -180.0f : 0.0f, // Y rotation for boxes[0] and boxes[2]
+        (j == 0) ? 90.0f : (j == 1) ? 30.0f : 30.0f   // Z rotation for boxes[0], boxes[1], and boxes[2]
+      }
+    };
+  }
 
   platform->color = color; // Set color
 
   platform->platformTimer = 0;
+
+  platform->contact = false;
 
   platformIdx++;
 
@@ -58,29 +70,52 @@ void platform_init(Platform* platform, T3DModel* model, Vector3 position, color_
 
 //// BEHAVIORS ~ Start ////
 
-// Example behavior: Oscillate platform height up and down over time with staggered offsets
-void platform_updateHeight(Platform* platform, float time, size_t index)
+// Example behavior: Oscillate platform x position to simulate shake
+void platform_shake(Platform* platform, float time)
 {
-  float amplitude = 75.0f;    // Maximum oscillation distance from the base height
-  float baseHeight = 0.0f;    // Center height around which the platform oscillates
-  float phaseOffset = index * 0.75f;  // Staggered phase offset based on platform index
+  float amplitude = 10.0f; // Maximum oscillation distance from home
+  float baseX = platform->home.x; // Use a stored "home" position for the base
 
-  // Oscillate `platform->position.z` with a staggered start for each platform
-  platform->position.z = baseHeight + amplitude * fm_sinf(time + phaseOffset);
+  // Oscillate `platform->position.x` around `baseX`
+  platform->position.x = baseX + amplitude * fm_sinf(time);
 }
 
-void platform_loop(Platform* platform, size_t index)
+// Example behavior: Lower platform over time
+void platform_updateHeight(Platform* platform, float time)
+{
+  if (platform->position.z > -150.0f) platform->position.z = platform->position.z - time;
+}
+
+void platform_collideCheck(Platform* platform, Actor* actor)
+{
+  float distance = vector3_distance(&platform->position, &actor->body.position);
+
+  // If actor is within AABB
+  if (distance <= 100.0f && actor->grounded)
+  {
+    platform->contact = true;
+  }
+
+}
+
+void platform_loop(Platform* platform, Actor* actor)
 {
 
-  static float timeElapsed = 0.0f;  // Accumulated time
-
-  timeElapsed += (display_get_delta_time() * 0.05f);  // Increment by some fraction of deltaTime
+  // Translate collision
+  for (int j = 0; j < 3; j++) platform->collider.box[j].center = platform->position;
 
   // Run behaviors
-  platform_updateHeight(platform, timeElapsed, index);
-
-  // Translate collision
-  platform->collider.box.center = platform->position;
+  platform_collideCheck(platform, actor);
+  if(platform->contact) 
+  {
+    platform->platformTimer++;
+    if(platform->platformTimer < 120)
+    {
+      platform_shake(platform, platform->platformTimer);
+    } else {
+      platform_updateHeight(platform, 2.0f);
+    }
+  }
 
   // Update matrix
   t3d_mat4fp_from_srt_euler(

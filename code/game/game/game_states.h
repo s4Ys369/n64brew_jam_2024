@@ -58,12 +58,16 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	time_setData(&game->timing);
 	player_setControlData(player);
 
-	Box allBoxes[PLATFORM_COUNT];
+	Box allBoxes[PLATFORM_COUNT*3];
     size_t boxIndex = 0;
 
     for (size_t i = 0; i < PLATFORM_COUNT; i++) {
-		platform_loop(&hexagons[i], i);
-		allBoxes[boxIndex++] = hexagons[i].collider.box;
+		for (int j = 0; j < 3; j++) {
+            allBoxes[boxIndex++] = hexagons[i].collider.box[j];
+        }
+		for (size_t a = 1; a < ACTOR_COUNT; a++) {
+			platform_loop(&hexagons[i], &actor[a]);
+		}
     }
 
 	// @TODO: need a function to determine the amount of human players versus AI players
@@ -73,10 +77,18 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 	for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
 
-		//actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], allBoxes, boxIndex);
+		actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], allBoxes, boxIndex);
 		actor_update(&actor[i], &player[i].control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
 	
 	}
+
+	for (size_t i = 0; i < PLATFORM_COUNT; i++)
+	{
+		for (size_t a = 0; a < ACTOR_COUNT; a++)
+		{
+			platform_loop(&hexagons[i], &actor[a]);
+		}
+    }
 
 	cameraControl_setOrbitalMovement(&game->scene.camera, &player[0].control);
 	camera_getMinigamePosition(&game->scene.camera, actor[0].body.position, game->timing.frame_time_s);

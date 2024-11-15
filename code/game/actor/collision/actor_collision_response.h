@@ -67,7 +67,7 @@ void actorCollision_setGroundResponse(Actor* actor, ActorContactData* contact, A
     actor->state = actor->previous_state;
 
     // Lower the ground height slightly when on a slope
-    if (contact->slope >= 1.0f && contact->slope < 50.0f && contact->ground_distance > 0.1f)
+    if (contact->slope > 10.0f && contact->slope < 50.0f && contact->ground_distance > 0.1f)
     {
         float slope_offset = 0.1f * contact->slope;
         actor->grounding_height -= slope_offset;
@@ -102,7 +102,7 @@ void actorCollision_setResponse(Actor* actor, ActorContactData* contact, ActorCo
     actorContactData_setAngleOfIncidence(contact, &actor->body.velocity);
     actorCollision_solvePenetration(actor, contact, collider);
 
-    if (contact->slope >= 0 && contact->slope < 50) {
+    if (contact->slope > 0 && contact->slope < 50) {
         actorCollision_setGroundResponse(actor, contact, collider);
         actorCollision_collideAndSlide(actor, contact);
     }
@@ -123,13 +123,14 @@ void actorCollision_updateBoxes(Actor* actor, ActorContactData* actor_contact, A
 	actorCollider_setVertical(actor_collider, &actor->body.position);
 
 	// Check if the actor is neither jumping nor falling
-	if (actor->body.position.z != -2000.0f // magic number
+	if (actor->body.position.z != -200.0f // magic number
 		&& actor->state != JUMP
-		&& actor->state != FALLING) {
+		&& actor->state != FALLING
+        && actor->hasCollided == false) {
 			
 		actor->state = FALLING;
 		actor->grounded = false;
-		actor->grounding_height = -2000.0f; // magic number
+		actor->grounding_height = -200.0f; // magic number
         
 	}
 
@@ -140,15 +141,10 @@ void actorCollision_updateBoxes(Actor* actor, ActorContactData* actor_contact, A
 		if (actorCollision_contactBox(actor_collider, &box_collider[i]))
         {
 			actorCollision_contactBoxSetData(actor_contact, actor_collider, &box_collider[i]);
-			actorCollision_setResponse(&actor[0], actor_contact, actor_collider);
+			actorCollision_setGroundResponse(actor, actor_contact, actor_collider);
         
 			actor->hasCollided = true; // Set to true only if collision occurs
 			actor->grounded = true;    // Set grounded if we have a collision
-
-            // Adjust actor height based on box (cheap platform displacement)
-            float height = box_collider[i].center.z + (box_collider[i].size.z * 0.35f);
-            actor->grounding_height = t3d_lerp(actor->grounding_height, height, 0.9f);
-            actor->body.position.z = t3d_lerp(actor->body.position.z, height, 0.9f);
 
 			actor->state = STAND_IDLE;
 			break; // Exit after the first collision

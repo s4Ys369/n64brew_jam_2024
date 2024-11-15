@@ -132,7 +132,7 @@ void minigame_init()
     }
 
     // platforms
-    platform_hexagonGrid(hexagons, t3d_model_load("rom:/game/platform.t3dm"), 100.0f, ui_color(YELLOW));
+    platform_hexagonGrid(hexagons, t3d_model_load("rom:/game/platform.t3dm"), 250.0f, ui_color(N_YELLOW));
 
 }
 
