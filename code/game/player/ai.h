@@ -23,25 +23,25 @@ void ai_init(AI *ai, uint8_t difficulty)
     switch(difficulty)
     {
         case DIFF_EASY:
-            ai->jump_threshold = 300.0f;
-            ai->safe_height = 70.0f;
+            ai->jump_threshold = 350.0f;
+            ai->safe_height = 150.0f;
             ai->difficulty = DIFF_EASY;
-            ai->error_margin = 18;
-            ai->max_reaction_delay = 12;
-            break;
-        case DIFF_MEDIUM:
-            ai->jump_threshold = 200.0f;
-            ai->safe_height = 50.0f;
-            ai->difficulty = DIFF_MEDIUM;
             ai->error_margin = 12;
             ai->max_reaction_delay = 8;
             break;
-        case DIFF_HARD:
-            ai->jump_threshold = 100.0f;
-            ai->safe_height = 30.0f;
-            ai->difficulty = DIFF_HARD;
-            ai->error_margin = 6;
+        case DIFF_MEDIUM:
+            ai->jump_threshold = 350.0f;
+            ai->safe_height = 100.0f;
+            ai->difficulty = DIFF_MEDIUM;
+            ai->error_margin = 8;
             ai->max_reaction_delay = 4;
+            break;
+        case DIFF_HARD:
+            ai->jump_threshold = 350.0f;
+            ai->safe_height = 75.0f;
+            ai->difficulty = DIFF_HARD;
+            ai->error_margin = 4;
+            ai->max_reaction_delay = 2;
             break;
     }
 
@@ -64,6 +64,7 @@ void ai_updateCam(ControllerData *control, float camera_angle)
 Platform* find_nearest_safe_platform(AI *ai, Actor *actor, Platform* platforms, size_t platform_count) {
     Platform* nearest_platform = NULL;
     float min_distance = FLT_MAX; // Large initial value
+    const float current_platform_threshold = 0.001f;
 
     for (size_t i = 0; i < platform_count; ++i)
     {
@@ -81,6 +82,9 @@ Platform* find_nearest_safe_platform(AI *ai, Actor *actor, Platform* platforms, 
 
         // Convert inverse distance to actual distance
         float distance = 1 / inverse_distance;
+
+        // Ignore the current platform the AI is standing on
+        if (distance < current_platform_threshold) continue;
 
         // Check if this platform is the nearest valid one
         if (distance < min_distance)
@@ -128,9 +132,10 @@ void ai_generateControlData(AI *ai, ControllerData *control, Actor *actor, Platf
     float horizontal_speed = sqrtf(actor->body.velocity.x * actor->body.velocity.x + actor->body.velocity.y * actor->body.velocity.y);
 
     // Check if the actor should jump when horizontal speed is greater than 10
-    if (horizontal_speed > ai->jump_threshold && actor->state != JUMP && actor->state != FALLING)
+    if (horizontal_speed > ai->jump_threshold && actor->state != FALLING)
     {
-        control->pressed.a = 1;  // Press jump button
+        control->pressed.a = 1; // Press jump button
+        control->held.a = 1;    // Hold jump button
     }
 
     // Adjust for camera angle if needed
