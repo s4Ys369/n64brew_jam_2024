@@ -80,13 +80,20 @@ const uint32_t COLORS[COLOR_COUNT] =
 };
 
 inline color_t ui_color(int colorIdx);
+uint32_t ui_colorSetAlpha(uint32_t color, uint8_t alpha);
 
 // Creates a color_t from one of the 32-bit packed COLORS.
 inline color_t ui_color(int colorIdx)
 {
-    color_t color;
-    return color = color_from_packed32(COLORS[colorIdx]);
+    return color_from_packed32(COLORS[colorIdx]);
 }
+
+// Clears the alpha bits and sets them to the new value
+uint32_t ui_colorSetAlpha(uint32_t color, uint8_t alpha)
+{
+    return (color & 0xFFFFFF00) | (alpha & 0xFF);
+}
+
 
 #ifdef __cplusplus
 }

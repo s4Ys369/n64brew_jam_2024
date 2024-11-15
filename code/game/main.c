@@ -58,14 +58,14 @@
 
 
 const MinigameDef minigame_def = {
-    .gamename = "Fall Guys Clone",
-    .developername = "zoncabe, float4, s4ys",
-    .description = "This is a game that exist.",
-    .instructions = "Press A to win."
+    .gamename = "Hot Hot Hexagons",
+    .developername = "Strawberry Byte: zoncabe, s4ys",
+    .description = "The floor is lava!",
+    .instructions = "Jump from platform to platform\nto avoid a terrible fate."
 };
 
 Game minigame = {
-	.state = GAMEPLAY
+	.state = INTRO
 };
 
 Player player[PLAYER_COUNT];

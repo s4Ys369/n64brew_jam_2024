@@ -42,11 +42,23 @@ const char* uiSpritePanelPath[NUM_SPRITES] = {
     "panels/star.ia8.sprite"
 };
 
+// Arrays for logo sprite file names and paths. See LICENSE.txt for attribution.
+const char* uiSpriteLogoFileName[NUM_SPRITES];
+const char* uiSpriteLogoPath[NUM_SPRITES] = {
+    "logos/sb_b0.rgba32.sprite",
+    "logos/sb_b1.rgba32.sprite",
+    "logos/sb_top.rgba32.sprite",
+    "logos/t3d.ia8.sprite",
+    "logos/libdragon.ia4.sprite",
+    "logos/mixamo.ia4.sprite"
+};
+
 /* Declarations */
 
 char* ui_filePath(const char* fn);
 void ui_fileFonts(void);
 void ui_fileSprites(void);
+void ui_fileLogos(void);
 void ui_fileGet(void);
 void ui_fileCleanup(void);
 
@@ -81,11 +93,19 @@ void ui_fileSprites(void) {
     }
 }
 
+void ui_fileLogos(void)
+{
+    for (int i = 0; i < NUM_SPRITES; ++i) {
+        uiSpriteLogoFileName[i] = ui_filePath(uiSpriteLogoPath[i]);
+    }
+}
+
 // Calls functions to initialize font and sprite file paths.
 void ui_fileGet(void)
 {
     ui_fileFonts();
     ui_fileSprites();
+    ui_fileLogos();
 }
 
 // Frees memory allocated for font and sprite file paths.
@@ -97,6 +117,7 @@ void ui_fileCleanup(void)
     for (int i = 0; i < NUM_SPRITES; i++) {
         free((char*)uiSpriteButtonFileName[i]);
         free((char*)uiSpritePanelFileName[i]);
+        free((char*)uiSpriteLogoFileName[i]);
     }
 }
 

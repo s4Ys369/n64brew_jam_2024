@@ -12,6 +12,7 @@ void game_setControlData(Game* game, Player *player)
 
             if (game->state == PAUSE) game->state = GAMEPLAY;
             else if (game->state == GAMEPLAY) game->state = PAUSE;
+            else game->state = GAMEPLAY;
         }
     }
 }

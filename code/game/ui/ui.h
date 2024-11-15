@@ -82,12 +82,8 @@ void ui_main_menu(ControllerData* control)
     ui_spriteDrawPanel(TILE1, sprite_gradient, T_RED, 96, 64, 224, 140, 0, 0, 128, 64);
     ui_spriteDrawPanel(TILE2, sprite_tessalate, T_BLACK, 112, 74, 208, 131, 0, 0, 64, 64);
 
-    ui_syncText();
-    rdpq_text_print(&txt_titleParms, ID_TITLE, 136, 96, "TITLE");
-    rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 120, "Press");
-
-    ui_spriteDrawPanel(TILE4, sprite_star, YELLOW, 100, 74, 132, 106, 0, 0, 64, 64);
-    ui_spriteDrawPanel(TILE4, sprite_star, YELLOW, 187, 74, 219, 106, 0, 0, 64, 64);
+    ui_spriteDrawPanel(TILE4, sprite_star, YELLOW, 90, 60, 122, 92, 0, 0, 64, 64);
+    ui_spriteDrawPanel(TILE4, sprite_star, YELLOW, 197, 60, 229, 92, 0, 0, 64, 64);
 
     if(control->pressed.start || control->held.start)
     {
@@ -95,6 +91,11 @@ void ui_main_menu(ControllerData* control)
     } else {
         ui_spriteDraw(TILE3, sprite_faceButtons0, 0, 170, 108);
     }
+
+    ui_syncText();
+    rdpq_text_print(&txt_titleParms, ID_TITLE, 114, 90, " Hot Hot\nHexagons");
+    rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 120, "Press");
+    rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 200, "  Credits:\nYour Mom");
 }
 
 // Time to crash test the RDP
@@ -153,10 +154,65 @@ void ui_input_display(ControllerData* control)
 
 }
 
-// @TODO: Needs integration of text parsing from upstream, currently does nothing.
-void ui_textbox(void)
-{
 
+void ui_intro(ControllerData* control)
+{
+    // Basic frame counter for timing
+    static uint32_t introTimer = 0;
+    introTimer++;
+
+    // Animated text positions
+    static Vector2 topTextPosition = {102.0f, 0.0f};
+    topTextPosition.y = topTextPosition.y + 2.0f;
+    if(topTextPosition.y > 56.0f) topTextPosition.y = 56.0f;
+
+    // Dynamic alpha from prim colors
+    uint32_t dynamicColorsPacked[3] ={0,0,0};
+    color_t dynamicColors[3];
+    dynamicColorsPacked[0] = ui_colorSetAlpha(COLORS[N_RED],    introTimer*2);
+    dynamicColorsPacked[1] = ui_colorSetAlpha(COLORS[N_GREEN],  introTimer*2);
+    dynamicColorsPacked[2] = ui_colorSetAlpha(COLORS[N_YELLOW], introTimer*2);
+    dynamicColors[0] = color_from_packed32(dynamicColorsPacked[0]);
+    dynamicColors[1] = color_from_packed32(dynamicColorsPacked[1]);
+    dynamicColors[2] = color_from_packed32(dynamicColorsPacked[2]);
+
+
+    if(introTimer < 120)
+    {
+
+/* MADE WITH SCREEN */
+
+        // Panels
+        ui_spriteDrawDynamic(TILE0, sprite_libdragon, dynamicColors[0],  28,  76, 156, 140, 0, 0, 128, 64);
+        ui_spriteDrawDynamic(TILE1, sprite_t3d,       dynamicColors[1], 160,  76, 288, 140, 0, 0,  64, 32);
+        ui_spriteDrawDynamic(TILE2, sprite_mixamo,    dynamicColors[2],  96, 146, 224, 210, 0, 0, 128, 64);
+
+        // Text
+        ui_syncText();
+        rdpq_text_print(&txt_titleParms, ID_TITLE, topTextPosition.x, topTextPosition.y, "Made with");
+
+    } else if (introTimer < 240) {
+
+/* STRAWBERRY SCREEN */
+
+        // Panels
+        ui_spriteDrawPanel(TILE0, sprite_strawberryTop, WHITE, 128, 80,196,112,0,0,32,16);
+        if(introTimer >= 180)
+        {
+            ui_spriteDrawPanel(TILE1, sprite_strawberry1, WHITE,   128,112,196,144,0,0,32,16);
+        } else {
+            ui_spriteDrawPanel(TILE1, sprite_strawberry0, WHITE,   128,112,196,144,0,0,32,16);
+        }
+
+        // Text
+        ui_syncText();
+        rdpq_text_print(&txt_titleParms, ID_TITLE, 72, 56, "Strawberry Byte");
+        if(introTimer >= 180) rdpq_text_print(&txt_titleParms, ID_TITLE, 120, 190, "Presents");
+
+    } else {
+        ui_main_menu(control);
+    }
+    
 }
 
 void ui_cleanup(void)

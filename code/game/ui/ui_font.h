@@ -116,7 +116,7 @@ void ui_fontRegister(void)
     );
 
     txt_debugParms = (rdpq_textparms_t){.style_id = STYLE_DEBUG, .disable_aa_fix=true};
-    txt_titleParms = (rdpq_textparms_t){.style_id = STYLE_TITLE, .disable_aa_fix=true};
+    txt_titleParms = (rdpq_textparms_t){.style_id = STYLE_TITLE, .disable_aa_fix=true, .align=ALIGN_CENTER};
     txt_gameParms = (rdpq_textparms_t){.style_id = STYLE_BRIGHT, .disable_aa_fix=true};
 
 }

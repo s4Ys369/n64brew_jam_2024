@@ -42,6 +42,12 @@ UI_SPRITE_FILES := $(UI_DIR)/buttons/control_stick.ia8.sprite \
                    $(UI_DIR)/buttons/c_buttons1.rgba32.sprite \
                    $(UI_DIR)/buttons/face_buttons0.rgba32.sprite \
                    $(UI_DIR)/buttons/face_buttons1.rgba32.sprite \
+                   $(UI_DIR)/logos/libdragon.ia4.sprite \
+                   $(UI_DIR)/logos/mixamo.ia4.sprite \
+                   $(UI_DIR)/logos/t3d.ia8.sprite \
+                   $(UI_DIR)/logos/sb_b0.rgba32.sprite \
+                   $(UI_DIR)/logos/sb_b1.rgba32.sprite \
+                   $(UI_DIR)/logos/sb_top.rgba32.sprite \
                    $(UI_DIR)/panels/border.ia4.sprite \
                    $(UI_DIR)/panels/border.ia8.sprite \
                    $(UI_DIR)/panels/gloss.ia4.sprite \

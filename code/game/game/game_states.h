@@ -4,7 +4,7 @@
 
 // function prototypes
 
-void gameState_setIntro();
+void gameState_setIntro(Game* game, Player* player, Scenery* scenery);
 void gameState_setMainMenu();
 
 void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact);
@@ -15,9 +15,37 @@ void gameState_setGameOver();
 void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact);
 
 
-void gameState_setIntro()
+void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 {
+	// ======== Update ======== //
+
+	time_setData(&game->timing);
+	player_setControlData(player);
+
+	// ======== Draw ======== //
+	
+	screen_clearDisplay(&game->screen);
+	screen_clearT3dViewport(&game->screen);
+
+	light_set(&game->scene.light);
+
+	t3d_matrix_push_pos(1);
+
+	//scenery_draw(scenery);
+	move_lava(scenery);
+	room_draw(scenery);
+
+	t3d_matrix_pop(1);
+
+	game->syncPoint = rspq_syncpoint_new();
+
+	ui_fps();
+	ui_intro(&player[0].control);
+
+	rdpq_detach_show();
+	sound_update_buffer();
 }
+
 void gameState_setMainMenu()
 {
 }
@@ -101,14 +129,19 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 	t3d_matrix_push_pos(1);
 
 	//scenery_draw(scenery);
-	//move_lava(scenery);
+	move_lava(scenery);
 	room_draw(scenery);
+
+	platform_drawBatch();
 	
 	actor_draw(actor);
 
 	t3d_matrix_pop(1);
 
 	game->syncPoint = rspq_syncpoint_new();
+
+	ui_fps();
+	ui_main_menu(&player[0].control);
 
 	rdpq_detach_show();
 	sound_update_buffer();
@@ -128,7 +161,7 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 		switch(game->state)
 		{
 			case INTRO:{
-				gameState_setIntro();
+				gameState_setIntro(game, player, scenery);
 				break;
 			}
 			case MAIN_MENU:{
