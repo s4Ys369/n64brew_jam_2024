@@ -112,9 +112,14 @@ void platform_loop(Platform* platform, Actor* actor)
     if(platform->platformTimer < 120)
     {
       platform_shake(platform, platform->platformTimer);
-    } else {
+    } else if(platform->platformTimer > 120 && platform->platformTimer < 360) {
       platform_updateHeight(platform, 2.0f);
+    } else if(platform->platformTimer > 600) {
+      platform->contact = false;
     }
+  } else {
+    platform->platformTimer = 0;
+    if(platform->position.z < platform->home.z) platform->position.z = platform->position.z + 1.0f;
   }
 
   // Update matrix
