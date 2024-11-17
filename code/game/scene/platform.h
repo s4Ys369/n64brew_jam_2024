@@ -105,7 +105,7 @@ void platform_loop(Platform* platform, Actor* actor)
   for (int j = 0; j < 3; j++) platform->collider.box[j].center = platform->position;
 
   // Run behaviors
-  platform_collideCheck(platform, actor);
+  if(actor != NULL) platform_collideCheck(platform, actor);
   if(platform->contact) 
   {
     platform->platformTimer++;

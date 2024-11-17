@@ -2,7 +2,7 @@
 #define GAME_STATES_H
 
 // Comment out to disable RSPQ Profiling
-#define PROFILING
+// #define PROFILING
 
 #ifdef PROFILING
 #include "rspq_profile.h"
@@ -25,10 +25,30 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 {
 
+	for (size_t j = 0; j < PLATFORM_COUNT; j++)
+	{
+		
+		platform_loop(&hexagons[j], NULL);
+	}
+
+	move_lava(scenery);
+
 	// ======== Draw ======== //
 	
 	screen_clearDisplay(&game->screen);
 	screen_clearT3dViewport(&game->screen);
+
+	light_set(&game->scene.light);
+
+	t3d_matrix_push_pos(1);
+
+	room_draw(scenery);
+
+	platform_drawBatch();
+
+	t3d_matrix_pop(1);
+
+	game->syncPoint = rspq_syncpoint_new();
 
 	ui_fps();
 	ui_intro(&player[0].control);
@@ -49,24 +69,21 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	// AI
 	for (size_t i = 1; i < ACTOR_COUNT; i++)
 	{
-		//ai_generateControlData(&ai[i], &player[i].control, &actor[i], hexagons, PLATFORM_COUNT, game->scene.camera.offset_angle);
+		ai_generateControlData(&ai[i], &player[i].control, &actor[i], hexagons, PLATFORM_COUNT, game->scene.camera.offset_angle);
 	}
 
-	// Matrices & Behavior Updates
+	// Actors
 	for (size_t i = 0; i < ACTOR_COUNT; i++)
 	{
-		//actor_update(&actor[i], &player[i].control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
-		for (size_t j = 0; j < PLATFORM_COUNT; j++)
-		{
-			
-			platform_loop(&hexagons[j], &actor[i]);
-		}
+		actor_update(&actor[i], &player[i].control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
+		actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], boxes, PLATFORM_COUNT*3);
 	}
 
-	// Collisions
-	for (size_t i = 0; i < ACTOR_COUNT; i++)
+	// Platforms
+	for (size_t j = 0; j < PLATFORM_COUNT; j++)
 	{
-		//actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], boxes, PLATFORM_COUNT*3);
+		
+		platform_loop(&hexagons[j], NULL);
 	}
 
 	move_lava(scenery);
@@ -81,9 +98,10 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	t3d_matrix_push_pos(1);
 
 	room_draw(scenery);
+
 	platform_drawBatch();
 
-	//actor_draw(actor);
+	actor_draw(actor);
 
 	t3d_matrix_pop(1);
 
@@ -123,8 +141,6 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 	room_draw(scenery);
 
 	platform_drawBatch();
-	
-	actor_draw(actor);
 
 	t3d_matrix_pop(1);
 
