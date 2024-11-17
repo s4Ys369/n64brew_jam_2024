@@ -12,7 +12,8 @@ typedef struct{
 
 
 void light_set(LightData *light);
-
+void light_setAmbient(LightData *light, uint8_t value);
+void light_resetAmbient(LightData *light);
 
 
 LightData light_create() {
@@ -34,6 +35,23 @@ void light_set(LightData *light)
     t3d_light_set_ambient(light->ambient_color);
     t3d_light_set_directional(0, light->directional_color, &light->direction);
     t3d_light_set_count(2);
+}
+
+void light_setAmbient(LightData *light, uint8_t value)
+{
+    for (size_t i = 0; i < 3; i++)
+	{
+		light->ambient_color[i] = value;
+	}
+    light_set(light);
+}
+
+void light_resetAmbient(LightData *light)
+{
+    light->ambient_color[0] = 80;
+	light->ambient_color[1] = 80;
+	light->ambient_color[2] = 100;
+    light_set(light);
 }
 
 #endif

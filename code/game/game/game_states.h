@@ -98,16 +98,11 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	t3d_matrix_push_pos(1);
 
 	room_draw(scenery);
-	for (size_t i = 0; i < 3; i++)
-	{
-		game->scene.light.ambient_color[i] = 0xCC;
-	}
-	light_set(&game->scene.light);
+
+	light_setAmbient(&game->scene.light, 0xBF);
 	platform_drawBatch();
-	game->scene.light.ambient_color[0] = 80;
-	game->scene.light.ambient_color[1] = 80;
-	game->scene.light.ambient_color[2] = 100;
-	light_set(&game->scene.light);
+	light_resetAmbient(&game->scene.light);
+
 	actor_draw(actor);
 
 	t3d_matrix_pop(1);
