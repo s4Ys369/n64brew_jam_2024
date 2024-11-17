@@ -85,6 +85,11 @@ Box allBoxes[PLATFORM_COUNT * 3];
 void minigame_init()
 {      
 	game_init(&minigame);
+#ifdef PROFILING
+    //rdpq_debug_start();
+    profile_data.frame_count = 0;
+    rspq_profile_start();
+#endif
 
     //display_set_fps_limit((display_get_refresh_rate() / 3) * 2); // @TODO
 

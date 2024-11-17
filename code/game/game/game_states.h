@@ -1,6 +1,13 @@
 #ifndef GAME_STATES_H
 #define GAME_STATES_H
 
+// Comment out to disable RSPQ Profiling
+#define PROFILING
+
+#ifdef PROFILING
+#include "rspq_profile.h"
+static rspq_profile_data_t profile_data;
+#endif
 
 // function prototypes
 
@@ -36,17 +43,19 @@ void gameState_setMainMenu()
 
 void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes)
 {
+	static uint32_t frameCounter = 0;
+	frameCounter++;
 
 	// AI
 	for (size_t i = 1; i < ACTOR_COUNT; i++)
 	{
-		ai_generateControlData(&ai[i], &player[i].control, &actor[i], hexagons, PLATFORM_COUNT, game->scene.camera.offset_angle);
+		//ai_generateControlData(&ai[i], &player[i].control, &actor[i], hexagons, PLATFORM_COUNT, game->scene.camera.offset_angle);
 	}
 
 	// Matrices & Behavior Updates
 	for (size_t i = 0; i < ACTOR_COUNT; i++)
 	{
-		actor_update(&actor[i], &player[i].control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
+		//actor_update(&actor[i], &player[i].control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
 		for (size_t j = 0; j < PLATFORM_COUNT; j++)
 		{
 			
@@ -57,7 +66,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	// Collisions
 	for (size_t i = 0; i < ACTOR_COUNT; i++)
 	{
-		actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], boxes, PLATFORM_COUNT*3);
+		//actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], boxes, PLATFORM_COUNT*3);
 	}
 
 	move_lava(scenery);
@@ -74,7 +83,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	room_draw(scenery);
 	platform_drawBatch();
 
-	actor_draw(actor);
+	//actor_draw(actor);
 
 	t3d_matrix_pop(1);
 
@@ -84,6 +93,17 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 	rdpq_detach_show();
 	sound_update_buffer();
+
+#ifdef PROFILING
+	rspq_profile_next_frame();
+	if(frameCounter > 29)
+	{
+		rspq_profile_dump();
+		rspq_profile_reset();
+		frameCounter = 0;
+	}
+    rspq_profile_get_data(&profile_data);
+#endif // PROFILING
 }
 
 
