@@ -159,6 +159,7 @@ void platform_createBatch(Platform* platform, T3DModel* model)
 
     // Set the model matrix and draw
     t3d_matrix_set(platform[i].mat, true);
+    rdpq_set_prim_color(platform[i].color);
     t3d_model_draw(batchModel);
 
     // End the current rspq block and start a new one every n objects
