@@ -137,8 +137,8 @@ void platform_loop(Platform* platform, Actor* actor)
 //// RENDERING ~ Start ////
 
 // T3D MODEL DRAW BATCHING
-#define BATCH_LIMIT 8      // Number of objects per rspq block
-#define BLOCK_COUNT 3     // Pre-calculated block count
+#define BATCH_LIMIT 4     // Number of objects per rspq block
+#define BLOCK_COUNT 5     // Pre-calculated block count
 
 T3DModel *batchModel = NULL;
 rspq_block_t* rspqBlocks[BLOCK_COUNT] = {NULL};  // Static array of rspq block pointers
@@ -159,7 +159,6 @@ void platform_createBatch(Platform* platform, T3DModel* model)
 
     // Set the model matrix and draw
     t3d_matrix_set(platform[i].mat, true);
-    rdpq_set_prim_color(platform[i].color);
     t3d_model_draw(batchModel);
 
     // End the current rspq block and start a new one every n objects
