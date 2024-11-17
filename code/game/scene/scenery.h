@@ -43,6 +43,7 @@ Scenery scenery_create(uint32_t id, const char *model_path)
     };
 
     rspq_block_begin();
+    t3d_matrix_set(scenery.modelMat, true);
     t3d_model_draw(scenery.model);
     scenery.dl = rspq_block_end();
 
@@ -66,7 +67,6 @@ void scenery_draw(Scenery *scenery)
 {
     for (int i = 0; i < SCENERY_COUNT; i++) {
 
-        t3d_matrix_set(scenery[i].modelMat, true);
         rspq_block_run(scenery[i].dl);
 	};
 }

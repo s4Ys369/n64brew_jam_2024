@@ -7,37 +7,21 @@
 void gameState_setIntro(Game* game, Player* player, Scenery* scenery);
 void gameState_setMainMenu();
 
-void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact);
+void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes);
 void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scenery);
 
 void gameState_setGameOver();
 
-void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact);
+void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes);
 
 
 void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 {
-	// ======== Update ======== //
-
-	time_setData(&game->timing);
-	player_setControlData(player);
 
 	// ======== Draw ======== //
 	
 	screen_clearDisplay(&game->screen);
 	screen_clearT3dViewport(&game->screen);
-
-	light_set(&game->scene.light);
-
-	t3d_matrix_push_pos(1);
-
-	//scenery_draw(scenery);
-	move_lava(scenery);
-	room_draw(scenery);
-
-	t3d_matrix_pop(1);
-
-	game->syncPoint = rspq_syncpoint_new();
 
 	ui_fps();
 	ui_intro(&player[0].control);
@@ -50,50 +34,33 @@ void gameState_setMainMenu()
 {
 }
 
-void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact)
+void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes)
 {
-	
-	// ======== Update ======== //
 
-	time_setData(&game->timing);
-	player_setControlData(player);
-
-	Box allBoxes[PLATFORM_COUNT*3];
-    size_t boxIndex = 0;
-
-    for (size_t i = 0; i < PLATFORM_COUNT; i++) {
-		for (int j = 0; j < 3; j++) {
-            allBoxes[boxIndex++] = hexagons[i].collider.box[j];
-        }
-		for (size_t a = 1; a < ACTOR_COUNT; a++) {
-			platform_loop(&hexagons[i], &actor[a]);
-		}
-    }
-
-	// @TODO: need a function to determine the amount of human players versus AI players
-	for (size_t i = 1; i < 4; i++) {
+	// AI
+	for (size_t i = 1; i < ACTOR_COUNT; i++)
+	{
 		ai_generateControlData(&ai[i], &player[i].control, &actor[i], hexagons, PLATFORM_COUNT, game->scene.camera.offset_angle);
 	}
 
-	for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
-
-		actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], allBoxes, boxIndex);
+	// Matrices & Behavior Updates
+	for (size_t i = 0; i < ACTOR_COUNT; i++)
+	{
 		actor_update(&actor[i], &player[i].control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
-	
+		for (size_t j = 0; j < PLATFORM_COUNT; j++)
+		{
+			
+			platform_loop(&hexagons[j], &actor[i]);
+		}
 	}
 
-	for (size_t i = 0; i < PLATFORM_COUNT; i++)
+	// Collisions
+	for (size_t i = 0; i < ACTOR_COUNT; i++)
 	{
-		for (size_t a = 0; a < ACTOR_COUNT; a++)
-		{
-			platform_loop(&hexagons[i], &actor[a]);
-		}
-    }
+		actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], boxes, PLATFORM_COUNT*3);
+	}
 
-	cameraControl_setOrbitalMovement(&game->scene.camera, &player[0].control);
-	camera_getMinigamePosition(&game->scene.camera, actor[0].body.position, game->timing.frame_time_s);
-	camera_set(&game->scene.camera, &game->screen);
-
+	move_lava(scenery);
 
 	// ======== Draw ======== //
 	
@@ -104,8 +71,6 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 	t3d_matrix_push_pos(1);
 
-	//scenery_draw(scenery);
-	move_lava(scenery);
 	room_draw(scenery);
 	platform_drawBatch();
 
@@ -124,12 +89,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scenery)
 {
-	// ======== Update ======== //
-
-	time_setData(&game->timing);
-	player_setControlData(player);
-
-	camera_set(&game->scene.camera, &game->screen);
+	move_lava(scenery);
 
 	// ======== Draw ======== //
 	
@@ -140,8 +100,6 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 
 	t3d_matrix_push_pos(1);
 
-	//scenery_draw(scenery);
-	move_lava(scenery);
 	room_draw(scenery);
 
 	platform_drawBatch();
@@ -165,11 +123,26 @@ void gameState_setGameOver()
     // code for the game over state
 }
 
-void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact)
+void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes)
 {
 	for(;;)
 	{
 		game_setControlData(game, player);
+
+		time_setData(&game->timing);
+
+		player_setControlData(player);
+
+		cameraControl_setOrbitalMovement(&game->scene.camera, &player[0].control);
+		camera_getMinigamePosition(&game->scene.camera, actor[0].body.position, game->timing.frame_time_s);
+		camera_set(&game->scene.camera, &game->screen);
+
+		// Precompute all collision boxes to avoid recomputing them repeatedly.
+    	for (size_t i = 0, boxIndex = 0; i < PLATFORM_COUNT; i++) {
+    	    memcpy(&boxes[boxIndex], hexagons[i].collider.box, sizeof(Box) * 3);
+    	    boxIndex += 3;
+    	}
+
 		switch(game->state)
 		{
 			case INTRO:{
@@ -181,7 +154,7 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 				break;
 			}
 			case GAMEPLAY:{
-				gameState_setGameplay(game, player, ai, actor, scenery, actor_collider, actor_contact);
+				gameState_setGameplay(game, player, ai, actor, scenery, actor_collider, actor_contact, boxes);
 				break;
 			}
 			case PAUSE:{
@@ -195,6 +168,12 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 		}
 	}
 
+}
+
+void game_playFixed(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes)
+{
+
+	
 }
 
 #endif

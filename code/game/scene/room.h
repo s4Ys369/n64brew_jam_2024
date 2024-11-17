@@ -57,11 +57,9 @@ void move_lava(Scenery *scenery)
 
 
 void room_draw(Scenery *scenery)
-{   
-    t3d_matrix_set(scenery[0].modelMat, true);
+{
     rspq_block_run(scenery[0].dl);
-
-    t3d_matrix_set(scenery[1].modelMat, true);
+    
     t3d_model_draw_custom(scenery[1].model, (T3DModelDrawConf){
         .userData = &scenery[1].tile_offset,
         .tileCb = tile_scroll,

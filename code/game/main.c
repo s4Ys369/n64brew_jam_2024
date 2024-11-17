@@ -80,12 +80,13 @@ ActorContactData actor_contact[ACTOR_COUNT];
 
 Scenery scenery[SCENERY_COUNT];
 
+Box allBoxes[PLATFORM_COUNT * 3];
 
 void minigame_init()
 {      
 	game_init(&minigame);
 
-    display_set_fps_limit(30.0f); // @TODO: There's a CPU race condition for multiple actor collisions, why the limiter is required
+    //display_set_fps_limit((display_get_refresh_rate() / 3) * 2); // @TODO
 
     // actors
     actors[0] = actor_create(0, "rom:/game/dogman.t3dm");
@@ -141,7 +142,7 @@ void minigame_init()
 
 void minigame_fixedloop()
 {
-	game_play(&minigame, player, aiPlayer, actors, scenery, actor_collider, actor_contact);
+    game_play(&minigame, player, aiPlayer, actors, scenery, actor_collider, actor_contact, allBoxes);
 }
 
 
@@ -151,7 +152,6 @@ void minigame_loop()
 
 void minigame_cleanup()
 {
-    //destroyShapeFileData(&shapeData); // REMEMBER to destroy shape data when switch levels or ending minigame
 
     // Step 1: Free subsystems
     sound_cleanup();

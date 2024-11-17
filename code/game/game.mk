@@ -27,10 +27,12 @@ SPRITE_FILES := $(ASSETS)/wolf_eye.sprite \
                 $(ASSETS)/dogman_eyebrow.sprite \
                 $(ASSETS)/dogman_mouth.sprite \
                 $(ASSETS)/fast64.sprite \
+                $(ASSETS)/brick.i4.sprite \
                 $(ASSETS)/brick24.i8.sprite \
                 $(ASSETS)/bricks48.i8.sprite \
                 $(ASSETS)/gate01.ci8.sprite \
                 $(ASSETS)/lava00.rgba16.sprite \
+                $(ASSETS)/lava01.ia8.sprite \
                 $(ASSETS)/lava08.rgba16.sprite \
 
 SOUND_FILES := $(SOUND_DIR)/ene.xm64 \

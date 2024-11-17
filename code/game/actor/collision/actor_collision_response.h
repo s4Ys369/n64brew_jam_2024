@@ -60,6 +60,7 @@ void actorCollision_collideAndSlide(Actor* actor, ActorContactData* contact)
 
 void actorCollision_setGroundResponse(Actor* actor, ActorContactData* contact, ActorCollider* collider)
 {
+    actorCollision_pushTowardsNormal(actor, contact);
     actor->grounded = true;
     actor->body.acceleration.z = 0;
     actor->body.velocity.z = 0;
@@ -67,7 +68,7 @@ void actorCollision_setGroundResponse(Actor* actor, ActorContactData* contact, A
     actor->state = actor->previous_state;
 
     // Lower the ground height slightly when on a slope
-    if (contact->slope > 10.0f && contact->slope < 50.0f && contact->ground_distance > 0.1f)
+    if (contact->slope > 1.0f && contact->slope < 50.0f && contact->ground_distance > 0.1f)
     {
         float slope_offset = 0.1f * contact->slope;
         actor->grounding_height -= slope_offset;

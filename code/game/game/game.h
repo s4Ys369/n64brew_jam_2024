@@ -42,7 +42,7 @@ void game_init(Game *game)
 	//
 	
   	game->syncPoint = 0;
-	game->state = GAMEPLAY;
+	game->state = INTRO;
 }
 
 
