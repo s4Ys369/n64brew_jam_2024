@@ -59,7 +59,7 @@
 
 const MinigameDef minigame_def = {
     .gamename = "Hot Hot Hexagons",
-    .developername = "Strawberry Byte: zoncabe, s4ys",
+    .developername = "Strawberry Byte: .zoncabe, s4ys, mewde",
     .description = "The floor is lava!",
     .instructions = "Jump from platform to platform\nto avoid a terrible fate."
 };
