@@ -57,8 +57,8 @@ UI_SPRITE_FILES := $(UI_DIR)/buttons/control_stick.ia8.sprite \
                    $(UI_DIR)/panels/pattern_tessalate.ia4.sprite \
                    $(UI_DIR)/panels/star.ia8.sprite
 
-FONT_FILES := $(UI_DIR)/fonts/chunkysans.font64 \
-              $(UI_DIR)/fonts/TitanOne-Regular.font64
+FONT_FILES := $(UI_DIR)/fonts/TitanOne-Regular.font64 \
+              $(UI_DIR)/fonts/OilOnTheWater-ee5O.font64
 
 # Final assets list
 ASSETS_LIST += $(TXT_FILES) $(T3DM_FILES) $(SPRITE_FILES) $(SOUND_FILES) $(UI_SPRITE_FILES) $(FONT_FILES)
@@ -77,7 +77,7 @@ $(ASSETS)/ene.xm64: AUDIOCONV_FLAGS = ''
 $(ASSETS)/boing.wav64: AUDIOCONV_FLAGS = ''
 
 # font64 flags
-$(UI_DIR)/fonts/chunkysans.font64: MKFONT_FLAGS += --outline 2 --size 12
+$(UI_DIR)/fonts/OilOnTheWater-ee5O.font64: MKFONT_FLAGS += --outline 2 --size 18
 $(UI_DIR)/fonts/TitanOne-Regular.font64: MKFONT_FLAGS += --outline 1 --size 12
 
 ifeq ($(DEBUG),1)
