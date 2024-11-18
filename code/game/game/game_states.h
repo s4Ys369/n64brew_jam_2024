@@ -2,7 +2,7 @@
 #define GAME_STATES_H
 
 // Comment out to disable RSPQ Profiling
-// #define PROFILING
+#define PROFILING
 
 #ifdef PROFILING
 #include "rspq_profile.h"
@@ -44,7 +44,9 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 
 	room_draw(scenery);
 
+	light_setAmbient(&game->scene.light, 0xBF);
 	platform_drawBatch();
+	light_resetAmbient(&game->scene.light);
 
 	t3d_matrix_pop(1);
 
@@ -63,13 +65,11 @@ void gameState_setMainMenu()
 
 void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes)
 {
-	static uint32_t frameCounter = 0;
-	frameCounter++;
 
 	// AI
 	for (size_t i = 1; i < ACTOR_COUNT; i++)
 	{
-		//ai_generateControlData(&ai[i], &player[i].control, &actor[i], hexagons, PLATFORM_COUNT, game->scene.camera.offset_angle);
+		ai_generateControlData(&ai[i], &player[i].control, &actor[i], hexagons, PLATFORM_COUNT, game->scene.camera.offset_angle);
 	}
 
 	// Actors
@@ -82,8 +82,10 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	// Platforms
 	for (size_t j = 0; j < PLATFORM_COUNT; j++)
 	{
-		
-		platform_loop(&hexagons[j], NULL);
+		for (size_t i = 0; i < ACTOR_COUNT; i++)
+		{
+			platform_loop(&hexagons[j], &actor[i]);
+		}
 	}
 
 	move_lava(scenery);
@@ -113,22 +115,14 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 	rdpq_detach_show();
 	sound_update_buffer();
-
-#ifdef PROFILING
-	rspq_profile_next_frame();
-	if(frameCounter > 29)
-	{
-		rspq_profile_dump();
-		rspq_profile_reset();
-		frameCounter = 0;
-	}
-    rspq_profile_get_data(&profile_data);
-#endif // PROFILING
 }
 
 
 void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scenery)
 {
+
+	static uint32_t frameCounter = 0;
+	frameCounter++;
 	move_lava(scenery);
 
 	// ======== Draw ======== //
@@ -142,7 +136,11 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 
 	room_draw(scenery);
 
+	light_setAmbient(&game->scene.light, 0xBF);
 	platform_drawBatch();
+	light_resetAmbient(&game->scene.light);
+
+	actor_draw(actor);
 
 	t3d_matrix_pop(1);
 
@@ -153,6 +151,17 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 
 	rdpq_detach_show();
 	sound_update_buffer();
+
+#ifdef PROFILING
+	rspq_profile_next_frame();
+	if(frameCounter > 29)
+	{
+		rspq_profile_dump();
+		rspq_profile_reset();
+		frameCounter = 0;
+	}
+    rspq_profile_get_data(&profile_data);
+#endif // PROFILING
 }
 
 
