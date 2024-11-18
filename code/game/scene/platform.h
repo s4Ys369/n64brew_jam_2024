@@ -89,12 +89,17 @@ void platform_updateHeight(Platform* platform, float time)
 
 void platform_collideCheck(Platform* platform, Actor* actor)
 {
-  float distance = vector3_distance(&platform->position, &actor->body.position);
+  if(platform->contact) return; // If already in collided state, do nothing
 
-  // If actor is within AABB
-  if (distance <= 100.0f && actor->grounded)
+  for (size_t i = 0; i < ACTOR_COUNT; i++)
   {
-    platform->contact = true;
+    float distance = vector3_distance(&platform->position, &actor[i].body.position);
+
+    // If actor is within AABB
+    if (distance <= 100.0f && actor[i].grounded)
+    {
+      platform->contact = true;
+    }
   }
 
 }
@@ -110,17 +115,27 @@ void platform_loop(Platform* platform, Actor* actor)
   if(platform->contact) 
   {
     platform->platformTimer++;
+
+    // Action 1: Play sound
     if(platform->platformTimer > 0 && platform->platformTimer < 2)
     {
       sound_wavPlay(SFX_STONES, false);
+
+    // Action 2: Shake platform
     } else if(platform->platformTimer < 120) {
       platform_shake(platform, platform->platformTimer);
+    
+    // Action 3: Drop platform
     } else if(platform->platformTimer > 120 && platform->platformTimer < 360) {
       platform_updateHeight(platform, 2.0f);
+
+    // Action 4: Reset to idle
     } else if(platform->platformTimer > 600) {
       platform->contact = false;
     }
   } else {
+
+    // Reset to initial position
     platform->platformTimer = 0;
     if(platform->position.z < platform->home.z) platform->position.z = platform->position.z + 1.0f;
   }
@@ -175,6 +190,7 @@ void platform_createBatch(Platform* platform, T3DModel* model)
     // Set the model matrix and draw
     t3d_matrix_set(platform[i].mat, true);
     rdpq_set_prim_color(platform[i].color);
+    t3d_matrix_set(platform[i].mat, true);
     t3d_model_draw_object(platform[i].obj, NULL);
 
     // End the current rspq block and start a new one every n objects

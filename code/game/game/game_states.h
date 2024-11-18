@@ -149,10 +149,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	// Platforms
 	for (size_t j = 0; j < PLATFORM_COUNT; j++)
 	{
-		for (size_t i = 0; i < ACTOR_COUNT; i++)
-		{
-			platform_loop(&hexagons[j], &actor[i]);
-		}
+		platform_loop(&hexagons[j], actor);
 	}
 
 	move_lava(scenery);
