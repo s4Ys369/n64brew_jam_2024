@@ -191,6 +191,13 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	game->syncPoint = rspq_syncpoint_new();
 
 	ui_fps();
+	ui_printf(
+		"Rumble:\n"
+		"Detected: %d\n"
+		"Active: %d",
+		joypad_get_rumble_supported(0),
+		player[0].control.rumble_active
+	);
 
 	rdpq_detach_show();
 	sound_update();
