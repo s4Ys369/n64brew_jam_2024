@@ -95,7 +95,11 @@ void ui_main_menu(ControllerData* control)
     ui_syncText();
     rdpq_text_print(&txt_titleParms, ID_TITLE, 114, 90, " Hot Hot\nHexagons");
     rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 120, "Press");
-    rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 200, "  Credits:\nYour Mom");
+    rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 155, "Credits:\n"
+                                                            "zoncabe\n"
+                                                            "s4ys\n"
+                                                            "Mew\n"
+                                                            "Your Mom");
 }
 
 // Time to crash test the RDP
