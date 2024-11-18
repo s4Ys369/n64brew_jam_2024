@@ -7,21 +7,23 @@
 #define SFX_CHANNEL 31
 
 xm64player_t xmPlayer;
-wav64_t sfx_boing;
+wav64_t sfx_stones, sfx_lava;
 
 const char* xmFileNames[1] = {
-    "rom:/game/sound/ene.xm64",
+    "rom:/game/sound/tribeof.xm64",
 };
 
-const char* wavFileNames[1] = {
-    "rom:/game/sound/boing.wav64",
+const char* wavFileNames[2] = {
+    "rom:/game/sound/stones-falling.wav64",
+	"rom:/game/sound/lava-loop-2.wav64",
 };
 
 void sound_load(void);
 
 void sound_load(void)
 {
-	wav64_open(&sfx_boing, wavFileNames[0]);
+	wav64_open(&sfx_stones, wavFileNames[0]);
+	wav64_open(&sfx_lava, wavFileNames[1]);
     xm64player_open(&xmPlayer, xmFileNames[0]);
     xm64player_play(&xmPlayer, MUSIC_CHANNEL);
 }
@@ -58,14 +60,21 @@ void sound_wav_close(void);
 
 void sound_wav_close(void)
 {
-	wav64_close(&sfx_boing);
+	wav64_close(&sfx_stones);
+	wav64_close(&sfx_lava);
+}
+void sound_wav_lava(void);
+
+void sound_wav_lava(void)
+{
+	wav64_play(&sfx_lava, SFX_CHANNEL);
 }
 
-void sound_wav_bounce(void);
+void sound_wav_stones(void);
 
-void sound_wav_bounce(void)
+void sound_wav_stones(void)
 {
-	wav64_play(&sfx_boing, SFX_CHANNEL);
+	wav64_play(&sfx_stones, SFX_CHANNEL);
 }
 
 void sound_update_buffer(void);

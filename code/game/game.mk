@@ -5,14 +5,11 @@ LEVEL_DIR = $(ASSETS)/levels
 SOUND_DIR = $(ASSETS)/sound
 UI_DIR = $(ASSETS)/ui
 
-TXT_FILES :=  $(LEVEL_DIR)/levelA.txt
-
 T3DM_FILES := $(ASSETS)/wolfie.t3dm \
               $(ASSETS)/s4ys.t3dm \
               $(ASSETS)/dogman.t3dm \
               $(ASSETS)/mew.t3dm \
               $(ASSETS)/platform.t3dm \
-              $(ASSETS)/room.t3dm \
               $(ASSETS)/lava.t3dm \
 
 SPRITE_FILES := $(ASSETS)/wolf_eye.sprite \
@@ -33,8 +30,9 @@ SPRITE_FILES := $(ASSETS)/wolf_eye.sprite \
                 $(ASSETS)/lava00.rgba16.sprite \
                 $(ASSETS)/lava08.rgba16.sprite \
 
-SOUND_FILES := $(SOUND_DIR)/ene.xm64 \
-               $(SOUND_DIR)/boing.wav64
+SOUND_FILES := $(SOUND_DIR)/tribeof.xm64 \
+               $(SOUND_DIR)/stones-falling.wav64 \
+               $(SOUND_DIR)/lava-loop-2.wav64
 
 UI_SPRITE_FILES := $(UI_DIR)/buttons/control_stick.ia8.sprite \
                    $(UI_DIR)/buttons/d_pad_triggers.ia8.sprite \
@@ -73,19 +71,10 @@ $(ASSETS)/room.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/lava.t3dm: T3DM_FLAGS = --base-scale=1
 
 # audioconv flags
-$(ASSETS)/ene.xm64: AUDIOCONV_FLAGS = ''
-$(ASSETS)/boing.wav64: AUDIOCONV_FLAGS = ''
+$(ASSETS)/tribeof.xm64: AUDIOCONV_FLAGS = ''
+$(ASSETS)/stones-falling.wav64: AUDIOCONV_FLAGS = --wav-compress=3 --wav-mono
+$(ASSETS)/lava-loop-2.wav64: AUDIOCONV_FLAGS = --wav-compress=3 --wav-mono
 
 # font64 flags
 $(UI_DIR)/fonts/OilOnTheWater-ee5O.font64: MKFONT_FLAGS += --outline 2 --size 18
 $(UI_DIR)/fonts/TitanOne-Regular.font64: MKFONT_FLAGS += --outline 1 --size 12
-
-ifeq ($(DEBUG),1)
-  N64_CFLAGS += -ggdb
-endif
-
-# Add rule for copying TXTs
-$(FILESYSTEM_DIR)/%.txt: $(ASSETS_DIR)/%.txt
-	@mkdir -p $(dir $@)
-	@echo "    [TXT] $@"
-	@cp $< $@

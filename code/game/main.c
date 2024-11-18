@@ -22,6 +22,7 @@
 
 #include "screen/screen.h"
 #include "control/controls.h"
+#include "sound/sound.h"
 #include "time/time.h"
 
 #include "physics/physics.h"
