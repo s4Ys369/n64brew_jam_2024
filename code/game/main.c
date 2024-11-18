@@ -91,7 +91,7 @@ void minigame_init()
     rspq_profile_start();
 #endif
 
-    //display_set_fps_limit((display_get_refresh_rate() / 3) * 2); // @TODO
+    display_set_fps_limit((display_get_refresh_rate() / 3) * 2); // @TODO
 
     // actors
     actors[0] = actor_create(0, "rom:/game/dogman.t3dm");
