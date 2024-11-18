@@ -28,7 +28,7 @@ void screen_clearDisplay(Screen* screen)
     rdpq_set_fog_color(RGBA32(50, 11, 20, 0xFF));
 	t3d_screen_clear_color(RGBA32(50, 11, 20, 0xFF));
 	t3d_screen_clear_depth();
-	t3d_fog_set_range(500.0f, 750.0f);
+	t3d_fog_set_range(750.0f, 900.0f);
 }
 
 void screen_initT3dViewport(Screen* screen)
