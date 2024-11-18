@@ -27,6 +27,24 @@ enum cStates
     C_RIGHT
 };
 
+enum MENU_TEXT {
+    TEXT_DIFF,
+    TEXT_PLAYERS = +4,
+    TEXT_BOTS,
+    TEXT_RUMBLE,
+    MENU_TEXT_COUNT
+};
+
+const char* uiMainMenuStrings[MENU_TEXT_COUNT] = {
+    "Difficulty: ",
+    "EASY",
+    "MEDIUM",
+    "HARD",
+    "Players: ",
+    "Bots: ",
+    "Insert Rumble Pak now!"
+};
+
 // @TODO: Unhardcode position, as it effects ui_printf as well.
 T3DVec3 fpsPos = {{32.0f,32.0f,1.0f}};
 
@@ -93,11 +111,16 @@ void ui_main_menu(ControllerData* control)
     ui_syncText();
     rdpq_text_print(&txt_titleParms, ID_TITLE, 106, 84, " Hot Hot\nHexagons");
     rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 122, "Press");
-    rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 155, "Credits:\n"
-                                                            "zoncabe\n"
-                                                            "s4ys\n"
-                                                            "Mew\n"
-                                                            "Your Mom");
+    rdpq_text_printf(&txt_gameParms, ID_DEFAULT, 92, 160, 
+        "%s %s\n"
+        "%s %lu\n"
+        "%s %lu\n"
+        "%s\n",
+        uiMainMenuStrings[TEXT_DIFF], uiMainMenuStrings[TEXT_DIFF+core_get_aidifficulty()+1],
+        uiMainMenuStrings[TEXT_PLAYERS], core_get_playercount(),
+        uiMainMenuStrings[TEXT_BOTS], ACTOR_COUNT - core_get_playercount(),
+        uiMainMenuStrings[TEXT_RUMBLE]
+    );
 }
 
 // Time to crash test the RDP

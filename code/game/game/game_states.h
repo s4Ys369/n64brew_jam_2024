@@ -149,9 +149,9 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	}
 
 	// AI
-	for (size_t i = 0; i < ACTOR_COUNT; i++)
+	for (size_t i = 0; i < AI_COUNT; i++)
 	{
-		ai_generateControlData(&ai[i], &player[i].control, &actor[i], hexagons, PLATFORM_COUNT, game->scene.camera.offset_angle);
+		ai_generateControlData(&ai[i], &player[i+PLAYER_COUNT].control, &actor[i], hexagons, PLATFORM_COUNT, game->scene.camera.offset_angle);
 	}
 
 	// Actors

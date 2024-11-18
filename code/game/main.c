@@ -7,7 +7,8 @@
 #include <t3d/t3ddebug.h>
 
 #define ACTOR_COUNT 4
-#define PLAYER_COUNT 4
+#define PLAYER_COUNT core_get_playercount()
+#define AI_COUNT ACTOR_COUNT - PLAYER_COUNT
 
 #define SCENERY_COUNT 1
 #define PLATFORM_COUNT 19
@@ -68,9 +69,9 @@ Game minigame = {
 	.state = INTRO
 };
 
-Player player[PLAYER_COUNT];
+Player player[MAXPLAYERS];
 
-AI aiPlayer[PLAYER_COUNT];
+AI aiPlayer[MAXPLAYERS];
 
 Actor actors[ACTOR_COUNT];
 
@@ -128,7 +129,7 @@ void minigame_init()
     }
 
     // AI
-    for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
+    for (uint8_t i = 0; i < AI_COUNT; i++) {
         ai_init(&aiPlayer[i], core_get_aidifficulty());
     }
     
