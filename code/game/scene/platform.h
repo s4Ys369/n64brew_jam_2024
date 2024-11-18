@@ -12,6 +12,7 @@ typedef struct {
 
   uint32_t id;
   T3DMat4FP *mat;
+  T3DObject *obj;
   Vector3 position;
   Vector3 home;
   PlatformCollider collider;
@@ -137,11 +138,12 @@ void platform_loop(Platform* platform, Actor* actor)
 //// RENDERING ~ Start ////
 
 // T3D MODEL DRAW BATCHING
-#define BATCH_LIMIT 4     // Number of objects per rspq block
-#define BLOCK_COUNT 5     // Pre-calculated block count
+#define BATCH_LIMIT 8     // Number of objects per rspq block
+#define BLOCK_COUNT 3     // Pre-calculated block count
 
 T3DModel *batchModel = NULL;
 rspq_block_t* rspqBlocks[BLOCK_COUNT] = {NULL};  // Static array of rspq block pointers
+rspq_block_t* materialBlock = NULL; // Block for single material load and draw
 
 void platform_createBatch(Platform* platform, T3DModel* model)
 {
@@ -149,6 +151,17 @@ void platform_createBatch(Platform* platform, T3DModel* model)
   if (batchModel == NULL) {
     batchModel = model;
   }
+
+  // Create T3DObjects from batch for each platform
+  for (size_t i = 0; i < PLATFORM_COUNT; i++)
+  {
+    platform[i].obj = t3d_model_get_object_by_index(batchModel, 0);
+  }
+
+  // Create material RSPQ block to run before drawing objects
+  rspq_block_begin();
+    t3d_model_draw_material(platform[0].obj->material, NULL);
+  materialBlock = rspq_block_end();
 
   // Initialize the rspq block index and start a new rspq block
   size_t blockIndex = 0;
@@ -160,7 +173,7 @@ void platform_createBatch(Platform* platform, T3DModel* model)
     // Set the model matrix and draw
     t3d_matrix_set(platform[i].mat, true);
     rdpq_set_prim_color(platform[i].color);
-    t3d_model_draw(batchModel);
+    t3d_model_draw_object(platform[i].obj, NULL);
 
     // End the current rspq block and start a new one every n objects
     if ((i + 1) % BATCH_LIMIT == 0 || i == PLATFORM_COUNT - 1)
@@ -176,6 +189,10 @@ void platform_createBatch(Platform* platform, T3DModel* model)
 // Iterate through and run RSPQ blocks
 inline void platform_drawBatch(void)
 {
+
+  // Draw material once per batch
+  rspq_block_run(materialBlock);
+
   for (size_t i = 0; i < BLOCK_COUNT; i++)
   {
     if (rspqBlocks[i] != NULL)  // Check for NULL before running
@@ -185,7 +202,7 @@ inline void platform_drawBatch(void)
   }
 }
 
-// Generate a hexagonal grid of 30 platforms at desired height, with desired model and color
+// Generate a hexagonal grid of 19 platforms at desired height, with desired model and color
 void platform_hexagonGrid(Platform* platform, T3DModel* model, float z, color_t color)
 {
   float x_offset = 260.0f;    // Horizontal distance between centers of adjacent columns
@@ -223,6 +240,8 @@ void platform_hexagonGrid(Platform* platform, T3DModel* model, float z, color_t 
 // Frees T3D model, matrices and RSPQ Blocks used for rendering
 void platform_destroy(Platform* platform)
 {
+  rspq_block_free(materialBlock);
+
   for (size_t b = 0; b < BLOCK_COUNT; b++)
   {
     if(rspqBlocks[b] != NULL) rspq_block_free(rspqBlocks[b]);
