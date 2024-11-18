@@ -72,14 +72,14 @@ void ui_fontRegister(void)
     txt_game_fontStyle.color = ui_color(WHITE);
     txt_debug_fontStyle.outline_color = ui_color(T_BLACK);
 
-    txt_title_fontStyle.color = ui_color(GREEN);
-    txt_title_fontStyle.outline_color = ui_color(DARK_GREEN);
+    txt_title_fontStyle.color = ui_color(YELLOW);
+    txt_title_fontStyle.outline_color = ui_color(DARK_RED);
 
     txt_bright_fontStyle.color = ui_color(YELLOW);
     txt_debug_fontStyle.outline_color = ui_color(T_BLACK);
 
     txt_green_fontStyle.color = ui_color(GREEN);
-    txt_title_fontStyle.outline_color = ui_color(DARK_GREEN);
+    txt_green_fontStyle.outline_color = ui_color(DARK_GREEN);
 
     for (int i = 1; i < ID_COUNT; i++)
     {

@@ -79,22 +79,20 @@ void ui_printf(const char *txt, ...)
 // Controller data is passed here for visual feedback for the button press.
 void ui_main_menu(ControllerData* control)
 {
-    ui_spriteDrawPanel(TILE1, sprite_gradient, T_RED, 96, 64, 224, 140, 0, 0, 128, 64);
-    ui_spriteDrawPanel(TILE2, sprite_tessalate, T_BLACK, 112, 74, 208, 131, 0, 0, 64, 64);
-
-    ui_spriteDrawPanel(TILE4, sprite_star, YELLOW, 90, 60, 122, 92, 0, 0, 64, 64);
-    ui_spriteDrawPanel(TILE4, sprite_star, YELLOW, 197, 60, 229, 92, 0, 0, 64, 64);
+    ui_spriteDrawPanel(TILE1, sprite_border, TRANSPARENT, 0, 0, 320, 240, 0, 0, 64, 64);
+    ui_spriteDrawPanel(TILE2, sprite_border, T_RED, 90, 60, 230, 144, 0, 0, 64, 64);
+    ui_spriteDrawPanel(TILE3, sprite_tessalate, T_BLACK, 100, 65, 220, 140, 0, 0, 64, 64);
 
     if(control->pressed.start || control->held.start)
     {
-        ui_spriteDraw(TILE3, sprite_faceButtons0, 1, 170, 108);
+        ui_spriteDraw(TILE3, sprite_faceButtons0, 1, 170, 110);
     } else {
-        ui_spriteDraw(TILE3, sprite_faceButtons0, 0, 170, 108);
+        ui_spriteDraw(TILE3, sprite_faceButtons0, 0, 170, 110);
     }
 
     ui_syncText();
-    rdpq_text_print(&txt_titleParms, ID_TITLE, 114, 90, " Hot Hot\nHexagons");
-    rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 120, "Press");
+    rdpq_text_print(&txt_titleParms, ID_TITLE, 106, 84, " Hot Hot\nHexagons");
+    rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 122, "Press");
     rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 155, "Credits:\n"
                                                             "zoncabe\n"
                                                             "s4ys\n"
@@ -167,7 +165,7 @@ void ui_intro(ControllerData* control)
     introTimer++;
 
     // Animated text positions
-    static Vector2 topTextPosition = {102.0f, 0.0f};
+    static Vector2 topTextPosition = {93.0f, 0.0f};
     topTextPosition.y = topTextPosition.y + 2.0f;
     if(topTextPosition.y > 56.0f) topTextPosition.y = 56.0f;
 
@@ -188,9 +186,9 @@ void ui_intro(ControllerData* control)
 /* MADE WITH SCREEN */
 
         // Panels
-        ui_spriteDrawDynamic(TILE0, sprite_libdragon, dynamicColors[0],  28,  76, 156, 140, 0, 0, 128, 64);
-        ui_spriteDrawDynamic(TILE1, sprite_t3d,       dynamicColors[1], 160,  76, 288, 140, 0, 0,  64, 32);
-        ui_spriteDrawDynamic(TILE2, sprite_mixamo,    dynamicColors[2],  96, 146, 224, 210, 0, 0, 128, 64);
+        ui_spriteDrawDynamic(TILE1, sprite_libdragon, dynamicColors[0],  28,  76, 156, 140, 0, 0, 128, 64);
+        ui_spriteDrawDynamic(TILE2, sprite_t3d,       dynamicColors[1], 160,  76, 288, 140, 0, 0,  64, 32);
+        ui_spriteDrawDynamic(TILE3, sprite_mixamo,    dynamicColors[2],  96, 146, 224, 210, 0, 0, 128, 64);
 
         // Text
         ui_syncText();
@@ -201,17 +199,17 @@ void ui_intro(ControllerData* control)
 /* STRAWBERRY SCREEN */
 
         // Panels
-        ui_spriteDrawPanel(TILE0, sprite_strawberryTop, WHITE, 128, 80,196,112,0,0,32,16);
+        ui_spriteDrawPanel(TILE1, sprite_strawberryTop, WHITE, 128, 80,196,112,0,0,32,16);
         if(introTimer >= refreshRate * 8.0f)
         {
-            ui_spriteDrawPanel(TILE1, sprite_strawberry1, WHITE,   128,112,196,144,0,0,32,16);
+            ui_spriteDrawPanel(TILE2, sprite_strawberry1, WHITE,   128,112,196,144,0,0,32,16);
         } else {
-            ui_spriteDrawPanel(TILE1, sprite_strawberry0, WHITE,   128,112,196,144,0,0,32,16);
+            ui_spriteDrawPanel(TILE2, sprite_strawberry0, WHITE,   128,112,196,144,0,0,32,16);
         }
 
         // Text
         ui_syncText();
-        rdpq_text_print(&txt_titleParms, ID_TITLE, 72, 56, "Strawberry Byte");
+        rdpq_text_print(&txt_titleParms, ID_TITLE, 70, 56, "Strawberry Byte");
         if(introTimer >= refreshRate * 8.0f) rdpq_text_print(&txt_titleParms, ID_TITLE, 120, 190, "Presents");
 
     } else {

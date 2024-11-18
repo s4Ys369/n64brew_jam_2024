@@ -52,8 +52,8 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 
 	game->syncPoint = rspq_syncpoint_new();
 
-	ui_fps();
 	ui_intro(&player[0].control);
+	ui_fps();
 
 	rdpq_detach_show();
 	sound_update_buffer();
@@ -146,8 +146,8 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 
 	game->syncPoint = rspq_syncpoint_new();
 
-	ui_fps();
 	ui_main_menu(&player[0].control);
+	ui_fps();
 
 	rdpq_detach_show();
 	sound_update_buffer();

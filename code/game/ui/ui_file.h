@@ -17,7 +17,7 @@ const char* basePath = "rom:/game/ui/";
 const char* uiFontFileName[NUM_FONTS];
 const char* uiFontPaths[NUM_FONTS] = {
     "fonts/TitanOne-Regular.font64",
-    "fonts/chunkysans.font64"
+    "fonts/OilOnTheWater-ee5O.font64"
 };
 
 // Arrays for button sprite file names and paths.
