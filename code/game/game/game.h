@@ -1,11 +1,16 @@
 #ifndef GAME_H
 #define GAME_H
 
-#define INTRO 0
-#define MAIN_MENU 1
-#define GAMEPLAY 2
-#define PAUSE 3
-#define GAME_OVER 4
+
+
+enum GAME_STATES {
+	INTRO,
+	MAIN_MENU,
+	CHARACTER_SELECT,
+	GAMEPLAY,
+	PAUSE,
+	GAME_OVER
+};
 
 
 typedef struct

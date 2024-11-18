@@ -104,24 +104,27 @@ void minigame_init()
         actorCollider_init(&actor_collider[i]);
         actor_collider[i].settings.body_radius = 35.0f;
         actor_collider[i].settings.body_height = 190.f;
-        actors[i].body.position.z = 800.0f;
 
-        // Individual Character Placement
+		actors[i].body.position.y = -600.0f;
+		actors[i].body.position.z = 500.0f;
+		// Individual Character Placement
         switch(i)
         {
             case 0:
-                actors[i].body.position.x = -300.0f;
+                actors[i].body.position.x = -150.0f;
                 break;
             case 1:
-                actors[i].body.position.x = -180.0f;
+                actors[i].body.position.x = -50.0f;
                 break;
             case 2:
-                actors[i].body.position.x = 80.0f;
+                actors[i].body.position.x = 50.0f;
                 break;
             case 3:
                 actors[i].body.position.x = 150.0f;
                 break;
         }
+
+        actors[i].home = actors[i].body.position;
     }
 
     // AI

@@ -13,6 +13,7 @@ static rspq_profile_data_t profile_data;
 
 void gameState_setIntro(Game* game, Player* player, Scenery* scenery);
 void gameState_setMainMenu();
+void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery);
 
 void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes);
 void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scenery);
@@ -61,6 +62,72 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 
 void gameState_setMainMenu()
 {
+}
+
+void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
+{
+	for (size_t j = 0; j < PLATFORM_COUNT; j++)
+	{
+		
+		platform_loop(&hexagons[j], NULL);
+	}
+
+	static uint8_t selectedCharacter[4] = {0};
+
+	controllerData_8way(&player[0].control);
+
+	if (player[0].control.pressed.d_right)
+    	selectedCharacter[0] = (selectedCharacter[0] + 1) % ACTOR_COUNT;
+
+	if (player[0].control.pressed.d_left)
+	    selectedCharacter[0] = (selectedCharacter[0] - 1 + ACTOR_COUNT) % ACTOR_COUNT;
+
+	Actor* selectedActor = &actor[selectedCharacter[0]];
+
+	selectedActor->body.position.x = 0.0f;
+	selectedActor->body.position.y = -800.0f;
+	selectedActor->body.rotation.z -= 3.0f;
+
+	for (size_t i = 0; i < ACTOR_COUNT; i++)
+	{
+		actor_update(&actor[i], NULL, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
+		
+		// Reset non-selected actors
+		if (i != selectedCharacter[0])
+		{ 
+        	actor[i].body.position = actor[i].home;
+        	actor[i].body.rotation.z = 0;
+    	}
+	}
+
+	move_lava(scenery);
+
+	// ======== Draw ======== //
+	
+	screen_clearDisplay(&game->screen);
+	screen_clearT3dViewport(&game->screen);
+
+	light_set(&game->scene.light);
+
+	t3d_matrix_push_pos(1);
+
+	room_draw(scenery);
+
+	light_setAmbient(&game->scene.light, 0xBF);
+	platform_drawBatch();
+	light_resetAmbient(&game->scene.light);
+
+	actor_draw(actor);
+
+	t3d_matrix_pop(1);
+
+	game->syncPoint = rspq_syncpoint_new();
+
+	ui_fps();
+	ui_printf("Char %d", selectedCharacter[0]);
+
+	rdpq_detach_show();
+	sound_update_buffer();
 }
 
 void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes)
@@ -205,6 +272,10 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 			}
 			case MAIN_MENU:{
 				gameState_setMainMenu();
+				break;
+			}
+			case CHARACTER_SELECT:{
+				gameState_setCS(game, player, actor, scenery);
 				break;
 			}
 			case GAMEPLAY:{

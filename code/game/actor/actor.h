@@ -106,6 +106,8 @@ typedef struct {
 	uint8_t previous_state;
 	uint8_t state;
 
+	Vector3 home;
+
 	ActorSettings settings;
 	Actorinput input;
 
