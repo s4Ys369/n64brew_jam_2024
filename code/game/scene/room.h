@@ -19,16 +19,16 @@ void tile_scroll(void* userData, rdpq_texparms_t *tileParams, rdpq_tile_t tile)
 void move_lava(Scenery *scenery)
 {
     
-    scenery[1].transform_offset += 0.008f;
-    scenery[1].tile_offset += 0.1f;
+    scenery[0].transform_offset += 0.008f;
+    scenery[0].tile_offset += 0.1f;
 
     // returns the global vertex buffer for a model.
     // If you have multiple models and want to only update one, you have to manually iterate over the objects.
     // see the implementation of t3d_model_draw_custom in that case.
-    T3DVertPacked* verts = t3d_model_get_vertices(scenery[1].model);
-    float globalHeight = fm_sinf(scenery[1].transform_offset * 2.5f) * 30.0f;
+    T3DVertPacked* verts = t3d_model_get_vertices(scenery[0].model);
+    float globalHeight = fm_sinf(scenery[0].transform_offset * 2.5f) * 30.0f;
 
-    for(uint16_t i=0; i < scenery[1].model->totalVertCount; ++i)
+    for(uint16_t i=0; i < scenery[0].model->totalVertCount; ++i)
     {
     // To better handle the interleaved vertex format,
     // t3d provides a few helper functions to access attributes
@@ -36,7 +36,7 @@ void move_lava(Scenery *scenery)
 
     // water-like wobble effect
     float height = fm_sinf(
-        scenery[1].transform_offset * 4.5f
+        scenery[0].transform_offset * 4.5f
         + pos[0] * 30.1f
         + pos[1] * 20.1f
     );
@@ -52,15 +52,15 @@ void move_lava(Scenery *scenery)
     }
 
     // Don't forget to flush the cache again! (or use an uncached buffer in the first place)
-    data_cache_hit_writeback(verts, sizeof(T3DVertPacked) * scenery[1].model->totalVertCount / 2);
+    data_cache_hit_writeback(verts, sizeof(T3DVertPacked) * scenery[0].model->totalVertCount / 2);
 }
 
 
 void room_draw(Scenery *scenery)
 {
-    rspq_block_run(scenery[0].dl);
+    //rspq_block_run(scenery[0].dl);
     
-    t3d_model_draw_custom(scenery[1].model, (T3DModelDrawConf){
+    t3d_model_draw_custom(scenery[0].model, (T3DModelDrawConf){
         .userData = &scenery[1].tile_offset,
         .tileCb = tile_scroll,
     });

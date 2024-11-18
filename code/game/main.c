@@ -9,7 +9,7 @@
 #define ACTOR_COUNT 4
 #define PLAYER_COUNT 4
 
-#define SCENERY_COUNT 2
+#define SCENERY_COUNT 1
 #define PLATFORM_COUNT 19
 
 #define S4YS 0
@@ -130,8 +130,8 @@ void minigame_init()
     }
     
 	// scenery
-    scenery[0] = scenery_create(0, "rom:/game/room.t3dm");
-    scenery[1] = scenery_create(1, "rom:/game/lava.t3dm");
+    //scenery[0] = scenery_create(0, "rom:/game/room.t3dm");
+    scenery[0] = scenery_create(0, "rom:/game/lava.t3dm");
 
     for (uint8_t i = 0; i < SCENERY_COUNT; i++)
 	{
