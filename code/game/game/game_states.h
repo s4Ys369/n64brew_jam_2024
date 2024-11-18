@@ -57,7 +57,7 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 	ui_fps();
 
 	rdpq_detach_show();
-	sound_update_buffer();
+	sound_update();
 }
 
 void gameState_setMainMenu()
@@ -127,7 +127,7 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 	ui_printf("Char %d", selectedCharacter[0]);
 
 	rdpq_detach_show();
-	sound_update_buffer();
+	sound_update();
 }
 
 void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes)
@@ -181,7 +181,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	ui_fps();
 
 	rdpq_detach_show();
-	sound_update_buffer();
+	sound_update();
 }
 
 
@@ -217,7 +217,7 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 	ui_fps();
 
 	rdpq_detach_show();
-	sound_update_buffer();
+	sound_update();
 
 #ifdef PROFILING
 	rspq_profile_next_frame();
@@ -257,6 +257,8 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 		cameraControl_setOrbitalMovement(&game->scene.camera, &player[0].control);
 		camera_getMinigamePosition(&game->scene.camera, camFocus, game->timing.frame_time_s);
 		camera_set(&game->scene.camera, &game->screen);
+
+		sound_spatial(&camFocus, &hexagons[1].home,  &game->scene.camera);
 
 		// Precompute all collision boxes to avoid recomputing them repeatedly.
     	for (size_t i = 0, boxIndex = 0; i < PLATFORM_COUNT; i++) {

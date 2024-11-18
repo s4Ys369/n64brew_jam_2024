@@ -22,7 +22,6 @@
 
 #include "screen/screen.h"
 #include "control/controls.h"
-#include "sound/sound.h"
 #include "time/time.h"
 
 #include "physics/physics.h"
@@ -30,6 +29,8 @@
 #include "camera/camera.h"
 #include "camera/camera_states.h"
 #include "camera/camera_control.h"
+
+#include "sound/sound.h"
 
 #include "actor/actor.h"
 #include "actor/actor_states.h"
@@ -48,8 +49,6 @@
 #include "scene/room.h"
 
 #include "player/ai.h"
-
-#include "sound/sound.h"
 
 #include "ui/ui.h"
 
@@ -134,7 +133,6 @@ void minigame_init()
     }
     
 	// scenery
-    //scenery[0] = scenery_create(0, "rom:/game/room.t3dm");
     scenery[0] = scenery_create(0, "rom:/game/lava.t3dm");
 
     for (uint8_t i = 0; i < SCENERY_COUNT; i++)
@@ -144,6 +142,9 @@ void minigame_init()
 
     // platforms
     platform_hexagonGrid(hexagons, t3d_model_load("rom:/game/platform.t3dm"), 250.0f, ui_color(N_YELLOW));
+
+    // Sound: Play lava SFX
+    sound_wavPlay(SFX_LAVA, true);
 
 }
 

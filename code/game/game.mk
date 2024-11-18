@@ -31,6 +31,7 @@ SPRITE_FILES := $(ASSETS)/wolf_eye.sprite \
                 $(ASSETS)/lava08.rgba16.sprite \
 
 SOUND_FILES := $(SOUND_DIR)/tribeof.xm64 \
+               $(SOUND_DIR)/heal.wav64 \
                $(SOUND_DIR)/stones-falling.wav64 \
                $(SOUND_DIR)/lava-loop-2.wav64
 
@@ -59,7 +60,7 @@ FONT_FILES := $(UI_DIR)/fonts/TitanOne-Regular.font64 \
               $(UI_DIR)/fonts/OilOnTheWater-ee5O.font64
 
 # Final assets list
-ASSETS_LIST += $(TXT_FILES) $(T3DM_FILES) $(SPRITE_FILES) $(SOUND_FILES) $(UI_SPRITE_FILES) $(FONT_FILES)
+ASSETS_LIST += $(T3DM_FILES) $(SPRITE_FILES) $(SOUND_FILES) $(UI_SPRITE_FILES) $(FONT_FILES)
 
 # t3d flags
 $(ASSETS)/s4ys.t3dm: T3DM_FLAGS = --base-scale=1
@@ -74,6 +75,8 @@ $(ASSETS)/lava.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/tribeof.xm64: AUDIOCONV_FLAGS = ''
 $(ASSETS)/stones-falling.wav64: AUDIOCONV_FLAGS = --wav-compress=3 --wav-mono
 $(ASSETS)/lava-loop-2.wav64: AUDIOCONV_FLAGS = --wav-compress=3 --wav-mono
+$(ASSETS)/heal.wav64: AUDIOCONV_FLAGS = --wav-compress=3 --wav-mono
+
 
 # font64 flags
 $(UI_DIR)/fonts/OilOnTheWater-ee5O.font64: MKFONT_FLAGS += --outline 2 --size 18

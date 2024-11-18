@@ -112,7 +112,7 @@ void platform_loop(Platform* platform, Actor* actor)
     platform->platformTimer++;
     if(platform->platformTimer > 0 && platform->platformTimer < 2)
     {
-      sound_wav_stones();
+      sound_wavPlay(SFX_STONES, false);
     } else if(platform->platformTimer < 120) {
       platform_shake(platform, platform->platformTimer);
     } else if(platform->platformTimer > 120 && platform->platformTimer < 360) {
