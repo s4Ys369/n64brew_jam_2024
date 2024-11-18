@@ -133,8 +133,23 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes)
 {
 
+	static bool actorSet = false;
+	if (!actorSet)
+	{
+		actor[0].body.position = hexagons[3].position;
+		actor[1].body.position = hexagons[6].position;
+		actor[2].body.position = hexagons[12].position;
+		actor[3].body.position = hexagons[15].position;
+		for (size_t i = 0; i < ACTOR_COUNT; i++) 
+		{
+			actor[i].body.position.z = actor[i].body.position.z + 100.0f;
+			actor[i].home = actor[i].body.position;
+		}
+		actorSet ^= 1;
+	}
+
 	// AI
-	for (size_t i = 1; i < ACTOR_COUNT; i++)
+	for (size_t i = 0; i < ACTOR_COUNT; i++)
 	{
 		ai_generateControlData(&ai[i], &player[i].control, &actor[i], hexagons, PLATFORM_COUNT, game->scene.camera.offset_angle);
 	}

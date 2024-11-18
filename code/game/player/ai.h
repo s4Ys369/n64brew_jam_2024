@@ -47,11 +47,24 @@ void ai_init(AI *ai, uint8_t difficulty)
 
 }
 
+// Helper function to rotate input by camera angle
+void ai_updateCam(ControllerData *control, float camera_angle)
+{
+    // Convert angle to radians
+    float angle_rad = camera_angle * (T3D_PI / 180.0f);
+    int8_t original_x = control->input.stick_x;
+    int8_t original_y = control->input.stick_y;
+
+    // Rotate stick_x and stick_y based on camera angle
+    control->input.stick_x = (int8_t)(original_x * fm_cosf(angle_rad) - original_y * fm_sinf(angle_rad));
+    control->input.stick_y = (int8_t)(original_x * fm_sinf(angle_rad) + original_y * fm_cosf(angle_rad));
+}
+
 // Function to find the nearest platform at a safe height (position.z > 0)
 Platform* find_nearest_safe_platform(AI *ai, Actor *actor, Platform* platforms, size_t platform_count) {
     Platform* nearest_platform = NULL;
     float min_distance = FLT_MAX; // Large initial value
-    const float current_platform_threshold = 0.001f;
+    const float current_platform_threshold = 0.01f;
 
     for (size_t i = 0; i < platform_count; ++i)
     {
@@ -60,15 +73,8 @@ Platform* find_nearest_safe_platform(AI *ai, Actor *actor, Platform* platforms, 
         // Skip platforms not at a safe height
         if (platform->position.z <= ai->safe_height) continue;
 
-        // Calculate the vector difference to the platform
-        Vector3 diff = vector3_difference(&platform->position, &actor->body.position);
-
-        // Calculate the inverse distance
-        float inverse_distance = vector3_magnitude(&diff);
-        if (inverse_distance <= 0) continue; // Avoid division by zero
-
-        // Convert inverse distance to actual distance
-        float distance = 1 / inverse_distance;
+        // Calculate the vector distance to the platform
+        float distance = vector3_distance(&platform->position, &actor->body.position);
 
         // Ignore the current platform the AI is standing on
         if (distance < current_platform_threshold) continue;
@@ -125,6 +131,9 @@ void ai_generateControlData(AI *ai, ControllerData *control, Actor *actor, Platf
         control->pressed.a = 1; // Press jump button
         control->held.a = 1;    // Hold jump button
     }
+
+    // Adjust for camera angle if needed
+    ai_updateCam(control, camera_angle);
 
 }
 

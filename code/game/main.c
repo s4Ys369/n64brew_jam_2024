@@ -128,7 +128,7 @@ void minigame_init()
     }
 
     // AI
-    for (uint8_t i = 1; i < ACTOR_COUNT; i++) {
+    for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
         ai_init(&aiPlayer[i], core_get_aidifficulty());
     }
     

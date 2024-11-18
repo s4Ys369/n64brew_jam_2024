@@ -48,7 +48,7 @@ void platform_init(Platform* platform, T3DModel* model, Vector3 position, color_
   for (int j = 0; j < 3; j++)
   {
     platform->collider.box[j] = (Box) {
-      .size = {200.0f, 300.0f, 60.0f},
+      .size = {200.0f, 300.0f, 65.0f},
       .center = platform->position,
       .rotation = { 
         // Set the rotations explicitly
