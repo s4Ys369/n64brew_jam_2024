@@ -96,13 +96,13 @@ Camera camera_create()
     Camera camera = {
         .distance_from_barycenter = 500,
         .target_distance = 200,
-        .angle_around_barycenter = 15,
+        .angle_around_barycenter = 0,
         .pitch = 18,
         .offset_angle = 0,
-        .offset_height = 190,
-		.field_of_view = 60,
+        .offset_height = 250,
+		.field_of_view = 80,
 		.near_clipping = 100,
-		.far_clipping = 10000,
+		.far_clipping = 3000,
 
         .settings = {
         

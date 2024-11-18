@@ -68,6 +68,7 @@ Vector3 vector3_from_array(float arr[3]);
 Vector3 vector3_flip_coords(Vector3 vec);
 Vector3 vector3_flip_up(Vector3 vec);
 float vector3_distance(const Vector3* v, const Vector3* w);
+Vector3 vector3_average4(const Vector3* v1, const Vector3* v2, const Vector3* v3, const Vector3* v4);
 
 
 inline void vector3_init(Vector3 *v) 
@@ -361,6 +362,15 @@ inline float vector3_distance(const Vector3* v, const Vector3* w) {
     return sqrtf((w->x - v->x) * (w->x -v->x) +
                  (w->y - v->y) * (w->y -v->y) +
                  (w->z - v->z) * (w->z -v->z));
+}
+
+Vector3 vector3_average4(const Vector3* v1, const Vector3* v2, const Vector3* v3, const Vector3* v4)
+{
+    Vector3 avg;
+    avg.x = (v1->x + v2->x + v3->x + v4->x) / 4.0f;
+    avg.y = (v1->y + v2->y + v3->y + v4->y) / 4.0f;
+    avg.z = (v1->z + v2->z + v3->z + v4->z) / 4.0f;
+    return avg;
 }
 
 #endif

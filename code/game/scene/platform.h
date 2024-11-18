@@ -208,7 +208,7 @@ void platform_hexagonGrid(Platform* platform, T3DModel* model, float z, color_t 
   float x_offset = 260.0f;    // Horizontal distance between centers of adjacent columns
   float y_offset = 226.0f;    // Vertical distance between centers of adjacent rows
   float start_x = 0.0f;       // Starting X coordinate for the first row
-  float start_y = 0.0f;       // Starting Y coordinate for the first row
+  float start_y = -500.0f;       // Starting Y coordinate for the first row
 
   int rows[] = {3, 4, 5, 4, 3};  // Number of hexagons per row
   int hexagon_index = 0;

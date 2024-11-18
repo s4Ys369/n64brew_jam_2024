@@ -180,8 +180,13 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 
 		player_setControlData(player);
 
+		static uint8_t camSwitch = 0;
+		if(player[0].control.pressed.b) camSwitch ^= 1;
+
+		Vector3 camFocus = camSwitch ? hexagons[1].home : vector3_average4(&actor[0].body.position, &actor[1].body.position, &actor[2].body.position, &actor[3].body.position);
+
 		cameraControl_setOrbitalMovement(&game->scene.camera, &player[0].control);
-		camera_getMinigamePosition(&game->scene.camera, actor[0].body.position, game->timing.frame_time_s);
+		camera_getMinigamePosition(&game->scene.camera, camFocus, game->timing.frame_time_s);
 		camera_set(&game->scene.camera, &game->screen);
 
 		// Precompute all collision boxes to avoid recomputing them repeatedly.
