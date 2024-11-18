@@ -183,7 +183,9 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 		static uint8_t camSwitch = 0;
 		if(player[0].control.pressed.b) camSwitch ^= 1;
 
-		Vector3 camFocus = camSwitch ? hexagons[1].home : vector3_average4(&actor[0].body.position, &actor[1].body.position, &actor[2].body.position, &actor[3].body.position);
+		Vector3 playersCenter = vector3_average4(&actor[0].body.position, &actor[1].body.position, &actor[2].body.position, &actor[3].body.position);
+
+		Vector3 camFocus = camSwitch ?  playersCenter : hexagons[1].home;
 
 		cameraControl_setOrbitalMovement(&game->scene.camera, &player[0].control);
 		camera_getMinigamePosition(&game->scene.camera, camFocus, game->timing.frame_time_s);

@@ -97,7 +97,7 @@ Camera camera_create()
         .distance_from_barycenter = 500,
         .target_distance = 200,
         .angle_around_barycenter = 0,
-        .pitch = 18,
+        .pitch = 25,
         .offset_angle = 0,
         .offset_height = 250,
 		.field_of_view = 80,
