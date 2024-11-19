@@ -18,7 +18,7 @@ const char* xmFileNames[1] = {
 
 // WAV files
 enum SFX_WAV {
-	SFX_HEAL,
+	SFX_JUMP,
 	SFX_STONES,
 	SFX_LAVA,
 	NUM_WAV
@@ -28,7 +28,7 @@ enum SFX_WAV {
 wav64_t soundEffects[NUM_WAV];
 
 const char* wavFileNames[NUM_WAV] = {
-    "rom:/game/sound/heal.wav64",
+    "rom:/game/sound/grunt-01.wav64",
 	"rom:/game/sound/stones-falling.wav64",
 	"rom:/game/sound/lava-loop-2.wav64",
 };

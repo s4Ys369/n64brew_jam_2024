@@ -17,7 +17,7 @@ void actorControl_setJump(Actor* actor, ControllerData *control, float frame_tim
         
         actor->input.jump_hold = true;
         actor->input.jump_released = false;
-        sound_wavPlay(SFX_HEAL, false);
+        sound_wavPlay(SFX_JUMP, false);
         actor_setState(actor, JUMP);
     }
 

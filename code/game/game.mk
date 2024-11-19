@@ -31,7 +31,7 @@ SPRITE_FILES := $(ASSETS)/wolf_eye.sprite \
                 $(ASSETS)/lava08.rgba16.sprite \
 
 SOUND_FILES := $(SOUND_DIR)/tribeof.xm64 \
-               $(SOUND_DIR)/heal.wav64 \
+               $(SOUND_DIR)/grunt-01.wav64 \
                $(SOUND_DIR)/stones-falling.wav64 \
                $(SOUND_DIR)/lava-loop-2.wav64
 
@@ -75,7 +75,7 @@ $(ASSETS)/lava.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/tribeof.xm64: AUDIOCONV_FLAGS = ''
 $(ASSETS)/stones-falling.wav64: AUDIOCONV_FLAGS = --wav-compress=3 --wav-mono
 $(ASSETS)/lava-loop-2.wav64: AUDIOCONV_FLAGS = --wav-compress=3 --wav-mono
-$(ASSETS)/heal.wav64: AUDIOCONV_FLAGS = --wav-compress=3 --wav-mono
+$(ASSETS)/grunt-01.wav64: AUDIOCONV_FLAGS = --wav-compress=3 --wav-mono
 
 
 # font64 flags
