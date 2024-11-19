@@ -97,14 +97,18 @@ void ui_printf(const char *txt, ...)
 void ui_print_winner(int winner)
 {
     ui_syncText();
-    rdpq_text_printf(&txt_gameParms, ID_DEFAULT, 104, 120, "Player %d Wins", winner);
+    rdpq_textparms_t winnerTextParms = txt_gameParms;
+    winnerTextParms.style_id = STYLE_PLAYER + winner-1;
+    rdpq_text_printf(&winnerTextParms, ID_DEFAULT, 104, 120, "Player %d Wins", winner);
 }
 
 void ui_print_playerNum(Player* player, Screen* screen)
 {
     Vector3 pos = player_getBillboard(player, &screen->gameplay_viewport);
     ui_syncText();
-    rdpq_text_printf(&txt_gameParms, ID_DEFAULT, pos.x, pos.z, "P%d", player->id+1);
+    rdpq_textparms_t playerTextParms = txt_gameParms;
+    playerTextParms.style_id = STYLE_PLAYER + player->id;
+    rdpq_text_printf(&playerTextParms, ID_DEFAULT, pos.x, pos.z, "P%d", player->id+1);
 }
 
 // Controller data is passed here for visual feedback for the button press.
