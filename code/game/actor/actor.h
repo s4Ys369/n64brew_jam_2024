@@ -27,6 +27,7 @@ typedef struct {
 	float jump_timer_max;
 
 	float fall_max_speed;
+	float jump_max_speed;
 
 }ActorSettings;
 
@@ -98,7 +99,6 @@ typedef struct {
 	float horizontal_speed;
 	bool grounded;
 	float grounding_height;
-	float fall_max_speed;
 
 	bool hasCollided; // Testing a collision boolean
 
@@ -164,7 +164,8 @@ Actor actor_create(uint32_t id, const char *model_path)
 			.sprint_to_roll_target_speed = 980,
 			.jump_target_speed = 600, 
 			.jump_timer_max = 0.13,
-			.fall_max_speed = -2650.0f
+			.fall_max_speed = -2650.0f,
+			.jump_max_speed = 600.0f
         },
     };
 
