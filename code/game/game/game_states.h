@@ -157,18 +157,19 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 	// Actors
 	uint8_t loserCount = 0;
-	static uint8_t winnerID = 0;
+	uint8_t winnerID = 0;
 	bool winnerSet = false;
 
 	for (size_t i = 0; i < ACTOR_COUNT; i++)
 	{
 		if (actor[i].state != DEATH)
 		{
-			if (loserCount == ACTOR_COUNT - 1 && !winnerSet)
+			if (loserCount == 3 && !winnerSet)
 			{
 				core_set_winner(i);
 				winnerID = i;
 				winnerSet = true;
+				continue;
 			}
 
 			actor_update(&actor[i], &player[i].control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter,
@@ -189,6 +190,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 			player[i].died = true;
 			loserCount++;
+			continue;
 		}
 	}
 
@@ -226,7 +228,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	{
 		static int8_t winTimer = 0;
 		winTimer++;
-		if(winTimer < 120) ui_print_winner(winnerID);
+		if(winTimer < 120) ui_print_winner(winnerID+1);
 		if(winTimer >= 118) game->state = GAME_OVER;
 	}
 

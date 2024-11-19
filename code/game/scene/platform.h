@@ -122,15 +122,15 @@ void platform_loop(Platform* platform, Actor* actor)
       sound_wavPlay(SFX_STONES, false);
 
     // Action 2: Shake platform
-    } else if(platform->platformTimer < 120) {
+    } else if(platform->platformTimer < 60) {
       platform_shake(platform, platform->platformTimer);
     
     // Action 3: Drop platform
-    } else if(platform->platformTimer > 120 && platform->platformTimer < 360) {
+    } else if(platform->platformTimer > 60 && platform->platformTimer < 240) {
       platform_updateHeight(platform, 2.0f);
 
     // Action 4: Reset to idle
-    } else if(platform->platformTimer > 600) {
+    } else if(platform->platformTimer > (200 * (core_get_aidifficulty()+1))){
       platform->contact = false;
     }
   } else {
@@ -223,8 +223,8 @@ inline void platform_drawBatch(void)
 // Generate a hexagonal grid of 19 platforms at desired height, with desired model and color
 void platform_hexagonGrid(Platform* platform, T3DModel* model, float z, color_t color)
 {
-  float x_offset = 260.0f;    // Horizontal distance between centers of adjacent columns
-  float y_offset = 226.0f;    // Vertical distance between centers of adjacent rows
+  float x_offset = 300.0f;    // Horizontal distance between centers of adjacent columns
+  float y_offset = 300.0f;    // Vertical distance between centers of adjacent rows
   float start_x = 0.0f;       // Starting X coordinate for the first row
   float start_y = -500.0f;       // Starting Y coordinate for the first row
 

@@ -170,10 +170,6 @@ void minigame_cleanup()
     sound_cleanup();
     ui_cleanup();
 
-    // Step 2: Flush and execute all remaining RSPQ commands
-    rspq_flush();
-    rspq_wait();
-
     // Step 3: Destroy Tiny3D models, matrices, animations and RSPQ blocks
 	for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
 

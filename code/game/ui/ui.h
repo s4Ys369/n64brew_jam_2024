@@ -97,7 +97,7 @@ void ui_printf(const char *txt, ...)
 void ui_print_winner(int winner)
 {
     ui_syncText();
-    rdpq_text_printf(&txt_gameParms, ID_DEFAULT, 100, 120, "Player %d Wins", winner);
+    rdpq_text_printf(&txt_gameParms, ID_DEFAULT, 104, 120, "Player %d Wins", winner);
 }
 
 // Controller data is passed here for visual feedback for the button press.

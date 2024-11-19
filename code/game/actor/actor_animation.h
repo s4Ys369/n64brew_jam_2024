@@ -19,7 +19,7 @@ void animationSet_init(const Actor* actor, AnimationSet* set)
 	set->running_left = t3d_anim_create(actor->model, "running-10-left");
 	//set->jump_left = t3d_anim_create(actor->model, "jump-left");
 	set->falling_left = t3d_anim_create(actor->model, "falling-idle-left");
-	set->land_left = t3d_anim_create(actor->model, "falling-to-landing-left");
+	//set->land_left = t3d_anim_create(actor->model, "falling-to-landing-left");
 }
 
 void actorAnimation_init(const Actor* actor, ActorAnimation* animation)
