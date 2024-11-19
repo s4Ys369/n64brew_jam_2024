@@ -67,8 +67,8 @@ void controllerData_rumbleFrames(ControllerData*data, uint8_t port, uint8_t fram
 }
 
 
-#define DEAD_ZONE 50
-#define INPUT_DELAY 0.2f
+#define DEAD_ZONE 70
+#define INPUT_DELAY 0.3f
 
 // Treats joystick inputs as digital pad buttons, for menu navigation
 void controllerData_8way(ControllerData* data) {

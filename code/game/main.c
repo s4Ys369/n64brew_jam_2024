@@ -95,10 +95,10 @@ void minigame_init()
     display_set_fps_limit((display_get_refresh_rate() / 3) * 2); // @TODO
 
     // actors
-    actors[0] = actor_create(0, "rom:/game/dogman.t3dm");
-    actors[1] = actor_create(1, "rom:/game/mew.t3dm");
-    actors[2] = actor_create(2, "rom:/game/wolfie.t3dm");
-    actors[3] = actor_create(3, "rom:/game/s4ys.t3dm");
+    actors[S4YS] = actor_create(0, "rom:/game/s4ys.t3dm");
+    actors[WOLFIE] = actor_create(1, "rom:/game/wolfie.t3dm");
+    actors[MEW] = actor_create(2, "rom:/game/mew.t3dm");
+    actors[DOGMAN] = actor_create(3, "rom:/game/dogman.t3dm");
 
     for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
         actor_init(&actors[i]);

@@ -42,7 +42,7 @@ Vector3 player_getBillboard(Player* player, T3DViewport* viewport)
     Vector3 billboardPos = (Vector3){
       player->position.x,
       player->position.y,
-      player->position.z + 250.0f
+      player->position.z + 200.0f
     };
 
     T3DVec3 billboardPosConvert = Vector3_to_T3DVec3(billboardPos);

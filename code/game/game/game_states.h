@@ -84,7 +84,7 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 
 	Actor* selectedActor = &actor[selectedCharacter[0]];
 
-	selectedActor->body.position.x = 0.0f;
+	selectedActor->body.position.x = -50.0f;
 	selectedActor->body.position.y = -800.0f;
 	selectedActor->body.rotation.z -= 3.0f;
 
@@ -123,8 +123,13 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 
 	game->syncPoint = rspq_syncpoint_new();
 
+	for (size_t i = 0; i < ACTOR_COUNT; i++)
+	{
+		player[i].position = actor[i].body.position;
+		ui_print_playerNum(&player[i], &game->screen);
+	}
+
 	ui_fps();
-	ui_printf("Char %d", selectedCharacter[0]);
 
 	rdpq_detach_show();
 	sound_update();
@@ -159,20 +164,16 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	uint8_t loserCount = 0;
 	uint8_t winnerID = 0;
 	bool winnerSet = false;
+	uint8_t aliveCount = 0;
+    uint8_t lastAlivePlayer = 0;
 
 	for (size_t i = 0; i < ACTOR_COUNT; i++)
 	{
 		player[i].position = actor[i].body.position;
 		if (actor[i].state != DEATH)
 		{
-			if (loserCount == 3 && !winnerSet)
-			{
-				core_set_winner(i);
-				winnerID = i;
-				winnerSet = true;
-				continue;
-			}
-
+			aliveCount++;
+			lastAlivePlayer = i; // Track the last alive player
 			actor_update(&actor[i], &player[i].control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter,
 						game->scene.camera.offset_angle, &game->syncPoint);
 			actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], boxes, PLATFORM_COUNT * 3);
@@ -191,10 +192,16 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 			player[i].died = true;
 			loserCount++;
-			continue;
 		}
 	}
 
+	// Check if we have a winner (only one alive player left)
+	if (aliveCount == 1 && !winnerSet)
+	{
+		core_set_winner(lastAlivePlayer); // Set the winner to the last remaining player
+		winnerID = lastAlivePlayer;
+		winnerSet = true;
+	}
 
 	// Platforms
 	for (size_t j = 0; j < PLATFORM_COUNT; j++)

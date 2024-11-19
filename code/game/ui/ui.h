@@ -96,10 +96,11 @@ void ui_printf(const char *txt, ...)
 
 void ui_print_winner(int winner)
 {
+    ui_spriteDrawPanel(TILE1, sprite_gloss, T_BLACK, 90, 102, 210, 130, 0, 0, 64, 64);
     ui_syncText();
     rdpq_textparms_t winnerTextParms = txt_gameParms;
     winnerTextParms.style_id = STYLE_PLAYER + winner-1;
-    rdpq_text_printf(&winnerTextParms, ID_DEFAULT, 104, 120, "Player %d Wins", winner);
+    rdpq_text_printf(&winnerTextParms, ID_DEFAULT, 106, 120, "Player %d Wins", winner);
 }
 
 void ui_print_playerNum(Player* player, Screen* screen)
@@ -114,9 +115,9 @@ void ui_print_playerNum(Player* player, Screen* screen)
 // Controller data is passed here for visual feedback for the button press.
 void ui_main_menu(ControllerData* control)
 {
-    ui_spriteDrawPanel(TILE1, sprite_border, TRANSPARENT, 0, 0, 320, 240, 0, 0, 64, 64);
-    ui_spriteDrawPanel(TILE2, sprite_border, T_RED, 90, 60, 230, 144, 0, 0, 64, 64);
-    ui_spriteDrawPanel(TILE3, sprite_tessalate, T_BLACK, 100, 65, 220, 140, 0, 0, 64, 64);
+    ui_spriteDrawPanel(TILE1, sprite_gloss, TRANSPARENT, 0, 0, 320, 240, 0, 0, 64, 64);
+    ui_spriteDrawPanel(TILE2, sprite_gloss, T_RED, 90, 60, 230, 144, 0, 0, 64, 64);
+    ui_spriteDrawPanel(TILE3, sprite_tessalate, T_BLACK, 100, 65, 220, 134, 0, 0, 64, 64);
 
     if(control->pressed.start || control->held.start)
     {
