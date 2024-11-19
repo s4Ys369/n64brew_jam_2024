@@ -23,6 +23,31 @@ void gameState_setGameOver();
 void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes);
 
 
+
+// new camera code ////
+
+void camera_getMinigamePosition(Camera* camera, Actor* actor, Vector3 camera_distance)
+{
+	Vector3 actor_distance;
+
+    camera->target = actor[0].body.position;
+	vector3_init(&camera->position);
+	vector3_init(&actor_distance);
+
+    for (uint8_t i = 0; i < ACTOR_COUNT - 1; i++)
+    {	
+		actor_distance = vector3_difference(&actor[i + 1].body.position, &actor[i].body.position);
+        vector3_addScaledVector(&camera->target, &actor_distance, 0.5f);
+    }
+
+    camera->position = camera->target;
+    
+    vector3_add(&camera->position, &camera_distance);
+}
+
+//////////////////////
+
+
 void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 {
 
@@ -334,8 +359,7 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 
 		Vector3 camFocus = camSwitch ?  playersCenter : hexagons[1].home;
 
-		cameraControl_setOrbitalMovement(&game->scene.camera, &player[0].control);
-		camera_getMinigamePosition(&game->scene.camera, camFocus, game->timing.frame_time_s);
+		camera_getMinigamePosition(&game->scene.camera, actor, (Vector3){0, -600, 600});
 		camera_set(&game->scene.camera, &game->screen);
 
 		sound_spatial(&camFocus, &hexagons[1].home,  &game->scene.camera);
