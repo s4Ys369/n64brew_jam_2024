@@ -186,6 +186,8 @@ void actor_draw(Actor *actor)
 {	
 	for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
 				
+		if(actor[i].state == 9) continue; // DEATH
+
 		t3d_mat4fp_from_srt_euler(actor[i].modelMat,
 			(float[3]){actor[i].scale.x, actor[i].scale.y, actor[i].scale.z},
 			(float[3]){rad(actor[i].body.rotation.x), rad(actor[i].body.rotation.y), rad(actor[i].body.rotation.z)},
@@ -215,7 +217,7 @@ void actor_delete(Actor *actor)
 	//t3d_anim_destroy(&actor->animation.blend.land_left);
 	
 	t3d_model_free(actor->model);
-	rspq_block_free(actor->dl);
+	if(actor->dl != NULL) rspq_block_free(actor->dl);
 }
 
 

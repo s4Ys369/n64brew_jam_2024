@@ -7,6 +7,7 @@
 #define JUMP 6
 #define FALLING 7
 #define LANDING 8
+#define DEATH 9
 
 
 // function prototypes
@@ -18,6 +19,8 @@ void actorState_setRunning (Actor *actor);
 void actorState_setJump (Actor *actor);
 
 void actorState_setFalling (Actor *actor);
+
+void actorState_setDeath (Actor *actor);
 
 void actor_setState (Actor *actor, uint8_t state);
 
@@ -58,6 +61,16 @@ void actorState_setFalling (Actor *actor)
     actor->grounding_height = -0.0f; 
 }
 
+void actorState_setDeath (Actor *actor)
+{
+    if (actor->state == DEATH ) return;
+
+    actor->previous_state = actor->state;
+    actor->grounding_height = -50.0f;
+    actor->state = DEATH;
+    
+}
+
 void actor_setState(Actor *actor, uint8_t state) 
 {
     switch(state) {
@@ -77,7 +90,11 @@ void actor_setState(Actor *actor, uint8_t state)
         case FALLING: {
             actorState_setFalling (actor);
             break;
-        }   
+        }
+        case DEATH: {
+            actorState_setDeath (actor);
+            break;
+        }    
     }
 }
 

@@ -102,6 +102,10 @@ void actor_setAnimation(Actor* actor, ActorAnimation* animation, const float fra
 			actorAnimation_setJump(actor, animation, frame_time, syncpoint);
             break;
         }
+		case DEATH: {
+			actorAnimation_setJump(actor, animation, frame_time, syncpoint);
+            break;
+        }
     }
 	
 	if(syncpoint)rspq_syncpoint_wait(*syncpoint);

@@ -126,6 +126,8 @@ void minigame_init()
         }
 
         actors[i].home = actors[i].body.position;
+
+        player_init(&player[i], i, i);
     }
 
     // AI

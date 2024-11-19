@@ -94,6 +94,12 @@ void ui_printf(const char *txt, ...)
     rdpq_text_vprintf(&txt_debugParms, ID_DEBUG, fpsPos.v[0], fpsPos.v[1] + 20, txt, args);
 }
 
+void ui_print_winner(int winner)
+{
+    ui_syncText();
+    rdpq_text_printf(&txt_gameParms, ID_DEFAULT, 100, 120, "Player %d Wins", winner);
+}
+
 // Controller data is passed here for visual feedback for the button press.
 void ui_main_menu(ControllerData* control)
 {

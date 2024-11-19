@@ -2,7 +2,7 @@
 #define GAME_STATES_H
 
 // Comment out to disable RSPQ Profiling
-#define PROFILING
+//#define PROFILING
 
 #ifdef PROFILING
 #include "rspq_profile.h"
@@ -151,15 +151,47 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	// AI
 	for (size_t i = 0; i < AI_COUNT; i++)
 	{
+		if(player[i+PLAYER_COUNT].died) continue;
 		ai_generateControlData(&ai[i], &player[i+PLAYER_COUNT].control, &actor[i+PLAYER_COUNT], hexagons, PLATFORM_COUNT, game->scene.camera.offset_angle);
 	}
 
 	// Actors
+	uint8_t loserCount = 0;
+	static uint8_t winnerID = 0;
+	bool winnerSet = false;
+
 	for (size_t i = 0; i < ACTOR_COUNT; i++)
 	{
-		actor_update(&actor[i], &player[i].control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
-		actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], boxes, PLATFORM_COUNT*3);
+		if (actor[i].state != DEATH)
+		{
+			if (loserCount == ACTOR_COUNT - 1 && !winnerSet)
+			{
+				core_set_winner(i);
+				winnerID = i;
+				winnerSet = true;
+			}
+
+			actor_update(&actor[i], &player[i].control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter,
+						game->scene.camera.offset_angle, &game->syncPoint);
+			actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], boxes, PLATFORM_COUNT * 3);
+
+		} else {
+
+			static bool rumbled[MAXPLAYERS] = {false}; 
+			static int8_t timer[MAXPLAYERS] = {0};   
+			if (!rumbled[i])
+			{
+				controllerData_rumbleFrames(&player[i].control, i, 2);
+				if (++timer[i] > 20) rumbled[i] = true;
+			} else {
+				controllerData_rumbleStop(&player[i].control, i);
+			}
+
+			player[i].died = true;
+			loserCount++;
+		}
 	}
+
 
 	// Platforms
 	for (size_t j = 0; j < PLATFORM_COUNT; j++)
@@ -190,14 +222,15 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 	game->syncPoint = rspq_syncpoint_new();
 
+	if(loserCount >= 3)
+	{
+		static int8_t winTimer = 0;
+		winTimer++;
+		if(winTimer < 120) ui_print_winner(winnerID);
+		if(winTimer >= 118) game->state = GAME_OVER;
+	}
+
 	ui_fps();
-	ui_printf(
-		"Rumble:\n"
-		"Detected: %d\n"
-		"Active: %d",
-		joypad_get_rumble_supported(0),
-		player[0].control.rumble_active
-	);
 
 	rdpq_detach_show();
 	sound_update();
@@ -253,7 +286,7 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 
 void gameState_setGameOver()
 {
-    // code for the game over state
+    minigame_end();
 }
 
 void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes)
@@ -309,7 +342,7 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 			}
 			case GAME_OVER:{
 				gameState_setGameOver();
-				break;
+				return;
 			}
 		}
 	}

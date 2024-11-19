@@ -157,7 +157,7 @@ void actorCollision_updateBoxes(Actor* actor, ActorContactData* actor_contact, A
 	// Call setState after processing collision responses
 	actor_setState(actor, actor->state);
 
-	if(actor->body.position.z <= -50.0f) actor->body.position = actor->home;
+	if(actor->body.position.z <= -50.0f) actorState_setDeath(actor);
 }
 
 #endif
