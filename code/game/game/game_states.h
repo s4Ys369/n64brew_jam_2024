@@ -162,6 +162,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 	for (size_t i = 0; i < ACTOR_COUNT; i++)
 	{
+		player[i].position = actor[i].body.position;
 		if (actor[i].state != DEATH)
 		{
 			if (loserCount == 3 && !winnerSet)
@@ -232,6 +233,10 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		if(winTimer >= 118) game->state = GAME_OVER;
 	}
 
+	for (size_t i = 0; i < ACTOR_COUNT; i++)
+	{
+		ui_print_playerNum(&player[i], &game->screen);
+	}
 	ui_fps();
 
 	rdpq_detach_show();

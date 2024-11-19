@@ -100,6 +100,13 @@ void ui_print_winner(int winner)
     rdpq_text_printf(&txt_gameParms, ID_DEFAULT, 104, 120, "Player %d Wins", winner);
 }
 
+void ui_print_playerNum(Player* player, Screen* screen)
+{
+    Vector3 pos = player_getBillboard(player, &screen->gameplay_viewport);
+    ui_syncText();
+    rdpq_text_printf(&txt_gameParms, ID_DEFAULT, pos.x, pos.z, "P%d", player->id+1);
+}
+
 // Controller data is passed here for visual feedback for the button press.
 void ui_main_menu(ControllerData* control)
 {
