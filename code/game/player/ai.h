@@ -23,22 +23,22 @@ void ai_init(AI *ai, uint8_t difficulty)
     switch(difficulty)
     {
         case DIFF_EASY:
-            ai->jump_threshold = 300.0f;
-            ai->safe_height = 240.0f;
+            ai->jump_threshold = 200.0f;
+            ai->safe_height = 235.0f;
             ai->difficulty = DIFF_EASY;
             ai->error_margin = 12;
             ai->max_reaction_delay = 8;
             break;
         case DIFF_MEDIUM:
-            ai->jump_threshold = 350.0f;
-            ai->safe_height = 225.0f;
+            ai->jump_threshold = 200.0f;
+            ai->safe_height = 230.0f;
             ai->difficulty = DIFF_MEDIUM;
             ai->error_margin = 8;
             ai->max_reaction_delay = 4;
             break;
         case DIFF_HARD:
-            ai->jump_threshold = 400.0f;
-            ai->safe_height = 212.5f;
+            ai->jump_threshold = 200.0f;
+            ai->safe_height = 225.0f;
             ai->difficulty = DIFF_HARD;
             ai->error_margin = 4;
             ai->max_reaction_delay = 2;
