@@ -1,7 +1,5 @@
 # Project-specific assets
 ASSETS = filesystem/game
-DIALOG_DIR = $(ASSETS)/dialogs
-LEVEL_DIR = $(ASSETS)/levels
 SOUND_DIR = $(ASSETS)/sound
 UI_DIR = $(ASSETS)/ui
 
@@ -24,9 +22,7 @@ SPRITE_FILES := $(ASSETS)/wolf_eye.sprite \
                 $(ASSETS)/dogman_eyebrow.sprite \
                 $(ASSETS)/dogman_mouth.sprite \
                 $(ASSETS)/fast64.sprite \
-                $(ASSETS)/brick24.i8.sprite \
                 $(ASSETS)/bricks48.i8.sprite \
-                $(ASSETS)/gate01.ci8.sprite \
                 $(ASSETS)/lava00.rgba16.sprite \
                 $(ASSETS)/lava08.rgba16.sprite \
 
@@ -47,14 +43,8 @@ UI_SPRITE_FILES := $(UI_DIR)/buttons/control_stick.ia8.sprite \
                    $(UI_DIR)/logos/sb_b0.rgba32.sprite \
                    $(UI_DIR)/logos/sb_b1.rgba32.sprite \
                    $(UI_DIR)/logos/sb_top.rgba32.sprite \
-                   $(UI_DIR)/panels/border.ia4.sprite \
-                   $(UI_DIR)/panels/border.ia8.sprite \
                    $(UI_DIR)/panels/gloss.ia4.sprite \
-                   $(UI_DIR)/panels/gloss.ia8.sprite \
-                   $(UI_DIR)/panels/gradient.ia4.sprite \
-                   $(UI_DIR)/panels/pattern_bubble_grid.ia4.sprite \
-                   $(UI_DIR)/panels/pattern_tessalate.ia4.sprite \
-                   $(UI_DIR)/panels/star.ia8.sprite
+                   $(UI_DIR)/panels/pattern_tessalate.ia4.sprite
 
 FONT_FILES := $(UI_DIR)/fonts/TitanOne-Regular.font64 \
               $(UI_DIR)/fonts/OilOnTheWater-ee5O.font64
@@ -68,7 +58,6 @@ $(ASSETS)/wolfie.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/dogman.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/mew.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/platform.t3dm: T3DM_FLAGS = --base-scale=1
-$(ASSETS)/room.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/lava.t3dm: T3DM_FLAGS = --base-scale=1
 
 # audioconv flags

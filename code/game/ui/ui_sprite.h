@@ -19,12 +19,8 @@ static sprite_t *sprite_faceButtons0;
 static sprite_t *sprite_faceButtons1;
 
 // Static pointers to sprites for panels
-static sprite_t *sprite_border;
 static sprite_t *sprite_gloss;
-static sprite_t *sprite_gradient;
-static sprite_t *sprite_bubbleGrid;
 static sprite_t *sprite_tessalate;
-static sprite_t *sprite_star;
 
 // Static pointers to sprites for logos
 static sprite_t *sprite_libdragon;
@@ -57,12 +53,8 @@ void ui_spriteLoad(void)
     ui_fileLogos();
 
     // Load IA format sprites (grayscale with alpha for UI overlays).
-    sprite_border = sprite_load(uiSpritePanelFileName[0]);
-    sprite_gloss = sprite_load(uiSpritePanelFileName[1]);
-    sprite_gradient = sprite_load(uiSpritePanelFileName[2]);
-    sprite_bubbleGrid = sprite_load(uiSpritePanelFileName[3]);
-    sprite_tessalate = sprite_load(uiSpritePanelFileName[4]);
-    sprite_star = sprite_load(uiSpritePanelFileName[5]);
+    sprite_gloss = sprite_load(uiSpritePanelFileName[0]);
+    sprite_tessalate = sprite_load(uiSpritePanelFileName[1]);
     sprite_controlStick = sprite_load(uiSpriteButtonFileName[0]);
     sprite_dPadTriggers = sprite_load(uiSpriteButtonFileName[1]);
     sprite_libdragon = sprite_load(uiSpriteLogoFileName[4]);
@@ -158,12 +150,8 @@ void ui_spriteCleanup(void)
     sprite_free(sprite_cButtons1);
     sprite_free(sprite_faceButtons0);
     sprite_free(sprite_faceButtons1);
-    sprite_free(sprite_border);
     sprite_free(sprite_gloss);
-    sprite_free(sprite_gradient);
-    sprite_free(sprite_bubbleGrid);
     sprite_free(sprite_tessalate);
-    sprite_free(sprite_star);
     sprite_free(sprite_libdragon);
     sprite_free(sprite_mixamo);
     sprite_free(sprite_t3d);
