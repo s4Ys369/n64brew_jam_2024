@@ -154,16 +154,17 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	}
 
 	// AI
+	static bool winnerSet = false;
 	for (size_t i = 0; i < AI_COUNT; i++)
 	{
 		if(player[i+PLAYER_COUNT].died) continue;
+		if(winnerSet) continue;
 		ai_generateControlData(&ai[i], &player[i+PLAYER_COUNT].control, &actor[i+PLAYER_COUNT], hexagons, PLATFORM_COUNT, game->scene.camera.offset_angle);
 	}
 
 	// Actors
 	uint8_t loserCount = 0;
-	uint8_t winnerID = 0;
-	bool winnerSet = false;
+	static uint8_t winnerID = 0;
 	uint8_t aliveCount = 0;
     uint8_t lastAlivePlayer = 0;
 
@@ -172,11 +173,15 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		player[i].position = actor[i].body.position;
 		if (actor[i].state != DEATH)
 		{
-			aliveCount++;
-			lastAlivePlayer = i; // Track the last alive player
-			actor_update(&actor[i], &player[i].control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter,
+			
+			if(!winnerSet)
+			{
+				aliveCount++;
+				lastAlivePlayer = i; // Track the last alive player
+				actor_update(&actor[i], &player[i].control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter,
 						game->scene.camera.offset_angle, &game->syncPoint);
-			actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], boxes, PLATFORM_COUNT * 3);
+				actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], boxes, PLATFORM_COUNT * 3);
+			}
 
 		} else {
 
@@ -232,7 +237,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 	game->syncPoint = rspq_syncpoint_new();
 
-	if(loserCount >= 3)
+	if(loserCount == 3 && winnerSet)
 	{
 		static int8_t winTimer = 0;
 		winTimer++;
@@ -245,6 +250,15 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		ui_print_playerNum(&player[i], &game->screen);
 	}
 	ui_fps();
+	ui_printf(
+		"Winner Set %d\n"
+		"Winner ID %u"
+		"Alive %u"
+		"Losers %u\n",
+		winnerSet,
+		winnerID,
+		aliveCount,
+		loserCount);
 
 	rdpq_detach_show();
 	sound_update();
