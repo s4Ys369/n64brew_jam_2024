@@ -156,7 +156,10 @@ void minigame_loop(float dt)
 void minigame_cleanup()
 {
 
-    // Step 1: Free subsystems
+    // Step 1: Disable Frame Limiter
+    display_set_fps_limit(0);
+
+    // Step 2: Clean up Subsystems
     sound_cleanup();
     ui_cleanup();
 
@@ -173,8 +176,7 @@ void minigame_cleanup()
     platform_destroy(hexagons);
     t3d_destroy(); // Then destroy library
 
-    // Step 5: Free allocated surface buffers
+    // Step 4: Free allocated surface buffers
     surface_free(&minigame.screen.depthBuffer);
-	
     display_close();
 }
