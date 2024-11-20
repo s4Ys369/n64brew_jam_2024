@@ -223,8 +223,8 @@ inline void platform_drawBatch(void)
 // Generate a hexagonal grid of 19 platforms at desired height, with desired model and color
 void platform_hexagonGrid(Platform* platform, T3DModel* model, float z, color_t color)
 {
-  float x_offset = 300.0f;    // Horizontal distance between centers of adjacent columns
-  float y_offset = 300.0f;    // Vertical distance between centers of adjacent rows
+  float x_offset = 400.0f;    // Horizontal distance between centers of adjacent columns
+  float y_offset = 400.0f;    // Vertical distance between centers of adjacent rows
   float start_x = 0.0f;       // Starting X coordinate for the first row
   float start_y = -500.0f;       // Starting Y coordinate for the first row
 
