@@ -160,9 +160,11 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 	sound_update();
 }
 
+static uint32_t frameCounter = 0;
 void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes)
 {
 
+	frameCounter++;
 	static bool actorSet = false;
 	if (!actorSet)
 	{
@@ -286,13 +288,23 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 	rdpq_detach_show();
 	sound_update();
+
+#ifdef PROFILING
+	rspq_profile_next_frame();
+	if(frameCounter > 29)
+	{
+		rspq_profile_dump();
+		rspq_profile_reset();
+		frameCounter = 0;
+	}
+    rspq_profile_get_data(&profile_data);
+#endif // PROFILING
 }
 
 
 void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scenery)
 {
 
-	static uint32_t frameCounter = 0;
 	frameCounter++;
 	move_lava(scenery);
 
