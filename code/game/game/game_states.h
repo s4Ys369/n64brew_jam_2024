@@ -80,7 +80,12 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 	game->syncPoint = rspq_syncpoint_new();
 
 	ui_intro(&player[0].control);
-	ui_fps(game->timing.frame_rate);
+
+	if(player[0].control.held.r)
+	{
+		ui_fps(game->timing.frame_rate);
+		if(core_get_playercount() == 1) ui_input_display(&player[0].control);
+	}
 
 	rdpq_detach_show();
 	sound_update();
@@ -112,7 +117,11 @@ void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* sc
 	game->syncPoint = rspq_syncpoint_new();
 
 	ui_main_menu(&player[0].control);
-	ui_fps(game->timing.frame_rate);
+	if(player[0].control.held.r)
+	{
+		ui_fps(game->timing.frame_rate);
+		if(core_get_playercount() == 1) ui_input_display(&player[0].control);
+	}
 
 	rdpq_detach_show();
 	sound_update();
@@ -232,7 +241,11 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 
 	ui_character_select(&player[activePlayer].control, selectedCharacter[activePlayer]);
 
-	ui_fps(game->timing.frame_rate);
+	if(player[0].control.held.r)
+	{
+		ui_fps(game->timing.frame_rate);
+		if(core_get_playercount() == 1) ui_input_display(&player[0].control);
+	}
 
 	rdpq_detach_show();
 	sound_update();
@@ -405,7 +418,11 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	{
 		ui_print_playerNum(&player[i], &game->screen);
 	}
-	ui_fps(game->timing.frame_rate);
+	if(player[0].control.held.r)
+	{
+		ui_fps(game->timing.frame_rate);
+		if(core_get_playercount() == 1) ui_input_display(&player[0].control);
+	}
 
 	rdpq_detach_show();
 	sound_update();
@@ -451,7 +468,11 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 	game->syncPoint = rspq_syncpoint_new();
 
 	ui_pause(&player[0].control);
-	ui_fps(game->timing.frame_rate);
+	if(player[0].control.held.r)
+	{
+		ui_fps(game->timing.frame_rate);
+		if(core_get_playercount() == 1) ui_input_display(&player[0].control);
+	}
 
 	rdpq_detach_show();
 	sound_update();

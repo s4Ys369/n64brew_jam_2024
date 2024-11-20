@@ -131,7 +131,7 @@ void ui_countdown(int secondsLeft)
     snprintf(countdownText, sizeof(countdownText), "%d", secondsLeft);
 
     ui_syncText();
-    rdpq_text_printf(&txt_titleParms, ID_TITLE, 160, 120, "%s", countdownText);
+    rdpq_text_printf(&txt_titleParms, ID_TITLE, 150, 110, "%s", countdownText);
 }
 
 
