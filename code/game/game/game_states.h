@@ -216,8 +216,8 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 			static int8_t timer[MAXPLAYERS] = {0};   
 			if (!rumbled[i])
 			{
-				controllerData_rumbleFrames(&player[i].control, i, 2);
-				if (++timer[i] > 20) rumbled[i] = true;
+				controllerData_rumbleFrames(&player[i].control, i, 5);
+				if (++timer[i] > 25) rumbled[i] = true;
 			} else {
 				controllerData_rumbleStop(&player[i].control, i);
 			}
