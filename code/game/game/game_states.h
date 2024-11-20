@@ -275,15 +275,6 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		ui_print_playerNum(&player[i], &game->screen);
 	}
 	ui_fps();
-	ui_printf(
-		"Winner Set %d\n"
-		"Winner ID %u"
-		"Alive %u"
-		"Losers %u\n",
-		winnerSet,
-		winnerID,
-		aliveCount,
-		loserCount);
 
 	rdpq_detach_show();
 	sound_update();
@@ -353,16 +344,16 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 		player_setControlData(player);
 
 		static uint8_t camSwitch = 0;
-		if(player[0].control.pressed.b) camSwitch ^= 1;
 
-		Vector3 playersCenter = vector3_average4(&actor[0].body.position, &actor[1].body.position, &actor[2].body.position, &actor[3].body.position);
-
-		Vector3 camFocus = camSwitch ?  playersCenter : hexagons[1].home;
-
-		camera_getMinigamePosition(&game->scene.camera, actor, (Vector3){0, -600, 600});
+		if(camSwitch == 0)
+		{
+			camera_getOrbitalPosition(&game->scene.camera, hexagons[1].home, game->timing.frame_time_s);
+		} else {
+			camera_getMinigamePosition(&game->scene.camera, actor, (Vector3){0, -600, 800});
+		}
 		camera_set(&game->scene.camera, &game->screen);
 
-		sound_spatial(&camFocus, &hexagons[1].home,  &game->scene.camera);
+		sound_spatial(&hexagons[1].home, &hexagons[1].home,  &game->scene.camera);
 
 		// Precompute all collision boxes to avoid recomputing them repeatedly.
     	for (size_t i = 0, boxIndex = 0; i < PLATFORM_COUNT; i++) {
@@ -385,6 +376,7 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 				break;
 			}
 			case GAMEPLAY:{
+				camSwitch = 1;
 				gameState_setGameplay(game, player, ai, actor, scenery, actor_collider, actor_contact, boxes);
 				break;
 			}

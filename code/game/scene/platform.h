@@ -96,7 +96,7 @@ void platform_collideCheck(Platform* platform, Actor* actor)
     float distance = vector3_distance(&platform->position, &actor[i].body.position);
 
     // If actor is within AABB
-    if (distance <= 100.0f && actor[i].grounded)
+    if (distance <= 150.0f && actor[i].grounded)
     {
       platform->contact = true;
     }
@@ -223,8 +223,8 @@ inline void platform_drawBatch(void)
 // Generate a hexagonal grid of 19 platforms at desired height, with desired model and color
 void platform_hexagonGrid(Platform* platform, T3DModel* model, float z, color_t color)
 {
-  float x_offset = 275.0f;    // Horizontal distance between centers of adjacent columns
-  float y_offset = 275.0f;    // Vertical distance between centers of adjacent rows
+  float x_offset = 300.0f;    // Horizontal distance between centers of adjacent columns
+  float y_offset = 300.0f;    // Vertical distance between centers of adjacent rows
   float start_x = 0.0f;       // Starting X coordinate for the first row
   float start_y = -500.0f;       // Starting Y coordinate for the first row
 
