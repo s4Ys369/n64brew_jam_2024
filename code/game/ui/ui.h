@@ -254,9 +254,18 @@ void ui_intro(ControllerData* control)
         ui_spriteDrawDynamic(TILE2, sprite_t3d,       dynamicColors[1], 160,  76, 288, 140, 0, 0,  64, 32);
         ui_spriteDrawDynamic(TILE3, sprite_mixamo,    dynamicColors[2],  96, 146, 224, 210, 0, 0, 128, 64);
 
+        // Buttons
+        if(control->pressed.start || control->held.start)
+        {
+            ui_spriteDraw(TILE4, sprite_faceButtons0, 1, 132, 214);
+        } else {
+            ui_spriteDraw(TILE4, sprite_faceButtons0, 0, 132, 214);
+        }
+
         // Text
         ui_syncText();
         rdpq_text_print(&txt_titleParms, ID_TITLE, topTextPosition.x, topTextPosition.y, "Made with");
+        rdpq_text_print(&txt_gameParms, ID_DEFAULT, 90, 226, "Press        to Skip Intro");
 
     } else if (introTimer < refreshRate * 10.0f) {
 
@@ -271,12 +280,23 @@ void ui_intro(ControllerData* control)
             ui_spriteDrawPanel(TILE2, sprite_strawberry0, WHITE,   128,112,196,144,0,0,32,16);
         }
 
+        // Buttons
+        if(control->pressed.start || control->held.start)
+        {
+            ui_spriteDraw(TILE3, sprite_faceButtons0, 1, 132, 214);
+        } else {
+            ui_spriteDraw(TILE3, sprite_faceButtons0, 0, 132, 214);
+        }
+
         // Text
         ui_syncText();
         rdpq_text_print(&txt_titleParms, ID_TITLE, 70, 56, "Strawberry Byte");
         if(introTimer >= refreshRate * 8.0f) rdpq_text_print(&txt_titleParms, ID_TITLE, 120, 190, "Presents");
+        rdpq_text_print(&txt_gameParms, ID_DEFAULT, 90, 226, "Press        to Skip Intro");
 
     } else {
+
+        // Buttons
         if(control->pressed.start || control->held.start)
         {
             ui_spriteDraw(TILE3, sprite_faceButtons0, 1, 170, 86);
@@ -284,6 +304,7 @@ void ui_intro(ControllerData* control)
             ui_spriteDraw(TILE3, sprite_faceButtons0, 0, 170, 86);
         }
 
+        // Text
         ui_syncText();
         rdpq_text_print(&txt_titleParms, ID_TITLE, 106, 60, " Hot Hot\nHexagons");
         rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 98, "Press");
