@@ -405,10 +405,4 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 
 }
 
-void game_playFixed(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes)
-{
-
-	
-}
-
 #endif
