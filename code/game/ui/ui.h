@@ -31,6 +31,7 @@ enum MENU_TEXT {
     TEXT_DIFF,
     TEXT_PLAYERS = +4,
     TEXT_BOTS,
+    TEXT_CONTROLS,
     TEXT_RUMBLE,
     MENU_TEXT_COUNT
 };
@@ -42,6 +43,7 @@ const char* uiMainMenuStrings[MENU_TEXT_COUNT] = {
     "HARD",
     "Players: ",
     "Bots: ",
+    "       to Move\n       to Jump",
     "Insert Rumble Pak now!"
 };
 
@@ -138,28 +140,43 @@ void ui_countdown(int secondsLeft)
 // Controller data is passed here for visual feedback for the button press.
 void ui_main_menu(ControllerData* control)
 {
+    // Panels
     ui_spriteDrawPanel(TILE1, sprite_gloss, TRANSPARENT, 0, 0, 320, 240, 0, 0, 64, 64);
-    ui_spriteDrawPanel(TILE2, sprite_gloss, T_RED, 90, 60, 230, 144, 0, 0, 64, 64);
-    ui_spriteDrawPanel(TILE4, sprite_tessalate, T_BLACK, 100, 65, 220, 134, 0, 0, 64, 64);
+    ui_spriteDrawPanel(TILE2, sprite_gloss, T_RED, 90, 40, 230, 124, 0, 0, 64, 64);
+    ui_spriteDrawPanel(TILE4, sprite_tessalate, T_BLACK, 100, 45, 220, 114, 0, 0, 64, 64);
 
+    // Buttons
     if(control->pressed.start || control->held.start)
     {
-        ui_spriteDraw(TILE5, sprite_faceButtons0, 1, 170, 110);
+        ui_spriteDraw(TILE5, sprite_faceButtons0, 1, 170, 90);
     } else {
-        ui_spriteDraw(TILE5, sprite_faceButtons0, 0, 170, 110);
+        ui_spriteDraw(TILE5, sprite_faceButtons0, 0, 170, 90);
+    }
+    ui_spriteDraw(TILE6, sprite_controlStick, 0, 92, 170);
+    int stickX = 92+(control->input.stick_x/15);
+    int stickY = 138+(spriteHeight*2)-(control->input.stick_y/15);
+    ui_spriteDraw(TILE6, sprite_controlStick, 1, stickX, stickY);
+    if(control->pressed.a || control->held.a)
+    {
+        ui_spriteDraw(TILE7, sprite_faceButtons1, aHeld, 92, 186);
+    } else {
+        ui_spriteDraw(TILE7, sprite_faceButtons0, aIdle, 92, 186);
     }
 
+    // Text
     ui_syncText();
-    rdpq_text_print(&txt_titleParms, ID_TITLE, 106, 84, " Hot Hot\nHexagons");
-    rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 122, "Press");
-    rdpq_text_printf(&txt_gameParms, ID_DEFAULT, 92, 160, 
+    rdpq_text_print(&txt_titleParms, ID_TITLE, 106, 64, " Hot Hot\nHexagons");
+    rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 102, "Press");
+    rdpq_text_printf(&txt_gameParms, ID_DEFAULT, 92, 140, 
         "%s %s\n"
         "%s %lu\n"
         "%s %lu\n"
+        "%s\n"
         "%s\n",
         uiMainMenuStrings[TEXT_DIFF], uiMainMenuStrings[TEXT_DIFF+core_get_aidifficulty()+1],
         uiMainMenuStrings[TEXT_PLAYERS], core_get_playercount(),
         uiMainMenuStrings[TEXT_BOTS], ACTOR_COUNT - core_get_playercount(),
+        uiMainMenuStrings[TEXT_CONTROLS],
         uiMainMenuStrings[TEXT_RUMBLE]
     );
 }
