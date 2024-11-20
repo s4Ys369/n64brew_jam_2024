@@ -52,7 +52,7 @@ T3DVec3 fpsPos = {{32.0f,32.0f,1.0f}};
 
 void ui_init(void);
 inline void ui_syncText(void);
-void ui_fps(void);
+void ui_fps(float frame_rate);
 void ui_printf(const char *txt, ...);
 void ui_main_menu(ControllerData* control);
 void ui_input_display(ControllerData* control);
@@ -77,12 +77,12 @@ inline void ui_syncText(void)
     rdpq_sync_tile();
 }
 
-void ui_fps(void)
+void ui_fps(float frame_rate)
 {
     heap_stats_t heap_stats;
     sys_get_heap_stats(&heap_stats);
     ui_syncText();
-    rdpq_text_printf(&txt_debugParms, ID_DEBUG, fpsPos.v[0], fpsPos.v[1], "FPS %.2f Mem: %d KiB", display_get_fps(), heap_stats.used/1024);
+    rdpq_text_printf(&txt_debugParms, ID_DEBUG, fpsPos.v[0], fpsPos.v[1], "FPS %.2f Mem: %d KiB", frame_rate, heap_stats.used/1024);
 }
 
 void ui_printf(const char *txt, ...)

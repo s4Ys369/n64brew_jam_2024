@@ -119,12 +119,12 @@ void actor_init(Actor* actor)
 	actorAnimation_init(actor, &actor->animation);
 }
 
-void actor_update(Actor* actor, ControllerData *control, float frame_time, float camera_angle_around, float camera_offset, rspq_syncpoint_t* syncpoint)
+void actor_update(Actor* actor, ControllerData *control, TimeData* timing, float camera_angle_around, float camera_offset, rspq_syncpoint_t* syncpoint)
 {
-	if(control != NULL) actor_setControlData(actor, control, frame_time, camera_angle_around, camera_offset);
+	if(control != NULL) actor_setControlData(actor, control, timing->frame_time_s, camera_angle_around, camera_offset);
 	actor_setState(actor, actor->state);
-	actor_setAnimation(actor, &actor->animation, frame_time, syncpoint);
-	actor_setMotion(actor, frame_time);
+	actor_setAnimation(actor, &actor->animation, timing->frame_time_s, syncpoint);
+	actor_setMotion(actor, timing->fixed_time_s);
 }
 
 

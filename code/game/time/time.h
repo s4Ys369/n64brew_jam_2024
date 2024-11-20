@@ -7,11 +7,10 @@
 typedef struct
 {
 
-    float current_frame_s;
-    float current_frame_ms;
-    float last_frame_ms;
     float frame_time_s;
+    float fixed_time_s;
     float frame_rate;
+    double subtick;
 
 } TimeData;
 
@@ -27,26 +26,19 @@ void time_setData(TimeData *time);
 /* sets time data values to zero */
 void time_init(TimeData *time)
 {
-    time->current_frame_s = 0.0f;
-    time->current_frame_ms = 0.0f;
-    time->last_frame_ms = 0.0f;
     time->frame_time_s = 0.0f;
+    time->fixed_time_s = 0.04f; // Hardcoded
     time->frame_rate = 0.0f;
+    time->subtick = 0.0;
 }
 
 
 /* sets timing data */
 void time_setData(TimeData *time)
 {
-    time->current_frame_ms = get_ticks_ms();
-
-    time->current_frame_s = time->current_frame_ms * 0.001f;
-
-    time->frame_time_s = (time->current_frame_ms - time->last_frame_ms) * 0.001f;
-
-    time->frame_rate = 1 / time->frame_time_s;
-
-    time->last_frame_ms = time->current_frame_ms;
+    // Update timing values
+    time->frame_rate = display_get_fps();        // Retrieve current frames per second
+    time->subtick = core_get_subtick();          // Retrieve subtick of the frame
 }
 
 #endif

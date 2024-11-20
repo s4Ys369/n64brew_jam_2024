@@ -79,7 +79,7 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 	game->syncPoint = rspq_syncpoint_new();
 
 	ui_intro(&player[0].control);
-	ui_fps();
+	ui_fps(game->timing.frame_rate);
 
 	rdpq_detach_show();
 	sound_update();
@@ -115,7 +115,7 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 
 	for (size_t i = 0; i < ACTOR_COUNT; i++)
 	{
-		actor_update(&actor[i], NULL, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
+		actor_update(&actor[i], NULL, &game->timing, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
 		
 		// Reset non-selected actors
 		if (i != selectedCharacter[0])
@@ -154,7 +154,7 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 		ui_print_playerNum(&player[i], &game->screen);
 	}
 
-	ui_fps();
+	ui_fps(game->timing.frame_rate);
 
 	rdpq_detach_show();
 	sound_update();
@@ -203,7 +203,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 			{
 				aliveCount++;
 				lastAlivePlayer = i; // Track the last alive player
-				actor_update(&actor[i], &player[i].control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter,
+				actor_update(&actor[i], &player[i].control, &game->timing, game->scene.camera.angle_around_barycenter,
 						game->scene.camera.offset_angle, &game->syncPoint);
 				actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], boxes, PLATFORM_COUNT * 3);
 			}
@@ -274,7 +274,15 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	{
 		ui_print_playerNum(&player[i], &game->screen);
 	}
-	ui_fps();
+	ui_fps(game->timing.frame_rate);
+
+	ui_printf("Timing:\n"
+			"-delta: %.3f\n"
+			"-fixed: %.3f\n"
+			"-subtick: %.3f\n", 
+			game->timing.frame_time_s,
+			game->timing.fixed_time_s,
+			game->timing.subtick);
 
 	rdpq_detach_show();
 	sound_update();
@@ -310,7 +318,7 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 	game->syncPoint = rspq_syncpoint_new();
 
 	ui_main_menu(&player[0].control);
-	ui_fps();
+	ui_fps(game->timing.frame_rate);
 
 	rdpq_detach_show();
 	sound_update();
@@ -347,7 +355,7 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 
 		if(camSwitch == 0)
 		{
-			camera_getOrbitalPosition(&game->scene.camera, hexagons[1].home, game->timing.frame_time_s);
+			camera_getOrbitalPosition(&game->scene.camera, hexagons[1].home, game->timing.fixed_time_s);
 		} else {
 			camera_getMinigamePosition(&game->scene.camera, actor, (Vector3){0, -600, 800});
 		}

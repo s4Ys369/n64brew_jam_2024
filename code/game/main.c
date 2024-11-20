@@ -151,16 +151,17 @@ void minigame_init()
 
 }
 
-
-
-void minigame_fixedloop()
+void minigame_fixedloop(float dt)
 {
+
     game_play(&minigame, player, aiPlayer, actors, scenery, actor_collider, actor_contact, allBoxes);
+    
 }
 
 
-void minigame_loop()
+void minigame_loop(float dt)
 {
+    minigame.timing.frame_time_s = dt;
 }
 
 void minigame_cleanup()
