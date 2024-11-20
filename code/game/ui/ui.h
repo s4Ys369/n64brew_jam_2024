@@ -124,6 +124,17 @@ void ui_print_playerNum(Player* player, Screen* screen)
     rdpq_text_printf(&playerTextParms, ID_DEFAULT, pos.x, pos.z, "P%d", player->id+1);
 }
 
+void ui_countdown(int secondsLeft)
+{
+    // Convert secondsLeft integer to a string
+    char countdownText[2];
+    snprintf(countdownText, sizeof(countdownText), "%d", secondsLeft);
+
+    ui_syncText();
+    rdpq_text_printf(&txt_titleParms, ID_TITLE, 160, 120, "%s", countdownText);
+}
+
+
 // Controller data is passed here for visual feedback for the button press.
 void ui_main_menu(ControllerData* control)
 {

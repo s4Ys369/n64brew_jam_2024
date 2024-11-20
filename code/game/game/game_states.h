@@ -238,10 +238,56 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 	sound_update();
 }
 
+static uint8_t countdownTimer = 150;
 void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes)
 {
 
 	frameCounter++;
+
+// ======== Countdown ======== //
+    if (countdownTimer > 0)
+    {
+		if(countdownTimer % 45 == 0) sound_wavPlay(SFX_JUMP, false);
+
+		// ======== Update Scenery ======== //
+		for (size_t j = 0; j < PLATFORM_COUNT; j++)
+		{
+			platform_loop(&hexagons[j], NULL);
+		}
+
+		move_lava(scenery);
+
+        // ======== Draw ======== //
+		screen_clearDisplay(&game->screen);
+		screen_clearT3dViewport(&game->screen);
+
+		light_set(&game->scene.light);
+
+		t3d_matrix_push_pos(1);
+
+		room_draw(scenery);
+
+		light_setAmbient(&game->scene.light, 0xBF);
+		platform_drawBatch();
+		light_resetAmbient(&game->scene.light);
+
+		t3d_matrix_pop(1);
+
+		game->syncPoint = rspq_syncpoint_new();
+
+		// Convert frames to seconds based on refresh rate
+		uint8_t secondsLeft = (countdownTimer / display_get_refresh_rate()) + 1;
+		ui_countdown(secondsLeft);
+
+		countdownTimer--;
+
+		rdpq_detach_show();
+		sound_update();
+		return; // Exit early until countdown finishes
+    }
+
+
+// ======== Gameplay ======== //
 	static bool actorSet = false;
 	if (!actorSet)
 	{
@@ -487,7 +533,7 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 				break;
 			}
 			case GAMEPLAY:{
-				camSwitch = 1;
+				if(countdownTimer == 0) camSwitch = 1;
 				gameState_setGameplay(game, player, ai, actor, scenery, actor_collider, actor_contact, boxes);
 				break;
 			}
