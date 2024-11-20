@@ -96,11 +96,16 @@ void ui_printf(const char *txt, ...)
 
 void ui_print_winner(int winner)
 {
-    ui_spriteDrawPanel(TILE1, sprite_gloss, T_BLACK, 90, 102, 210, 130, 0, 0, 64, 64);
+    ui_spriteDrawPanel(TILE1, sprite_gloss, T_BLACK, 96, 102, 210, 130, 0, 0, 64, 64);
     ui_syncText();
-    rdpq_textparms_t winnerTextParms = txt_gameParms;
-    winnerTextParms.style_id = STYLE_PLAYER + winner-1;
-    rdpq_text_printf(&winnerTextParms, ID_DEFAULT, 106, 120, "Player %d Wins", winner);
+    if(winner !=5) // 5 signifies a Draw
+    {
+        rdpq_textparms_t winnerTextParms = txt_gameParms;
+        winnerTextParms.style_id = STYLE_PLAYER + winner-1;
+        rdpq_text_printf(&winnerTextParms, ID_DEFAULT, 110, 120, "Player %d Wins", winner);
+    } else {
+        rdpq_text_print(&txt_gameParms, ID_DEFAULT, 132, 120, "DRAW!");
+    }
 }
 
 void ui_print_playerNum(Player* player, Screen* screen)

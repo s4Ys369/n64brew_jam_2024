@@ -264,11 +264,18 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 	game->syncPoint = rspq_syncpoint_new();
 
-	if(loserCount == 3 && winnerSet)
+	static int8_t winTimer = 0;
+	if(loserCount == 3)
 	{
-		static int8_t winTimer = 0;
+		if(winnerSet)
+		{
+			winTimer++;
+			if(winTimer < 120) ui_print_winner(winnerID+1);
+			if(winTimer >= 118) game->state = GAME_OVER;
+		}
+	} else if(loserCount > 3) {
 		winTimer++;
-		if(winTimer < 120) ui_print_winner(winnerID+1);
+		if(winTimer < 120) ui_print_winner(5);
 		if(winTimer >= 118) game->state = GAME_OVER;
 	}
 
