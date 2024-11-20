@@ -459,7 +459,7 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 			{
 				camera_getOrbitalPosition(&game->scene.camera, hexagons[1].home, game->timing.fixed_time_s);
 			} else {
-				camera_getMinigamePosition(&game->scene.camera, actor, (Vector3){0, -600, 800});
+				camera_getMinigamePosition(&game->scene.camera, actor, (Vector3){0, -800, 1000});
 			}
 		}
 		camera_set(&game->scene.camera, &game->screen);
@@ -487,6 +487,7 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 				break;
 			}
 			case GAMEPLAY:{
+				camSwitch = 1;
 				gameState_setGameplay(game, player, ai, actor, scenery, actor_collider, actor_contact, boxes);
 				break;
 			}

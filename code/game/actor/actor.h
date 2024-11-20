@@ -153,7 +153,7 @@ Actor actor_create(uint32_t id, const char *model_path)
 			.roll_acceleration_rate = 20,
 			.roll_acceleration_grip_rate = 2,
 			.jump_acceleration_rate = 50,
-			.aerial_control_rate = 2.5,
+			.aerial_control_rate = 4.0,
 			.walk_target_speed = 200,
 			.run_target_speed = 650,
 			.sprint_target_speed = 900,
