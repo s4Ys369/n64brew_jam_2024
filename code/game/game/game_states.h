@@ -12,7 +12,7 @@ static rspq_profile_data_t profile_data;
 // function prototypes
 
 void gameState_setIntro(Game* game, Player* player, Scenery* scenery);
-void gameState_setMainMenu();
+void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* scenery);
 void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery);
 
 void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes);
@@ -22,6 +22,7 @@ void gameState_setGameOver();
 
 void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes);
 
+static uint32_t frameCounter = 0;
 
 
 // new camera code ////
@@ -85,8 +86,49 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 	sound_update();
 }
 
-void gameState_setMainMenu()
+void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* scenery)
 {
+
+	frameCounter++;
+	move_lava(scenery);
+
+	// ======== Draw ======== //
+	
+	screen_clearDisplay(&game->screen);
+	screen_clearT3dViewport(&game->screen);
+
+	light_set(&game->scene.light);
+
+	t3d_matrix_push_pos(1);
+
+	room_draw(scenery);
+
+	light_setAmbient(&game->scene.light, 0xBF);
+	platform_drawBatch();
+	light_resetAmbient(&game->scene.light);
+
+	actor_draw(actor);
+
+	t3d_matrix_pop(1);
+
+	game->syncPoint = rspq_syncpoint_new();
+
+	ui_main_menu(&player[0].control);
+	ui_fps(game->timing.frame_rate);
+
+	rdpq_detach_show();
+	sound_update();
+
+#ifdef PROFILING
+	rspq_profile_next_frame();
+	if(frameCounter > 29)
+	{
+		rspq_profile_dump();
+		rspq_profile_reset();
+		frameCounter = 0;
+	}
+    rspq_profile_get_data(&profile_data);
+#endif // PROFILING
 }
 
 void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
@@ -160,7 +202,6 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 	sound_update();
 }
 
-static uint32_t frameCounter = 0;
 void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes)
 {
 
@@ -328,7 +369,7 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 
 	game->syncPoint = rspq_syncpoint_new();
 
-	ui_main_menu(&player[0].control);
+	ui_pause(&player[0].control);
 	ui_fps(game->timing.frame_rate);
 
 	rdpq_detach_show();
@@ -387,7 +428,7 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 				break;
 			}
 			case MAIN_MENU:{
-				gameState_setMainMenu();
+				gameState_setMainMenu(game, player, actor, scenery);
 				break;
 			}
 			case CHARACTER_SELECT:{

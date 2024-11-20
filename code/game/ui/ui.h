@@ -146,6 +146,24 @@ void ui_main_menu(ControllerData* control)
     );
 }
 
+void ui_pause(ControllerData* control)
+{
+    ui_spriteDrawPanel(TILE1, sprite_gloss, TRANSPARENT, 0, 0, 320, 240, 0, 0, 64, 64);
+    ui_spriteDrawPanel(TILE2, sprite_gloss, T_RED, 90, 60, 230, 144, 0, 0, 64, 64);
+    ui_spriteDrawPanel(TILE3, sprite_tessalate, T_BLACK, 100, 65, 220, 134, 0, 0, 64, 64);
+
+    if(control->pressed.start || control->held.start)
+    {
+        ui_spriteDraw(TILE3, sprite_faceButtons0, 1, 170, 110);
+    } else {
+        ui_spriteDraw(TILE3, sprite_faceButtons0, 0, 170, 110);
+    }
+
+    ui_syncText();
+    rdpq_text_print(&txt_titleParms, ID_TITLE, 106, 84, " Hot Hot\nHexagons");
+    rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 122, "Press\n\n\n  PAUSED");
+}
+
 // Time to crash test the RDP
 void ui_input_display(ControllerData* control)
 {
@@ -259,7 +277,25 @@ void ui_intro(ControllerData* control)
         if(introTimer >= refreshRate * 8.0f) rdpq_text_print(&txt_titleParms, ID_TITLE, 120, 190, "Presents");
 
     } else {
-        ui_main_menu(control);
+        if(control->pressed.start || control->held.start)
+        {
+            ui_spriteDraw(TILE3, sprite_faceButtons0, 1, 170, 86);
+        } else {
+            ui_spriteDraw(TILE3, sprite_faceButtons0, 0, 170, 86);
+        }
+
+        ui_syncText();
+        rdpq_text_print(&txt_titleParms, ID_TITLE, 106, 60, " Hot Hot\nHexagons");
+        rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 98, "Press");
+        rdpq_text_print(&txt_gameParms, ID_DEFAULT, 32, 110, 
+            "Credits:\n"
+            "Programming: zoncabe, s4ys\n"
+            "Models: zoncabe, mewde, s4ys\n"
+            "- Lava model by HailToDodongo\n"
+            "Strawberry Sprite by Sonika Rud\n"
+            "UI Sprites by Kenney\n"
+            "Music: 'The Tribe of Fiery Foxes'\n  by John Marwin\n"
+            "SFX obtained from Freesound");
     }
     
 }
