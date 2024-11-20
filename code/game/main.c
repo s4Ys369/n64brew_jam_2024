@@ -106,24 +106,13 @@ void minigame_init()
         actor_collider[i].settings.body_radius = 35.0f;
         actor_collider[i].settings.body_height = 190.f;
 
-		actors[i].body.position.y = -600.0f;
-		actors[i].body.position.z = 500.0f;
-		// Individual Character Placement
-        switch(i)
-        {
-            case 0:
-                actors[i].body.position.x = -150.0f;
-                break;
-            case 1:
-                actors[i].body.position.x = -50.0f;
-                break;
-            case 2:
-                actors[i].body.position.x = 50.0f;
-                break;
-            case 3:
-                actors[i].body.position.x = 150.0f;
-                break;
-        }
+		actors[i].body.position.y = -800.0f;
+        actors[i].body.rotation.x = 25.0f;
+		actors[i].body.position.z = 450.0f;
+
+        // Evenly space characters along x-axis
+        float spacing = 100.0f;  // Distance between characters
+        actors[i].body.position.x = -((ACTOR_COUNT - 1) * spacing) / 2 + i * spacing;
 
         actors[i].home = actors[i].body.position;
 

@@ -107,8 +107,6 @@ void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* sc
 	platform_drawBatch();
 	light_resetAmbient(&game->scene.light);
 
-	actor_draw(actor);
-
 	t3d_matrix_pop(1);
 
 	game->syncPoint = rspq_syncpoint_new();
@@ -139,28 +137,63 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 		platform_loop(&hexagons[j], NULL);
 	}
 
-	static uint8_t selectedCharacter[4] = {0};
+	static uint8_t activePlayer = 0;
+	const uint8_t totalPlayers = core_get_playercount();
+	static uint8_t selectedCharacter[ACTOR_COUNT] = {0};
+	static bool actorSelected[ACTOR_COUNT] = {false};
 
-	controllerData_8way(&player[0].control);
+	if(activePlayer >= 4){game->state = GAMEPLAY;return;}
 
-	if (player[0].control.pressed.d_right)
-    	selectedCharacter[0] = (selectedCharacter[0] + 1) % ACTOR_COUNT;
+	controllerData_8way(&player[activePlayer].control);
 
-	if (player[0].control.pressed.d_left)
-	    selectedCharacter[0] = (selectedCharacter[0] - 1 + ACTOR_COUNT) % ACTOR_COUNT;
+	if (player[activePlayer].control.pressed.d_right)
+	{
+		do {
+    		selectedCharacter[activePlayer] = (selectedCharacter[activePlayer] + 1) % ACTOR_COUNT;
+		} while (actorSelected[selectedCharacter[activePlayer]]);
+	}
 
-	Actor* selectedActor = &actor[selectedCharacter[0]];
+	if (player[activePlayer].control.pressed.d_left)
+	{
+		do {
+	    	selectedCharacter[activePlayer] = (selectedCharacter[activePlayer] - 1 + ACTOR_COUNT) % ACTOR_COUNT;
+		} while (actorSelected[selectedCharacter[activePlayer]]);
+	}
 
-	selectedActor->body.position.x = -50.0f;
-	selectedActor->body.position.y = -800.0f;
-	selectedActor->body.rotation.z -= 3.0f;
+	if (player[activePlayer].control.pressed.a)
+	{
+		uint8_t selectedActorId = selectedCharacter[activePlayer];
+		player[activePlayer].actor_id = selectedActorId;
+		actorSelected[selectedActorId] = true;
+		activePlayer++;
+
+		// Automatically assign actors to AI players
+		if (activePlayer >= totalPlayers)
+		{
+			for (uint8_t i = totalPlayers; i < 4; i++) // AI players start after human players
+			{
+				for (uint8_t j = 0; j < ACTOR_COUNT; j++)
+				{
+					if (!actorSelected[j]) // Assign the first unselected actor
+					{
+						player[i].actor_id = j;
+						actorSelected[j] = true;
+						break;
+					}
+				}
+			}
+			activePlayer = 4; // Lock selection
+		}
+
+		if(activePlayer >= 4){game->state = GAMEPLAY;return;}
+	}
 
 	for (size_t i = 0; i < ACTOR_COUNT; i++)
 	{
 		actor_update(&actor[i], NULL, &game->timing, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
 		
 		// Reset non-selected actors
-		if (i != selectedCharacter[0])
+		if (!actorSelected[i])
 		{ 
         	actor[i].body.position = actor[i].home;
         	actor[i].body.rotation.z = 0;
@@ -190,13 +223,29 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 
 	game->syncPoint = rspq_syncpoint_new();
 
-	for (size_t i = 0; i < ACTOR_COUNT; i++)
+	if(activePlayer < MAXPLAYERS)
 	{
-		player[i].position = actor[i].body.position;
-		ui_print_playerNum(&player[i], &game->screen);
+		player[activePlayer].position.x = actor[selectedCharacter[activePlayer]].body.position.x * 4.0f;
+		player[activePlayer].position.z = 300.0f;
+		ui_print_playerNum(&player[activePlayer], &game->screen);
 	}
 
+
 	ui_fps(game->timing.frame_rate);
+	ui_printf(
+		"Active Player: %u\n"
+		"Total Players: %u\n"
+		"Player 1 Actor ID: %u\n"
+		"Player 2 Actor ID: %u\n"
+		"Player 3 Actor ID: %u\n"
+		"Player 4 Actor ID: %u\n",
+		activePlayer,
+		totalPlayers,
+		player[0].actor_id,
+		player[1].actor_id,
+		player[2].actor_id,
+		player[3].actor_id
+	);
 
 	rdpq_detach_show();
 	sound_update();
@@ -209,13 +258,10 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	static bool actorSet = false;
 	if (!actorSet)
 	{
-		actor[0].body.position = hexagons[3].position;
-		actor[1].body.position = hexagons[6].position;
-		actor[2].body.position = hexagons[12].position;
-		actor[3].body.position = hexagons[15].position;
 		for (size_t i = 0; i < ACTOR_COUNT; i++) 
 		{
-			actor[i].body.position.z = actor[i].body.position.z + 100.0f;
+			actor[i].body.position = hexagons[9].position; // Center Platform
+			actor[i].body.position.z = actor[i].body.position.z + 150.0f; // Adjust height to prevent spawning inside platform
 			actor[i].home = actor[i].body.position;
 		}
 		actorSet ^= 1;
@@ -238,23 +284,25 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 	for (size_t i = 0; i < ACTOR_COUNT; i++)
 	{
-		player[i].position = actor[i].body.position;
-		if (actor[i].state != DEATH)
+		// Use player[i].actor_id to identify the assigned actor
+		uint8_t actorIndex = player[i].actor_id;
+		Actor* currentActor = &actor[actorIndex];
+		// Sync player's position with the actor
+		player[i].position = currentActor->body.position;
+		if (currentActor->state != DEATH)
 		{
-			
-			if(!winnerSet)
+			if (!winnerSet)
 			{
 				aliveCount++;
 				lastAlivePlayer = i; // Track the last alive player
-				actor_update(&actor[i], &player[i].control, &game->timing, game->scene.camera.angle_around_barycenter,
-						game->scene.camera.offset_angle, &game->syncPoint);
-				actorCollision_updateBoxes(&actor[i], &actor_contact[i], &actor_collider[i], boxes, PLATFORM_COUNT * 3);
+				// Update the assigned actor using its actor ID
+				actor_update(currentActor, &player[i].control, &game->timing, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
+				// Update collision data for the assigned actor
+				actorCollision_updateBoxes(currentActor, &actor_contact[actorIndex], &actor_collider[actorIndex], boxes, PLATFORM_COUNT * 3);
 			}
-
 		} else {
-
-			static bool rumbled[MAXPLAYERS] = {false}; 
-			static int8_t timer[MAXPLAYERS] = {0};   
+			static bool rumbled[MAXPLAYERS] = {false};
+			static int8_t timer[MAXPLAYERS] = {0};
 			if (!rumbled[i])
 			{
 				controllerData_rumbleFrames(&player[i].control, i, 5);
@@ -262,7 +310,6 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 			} else {
 				controllerData_rumbleStop(&player[i].control, i);
 			}
-
 			player[i].died = true;
 			loserCount++;
 		}
@@ -275,6 +322,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		winnerID = lastAlivePlayer;
 		winnerSet = true;
 	}
+
 
 	// Platforms
 	for (size_t j = 0; j < PLATFORM_COUNT; j++)
@@ -405,6 +453,8 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 
 		static uint8_t camSwitch = 0;
 
+		if(player[0].control.pressed.b) camSwitch ^= 1;
+
 		if(camSwitch == 0)
 		{
 			camera_getOrbitalPosition(&game->scene.camera, hexagons[1].home, game->timing.fixed_time_s);
@@ -436,7 +486,6 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 				break;
 			}
 			case GAMEPLAY:{
-				camSwitch = 1;
 				gameState_setGameplay(game, player, ai, actor, scenery, actor_collider, actor_contact, boxes);
 				break;
 			}
