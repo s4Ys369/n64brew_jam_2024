@@ -278,14 +278,6 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	}
 	ui_fps(game->timing.frame_rate);
 
-	ui_printf("Timing:\n"
-			"-delta: %.3f\n"
-			"-fixed: %.3f\n"
-			"-subtick: %.3f\n", 
-			game->timing.frame_time_s,
-			game->timing.fixed_time_s,
-			game->timing.subtick);
-
 	rdpq_detach_show();
 	sound_update();
 
