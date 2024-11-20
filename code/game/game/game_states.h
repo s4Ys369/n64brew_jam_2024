@@ -225,27 +225,14 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 
 	if(activePlayer < MAXPLAYERS)
 	{
-		player[activePlayer].position.x = actor[selectedCharacter[activePlayer]].body.position.x * 4.0f;
-		player[activePlayer].position.z = 300.0f;
+		player[activePlayer].position.x = (actor[selectedCharacter[activePlayer]].body.position.x * 3.6f) - 30.0f;
+		player[activePlayer].position.z = 275.0f;
 		ui_print_playerNum(&player[activePlayer], &game->screen);
 	}
 
+	ui_character_select(&player[activePlayer].control, selectedCharacter[activePlayer]);
 
 	ui_fps(game->timing.frame_rate);
-	ui_printf(
-		"Active Player: %u\n"
-		"Total Players: %u\n"
-		"Player 1 Actor ID: %u\n"
-		"Player 2 Actor ID: %u\n"
-		"Player 3 Actor ID: %u\n"
-		"Player 4 Actor ID: %u\n",
-		activePlayer,
-		totalPlayers,
-		player[0].actor_id,
-		player[1].actor_id,
-		player[2].actor_id,
-		player[3].actor_id
-	);
 
 	rdpq_detach_show();
 	sound_update();
@@ -455,11 +442,25 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 
 		if(player[0].control.pressed.b) camSwitch ^= 1;
 
-		if(camSwitch == 0)
+		Vector3 introStartPos = (Vector3){0,-1200,1200};
+
+		if(game->state == INTRO)
 		{
-			camera_getOrbitalPosition(&game->scene.camera, hexagons[1].home, game->timing.fixed_time_s);
+			const float lerpTime = 13.0f;
+			static float currentTime = 0;
+			currentTime += game->timing.fixed_time_s;
+			float t = currentTime / lerpTime;
+			if (t > 1.0f) t = 1.0f;
+			Vector3 camPos = vector3_lerp(&introStartPos, &hexagons[1].home, t);
+			camera_getOrbitalPosition(&game->scene.camera, camPos, game->timing.fixed_time_s);
 		} else {
-			camera_getMinigamePosition(&game->scene.camera, actor, (Vector3){0, -600, 800});
+
+			if(camSwitch == 0)
+			{
+				camera_getOrbitalPosition(&game->scene.camera, hexagons[1].home, game->timing.fixed_time_s);
+			} else {
+				camera_getMinigamePosition(&game->scene.camera, actor, (Vector3){0, -600, 800});
+			}
 		}
 		camera_set(&game->scene.camera, &game->screen);
 

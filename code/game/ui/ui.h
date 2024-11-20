@@ -45,8 +45,15 @@ const char* uiMainMenuStrings[MENU_TEXT_COUNT] = {
     "Insert Rumble Pak now!"
 };
 
+const char* uiCharacterSelectStrings[ACTOR_COUNT] = {
+    "s4ys",
+    "Wolfie",
+    "Mewde",
+    "Olli"
+};
+
 // @TODO: Unhardcode position, as it effects ui_printf as well.
-T3DVec3 fpsPos = {{32.0f,32.0f,1.0f}};
+T3DVec3 fpsPos = {{20.0f,20.0f,1.0f}};
 
 /* Declarations */
 
@@ -122,13 +129,13 @@ void ui_main_menu(ControllerData* control)
 {
     ui_spriteDrawPanel(TILE1, sprite_gloss, TRANSPARENT, 0, 0, 320, 240, 0, 0, 64, 64);
     ui_spriteDrawPanel(TILE2, sprite_gloss, T_RED, 90, 60, 230, 144, 0, 0, 64, 64);
-    ui_spriteDrawPanel(TILE3, sprite_tessalate, T_BLACK, 100, 65, 220, 134, 0, 0, 64, 64);
+    ui_spriteDrawPanel(TILE4, sprite_tessalate, T_BLACK, 100, 65, 220, 134, 0, 0, 64, 64);
 
     if(control->pressed.start || control->held.start)
     {
-        ui_spriteDraw(TILE3, sprite_faceButtons0, 1, 170, 110);
+        ui_spriteDraw(TILE5, sprite_faceButtons0, 1, 170, 110);
     } else {
-        ui_spriteDraw(TILE3, sprite_faceButtons0, 0, 170, 110);
+        ui_spriteDraw(TILE5, sprite_faceButtons0, 0, 170, 110);
     }
 
     ui_syncText();
@@ -162,6 +169,23 @@ void ui_pause(ControllerData* control)
     ui_syncText();
     rdpq_text_print(&txt_titleParms, ID_TITLE, 106, 84, " Hot Hot\nHexagons");
     rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 122, "Press\n\n\n  PAUSED");
+}
+
+void ui_character_select(ControllerData* control, uint8_t selectedActor)
+{
+    // Buttons
+    if(control->pressed.a || control->held.a)
+    {
+        ui_spriteDraw(TILE2, sprite_faceButtons1, aHeld, 104, 46);
+    } else {
+        ui_spriteDraw(TILE2, sprite_faceButtons0, aIdle, 104, 46);
+    }
+
+    // Text
+    ui_syncText();
+    rdpq_text_print(&txt_titleParms, ID_TITLE, 70, 40, "Character Select");
+    rdpq_text_print(&txt_gameParms, ID_DEFAULT, 63, 58, "Press        to Confirm Selection");
+    rdpq_text_printf(&txt_titleParms, ID_DEFAULT, 78, 76, "Selected Actor: %s", uiCharacterSelectStrings[selectedActor]);
 }
 
 // Time to crash test the RDP
@@ -290,8 +314,8 @@ void ui_intro(ControllerData* control)
 
         // Text
         ui_syncText();
-        rdpq_text_print(&txt_titleParms, ID_TITLE, 70, 56, "Strawberry Byte");
-        if(introTimer >= refreshRate * 8.0f) rdpq_text_print(&txt_titleParms, ID_TITLE, 120, 190, "Presents");
+        rdpq_text_print(&txt_titleParms, ID_TITLE, 68, 56, "Strawberry Byte");
+        if(introTimer >= refreshRate * 8.0f) rdpq_text_print(&txt_titleParms, ID_TITLE, 110, 190, "Presents");
         rdpq_text_print(&txt_gameParms, ID_DEFAULT, 90, 226, "Press        to Skip Intro");
 
     } else {
@@ -299,23 +323,26 @@ void ui_intro(ControllerData* control)
         // Buttons
         if(control->pressed.start || control->held.start)
         {
-            ui_spriteDraw(TILE3, sprite_faceButtons0, 1, 170, 86);
+            ui_spriteDraw(TILE3, sprite_faceButtons0, 1, 170, 66);
         } else {
-            ui_spriteDraw(TILE3, sprite_faceButtons0, 0, 170, 86);
+            ui_spriteDraw(TILE3, sprite_faceButtons0, 0, 170, 66);
         }
 
         // Text
         ui_syncText();
-        rdpq_text_print(&txt_titleParms, ID_TITLE, 106, 60, " Hot Hot\nHexagons");
-        rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 98, "Press");
-        rdpq_text_print(&txt_gameParms, ID_DEFAULT, 32, 110, 
-            "Credits:\n"
+        rdpq_text_print(&txt_titleParms, ID_TITLE, 106, 40, " Hot Hot\nHexagons");
+        rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 78, "Press");
+        rdpq_text_print(&txt_titleParms, ID_DEFAULT, 32, 94, "CREDITS:");
+
+        // @TODO: Probably should make this a rdpq_paragraph
+        rdpq_text_print(&txt_gameParms, ID_DEBUG, 32, 114, 
             "Programming: zoncabe, s4ys\n"
             "Models: zoncabe, mewde, s4ys\n"
             "- Lava model by HailToDodongo\n"
+            "- Original 'Olli' by FazanaJ\n"
             "Strawberry Sprite by Sonika Rud\n"
             "UI Sprites by Kenney\n"
-            "Music: 'The Tribe of Fiery Foxes'\n  by John Marwin\n"
+            "Music: 'The Tribe of Fiery Foxes' by John Marwin\n"
             "SFX obtained from Freesound");
     }
     
