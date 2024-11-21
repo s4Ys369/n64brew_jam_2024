@@ -230,18 +230,25 @@ void sound_spatial( const Vector3 *spawner,
         Vector3 horizontal_diff = {diff.x, diff.y, 0.0f};
         float horizontal_distance = vector3_magnitude(&horizontal_diff);        
 
-        Vector3 player_forward = calculate_camera_forward(camera);
-        float cos_angle = vector3_returnDotProduct(&horizontal_diff, &player_forward) / horizontal_distance;
-        float angle = acosf(cos_angle); // Angle in radians
+        // Avoid division by zero
+        if (horizontal_distance > 0.0f) {
+            Vector3 player_forward = calculate_camera_forward(camera);
+            float cos_angle = vector3_returnDotProduct(&horizontal_diff, &player_forward) / horizontal_distance;
+            float angle = acosf(cos_angle); // Angle in radians
 
-        // Determine if sound is to the left or right
-        pan = 0.5f * (1.0f - angle / M_PI); // Centered at 0.5, where 0 is left and 1 is right
+            // Determine if sound is to the left or right
+            pan = 0.5f * (1.0f - angle / M_PI); // Centered at 0.5, where 0 is left and 1 is right
 
-        // Flip pan if the sound source is on the right side
-        if (diff.x * player_forward.y - diff.y * player_forward.x > 0) pan = 1.0f - pan;
+            // Flip pan if the sound source is on the right side
+            if (diff.x * player_forward.y - diff.y * player_forward.x > 0) 
+                pan = 1.0f - pan;
 
-        // Cap the pan
-        pan = fminf(0.8f, fmaxf(0.2f, pan));
+            // Cap the pan
+            pan = fminf(0.8f, fmaxf(0.2f, pan));
+        } else {
+            // If horizontal_distance is zero, keep the pan centered
+            pan = 0.5f;
+        }
 
         // Apply a vertical attenuation if sound changes by height
         float vertical_attenuation = fminf(1.0f, fmaxf(0.1f, 1.0f - fabsf(diff.z) / max_distance));   

@@ -67,6 +67,7 @@ Vector3 vector3_lerp(const Vector3* v1, const Vector3* v2, float t);
 Vector3 vector3_from_array(float arr[3]);
 Vector3 vector3_flip_coords(Vector3 vec);
 Vector3 vector3_flip_up(Vector3 vec);
+float vector3_squaredDistance(const Vector3* v, const Vector3* w);
 float vector3_distance(const Vector3* v, const Vector3* w);
 Vector3 vector3_average4(const Vector3* v1, const Vector3* v2, const Vector3* v3, const Vector3* v4);
 
@@ -206,7 +207,7 @@ inline void vector3_addScaledVector(Vector3 *v, const Vector3 *w, float scalar)
 
 inline float vector3_magnitude(const Vector3 *v)
 {
-    return 1 / qi_sqrt(v->x * v->x + v->y * v->y + v->z * v->z);
+    return sqrtf(v->x * v->x + v->y * v->y + v->z * v->z);
 }
 
 inline float vector3_squaredMagnitude(const Vector3 *v) 
@@ -350,7 +351,8 @@ inline Vector3 vector3_flip_up(Vector3 vec)
 }
 
 // Function to convert T3D AABB coordinates to engine's format
-inline Vector3 vector3_from_int16(const int16_t int_arr[3]) {
+inline Vector3 vector3_from_int16(const int16_t int_arr[3])
+{
     Vector3 vec;
     vec.x = (float)int_arr[0];
     vec.y = -(float)int_arr[2];
@@ -358,10 +360,15 @@ inline Vector3 vector3_from_int16(const int16_t int_arr[3]) {
     return vec;
 }
 
-inline float vector3_distance(const Vector3* v, const Vector3* w) {
-    return sqrtf((w->x - v->x) * (w->x -v->x) +
-                 (w->y - v->y) * (w->y -v->y) +
-                 (w->z - v->z) * (w->z -v->z));
+float vector3_squaredDistance(const Vector3* v, const Vector3* w)
+{
+    Vector3 diff = vector3_difference(v,w);
+    return vector3_returnDotProduct(&diff,&diff);
+}
+
+float vector3_distance(const Vector3* v, const Vector3* w)
+{
+    return sqrtf(vector3_squaredDistance(v,w));
 }
 
 Vector3 vector3_average4(const Vector3* v1, const Vector3* v2, const Vector3* v3, const Vector3* v4)

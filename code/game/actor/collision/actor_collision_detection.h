@@ -75,9 +75,12 @@ void actorContactData_setAxisClosestToPoint(ActorContactData* contact, const Act
 void actorContactData_setSlope(ActorContactData* contact) 
 {
     float magnitude = vector3_magnitude(&contact->data.normal);
-    float cos_slope = contact->data.normal.z / magnitude;         // Calculate the cosine of the angle between the normal and the z-axis
-    float slope = acosf(cos_slope);
-    contact->slope = deg(slope);
+    if(magnitude > 0)
+    {
+        float cos_slope = contact->data.normal.z / magnitude;         // Calculate the cosine of the angle between the normal and the z-axis
+        float slope = acosf(cos_slope);
+        contact->slope = deg(slope);
+    }
 }
 
 void actorContactData_setAngleOfIncidence(ActorContactData* contact, const Vector3 *velocity) 
