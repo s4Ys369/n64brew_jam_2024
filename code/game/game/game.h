@@ -20,7 +20,7 @@ typedef struct
     Screen screen;
     TimeData timing;
   	rspq_syncpoint_t syncPoint;
-
+	int diff;
     Scene scene;
 
 }Game;

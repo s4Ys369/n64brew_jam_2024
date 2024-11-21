@@ -27,7 +27,7 @@ Platform hexagons[PLATFORM_COUNT];
 // Forward Declarations
 
 void platform_init(Platform* platform, T3DModel* model, Vector3 position, color_t color);
-void platform_loop(Platform* platform, Actor* actor);
+void platform_loop(Platform* platform, Actor* actor, int diff);
 void platform_drawBatch(void);
 void platform_hexagonGrid(Platform* platform, T3DModel* model, float z, color_t color);
 void platform_destroy(Platform* platform);
@@ -104,8 +104,9 @@ void platform_collideCheck(Platform* platform, Actor* actor)
 
 }
 
-void platform_loop(Platform* platform, Actor* actor)
+void platform_loop(Platform* platform, Actor* actor, int diff)
 {
+  int difficulty = (core_get_playercount() == 4) ? diff : core_get_aidifficulty();
 
   // Translate collision
   for (int j = 0; j < 3; j++) platform->collider.box[j].center = platform->position;
@@ -127,17 +128,17 @@ void platform_loop(Platform* platform, Actor* actor)
     
     // Action 3: Drop platform
     } else if(platform->platformTimer > 60 && platform->platformTimer < 240) {
-      platform_updateHeight(platform, 2.0f);
+      platform_updateHeight(platform, 2.0f + difficulty);
 
     // Action 4: Reset to idle
-    } else if(platform->platformTimer > (200 * (core_get_aidifficulty()+1))){
+    } else if(platform->platformTimer > (200 * (difficulty+1))){
       platform->contact = false;
     }
   } else {
 
     // Reset to initial position
     platform->platformTimer = 0;
-    if(platform->position.z < platform->home.z) platform->position.z = platform->position.z + 1.0f;
+    if(platform->position.z < platform->home.z) platform->position.z = platform->position.z + 1.0f + difficulty; 
   }
 
   // Update matrix

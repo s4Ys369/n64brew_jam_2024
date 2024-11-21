@@ -63,7 +63,7 @@ void ui_init(void);
 inline void ui_syncText(void);
 void ui_fps(float frame_rate);
 void ui_printf(const char *txt, ...);
-void ui_main_menu(ControllerData* control);
+void ui_main_menu(ControllerData* control, int diff);
 void ui_input_display(ControllerData* control);
 void ui_textbox(void);
 void ui_cleanup(void);
@@ -138,29 +138,46 @@ void ui_countdown(int secondsLeft)
 
 
 // Controller data is passed here for visual feedback for the button press.
-void ui_main_menu(ControllerData* control)
+void ui_main_menu(ControllerData* control, int diff)
 {
     // Panels
     ui_spriteDrawPanel(TILE1, sprite_gloss, TRANSPARENT, 0, 0, 320, 240, 0, 0, 64, 64);
     ui_spriteDrawPanel(TILE2, sprite_gloss, T_RED, 90, 40, 230, 124, 0, 0, 64, 64);
-    ui_spriteDrawPanel(TILE4, sprite_tessalate, T_BLACK, 100, 45, 220, 114, 0, 0, 64, 64);
+    ui_spriteDrawPanel(TILE3, sprite_tessalate, T_BLACK, 100, 45, 220, 114, 0, 0, 64, 64);
 
     // Buttons
     if(control->pressed.start || control->held.start)
     {
-        ui_spriteDraw(TILE5, sprite_faceButtons0, 1, 170, 90);
+        ui_spriteDraw(TILE4, sprite_faceButtons0, 1, 170, 90);
     } else {
-        ui_spriteDraw(TILE5, sprite_faceButtons0, 0, 170, 90);
+        ui_spriteDraw(TILE4, sprite_faceButtons0, 0, 170, 90);
     }
-    ui_spriteDraw(TILE6, sprite_controlStick, 0, 92, 170);
+    ui_spriteDraw(TILE5, sprite_controlStick, 0, 92, 170);
     int stickX = 92+(control->input.stick_x/15);
     int stickY = 138+(spriteHeight*2)-(control->input.stick_y/15);
-    ui_spriteDraw(TILE6, sprite_controlStick, 1, stickX, stickY);
+    ui_spriteDraw(TILE5, sprite_controlStick, 1, stickX, stickY);
     if(control->pressed.a || control->held.a)
     {
-        ui_spriteDraw(TILE7, sprite_faceButtons1, aHeld, 92, 186);
+        ui_spriteDraw(TILE6, sprite_faceButtons1, aHeld, 92, 186);
     } else {
-        ui_spriteDraw(TILE7, sprite_faceButtons0, aIdle, 92, 186);
+        ui_spriteDraw(TILE6, sprite_faceButtons0, aIdle, 92, 186);
+    }
+
+    int count = core_get_playercount();
+    static int set = 0;
+    if(count == 4)
+    {
+
+        if(control->pressed.b || control->held.b)
+        {
+            ui_spriteDraw(TILE4, sprite_faceButtons1, bHeld, 74, 128);
+        } else {
+            ui_spriteDraw(TILE4, sprite_faceButtons1, bIdle, 74, 128);
+        }
+
+        set = diff;
+    } else {
+        set = core_get_aidifficulty();
     }
 
     // Text
@@ -169,13 +186,13 @@ void ui_main_menu(ControllerData* control)
     rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 102, "Press");
     rdpq_text_printf(&txt_gameParms, ID_DEFAULT, 92, 140, 
         "%s %s\n"
-        "%s %lu\n"
-        "%s %lu\n"
-        "%s\n"
+        "%s %d\n"
+        "%s %d\n"
+        "%s\n\n"
         "%s\n",
-        uiMainMenuStrings[TEXT_DIFF], uiMainMenuStrings[TEXT_DIFF+core_get_aidifficulty()+1],
-        uiMainMenuStrings[TEXT_PLAYERS], core_get_playercount(),
-        uiMainMenuStrings[TEXT_BOTS], ACTOR_COUNT - core_get_playercount(),
+        uiMainMenuStrings[TEXT_DIFF], uiMainMenuStrings[TEXT_DIFF+set+1],
+        uiMainMenuStrings[TEXT_PLAYERS], count,
+        uiMainMenuStrings[TEXT_BOTS], ACTOR_COUNT - count,
         uiMainMenuStrings[TEXT_CONTROLS],
         uiMainMenuStrings[TEXT_RUMBLE]
     );

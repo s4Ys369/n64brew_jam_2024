@@ -55,7 +55,7 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 	for (size_t j = 0; j < PLATFORM_COUNT; j++)
 	{
 		
-		platform_loop(&hexagons[j], NULL);
+		platform_loop(&hexagons[j], NULL, 0);
 	}
 
 	move_lava(scenery);
@@ -91,6 +91,7 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 	sound_update();
 }
 
+
 void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* scenery)
 {
 
@@ -116,7 +117,19 @@ void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* sc
 
 	game->syncPoint = rspq_syncpoint_new();
 
-	ui_main_menu(&player[0].control);
+	if(core_get_playercount() == 4)
+	{
+		if(player[0].control.pressed.b)
+		{
+			if(game->diff <= 1)
+			{
+				game->diff++;
+			} else {
+				game->diff = 0;
+			}
+		}
+	}
+	ui_main_menu(&player[0].control, game->diff);
 	if(player[0].control.held.r)
 	{
 		ui_fps(game->timing.frame_rate);
@@ -140,11 +153,11 @@ void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* sc
 
 void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 {
-	for (size_t j = 0; j < PLATFORM_COUNT; j++)
-	{
-		
-		platform_loop(&hexagons[j], NULL);
-	}
+	//for (size_t j = 0; j < PLATFORM_COUNT; j++)
+	//{
+	//	
+	//	platform_loop(&hexagons[j], NULL);
+	//}
 
 	static uint8_t activePlayer = 0;
 	const uint8_t totalPlayers = core_get_playercount();
@@ -263,10 +276,10 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		if(countdownTimer % 45 == 0) sound_wavPlay(SFX_JUMP, false);
 
 		// ======== Update Scenery ======== //
-		for (size_t j = 0; j < PLATFORM_COUNT; j++)
-		{
-			platform_loop(&hexagons[j], NULL);
-		}
+		//for (size_t j = 0; j < PLATFORM_COUNT; j++)
+		//{
+		//	platform_loop(&hexagons[j], NULL);
+		//}
 
 		move_lava(scenery);
 
@@ -373,7 +386,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	// Platforms
 	for (size_t j = 0; j < PLATFORM_COUNT; j++)
 	{
-		platform_loop(&hexagons[j], actor);
+		platform_loop(&hexagons[j], actor, game->diff);
 	}
 
 	move_lava(scenery);
@@ -514,7 +527,7 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 
 		static uint8_t camSwitch = 0;
 
-		if(player[0].control.pressed.b) camSwitch ^= 1;
+		if(player[0].control.pressed.l) camSwitch ^= 1;
 
 		Vector3 introStartPos = (Vector3){0,-1200,1200};
 
