@@ -181,6 +181,7 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 
 	if (player[activePlayer].control.pressed.a)
 	{
+		// @TODO: More of a bandaid than a fix
 		// Bugfix: Ensure selected actor is next available one
 		if(!actorSelected[selectedCharacter[activePlayer]])
 		{
@@ -188,6 +189,9 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 			player[activePlayer].actor_id = selectedActorId;
 			actorSelected[selectedActorId] = true;
 			activePlayer++;
+		} else {
+			// Audio feedback for selecting unavailable actor
+			sound_wavPlay(SFX_JUMP, false); 
 		}
 
 		// Automatically assign actors to AI players
