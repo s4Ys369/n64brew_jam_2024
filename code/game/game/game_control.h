@@ -10,11 +10,24 @@ void game_setControlData(Game* game, Player *player)
 
         if (player[i].control.pressed.start) {
 
-            if (game->state == PAUSE) game->state = GAMEPLAY;
-            else if (game->state == GAMEPLAY) game->state = PAUSE;
-            else if (game->state == INTRO) game->state = MAIN_MENU;
-            else if (game->state == MAIN_MENU) game->state = CHARACTER_SELECT;
-            else if (game->state == CHARACTER_SELECT) game->state = GAMEPLAY;
+            switch (game->state)
+            {
+                case PAUSE:
+                    game->state = GAMEPLAY;
+                    break;
+                case GAMEPLAY:
+                    game->state = PAUSE;
+                    break;
+                case INTRO:
+                    game->state = MAIN_MENU;
+                    break;
+                case MAIN_MENU:
+                    game->state = CHARACTER_SELECT;
+                    break;
+                case CHARACTER_SELECT:
+                    game->state = GAMEPLAY;
+                    break;
+            }
         }
     }
 }
