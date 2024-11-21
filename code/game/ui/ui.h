@@ -230,7 +230,7 @@ void ui_character_select(ControllerData* control, uint8_t selectedActor)
     ui_syncText();
     rdpq_text_print(&txt_titleParms, ID_TITLE, 70, 40, "Character Select");
     rdpq_text_print(&txt_gameParms, ID_DEFAULT, 63, 58, "Press        to Confirm Selection");
-    rdpq_text_printf(&txt_titleParms, ID_DEFAULT, 78, 76, "Selected Actor: %s", uiCharacterSelectStrings[selectedActor]);
+    rdpq_text_printf(&txt_titleParms, ID_DEFAULT, 84, 76, "Selected Actor: %s", uiCharacterSelectStrings[selectedActor]);
 }
 
 // Time to crash test the RDP

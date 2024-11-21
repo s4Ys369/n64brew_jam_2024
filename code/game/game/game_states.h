@@ -27,20 +27,30 @@ static uint32_t frameCounter = 0;
 
 // new camera code ////
 
-void camera_getMinigamePosition(Camera* camera, Actor* actor, Vector3 camera_distance)
+void camera_getMinigamePosition(Camera* camera, Actor* actor, Player* player, Vector3 camera_distance)
 {
-	Vector3 actor_distance;
+    Vector3 camera_target;
 
-    camera->target = actor[0].body.position;
-	vector3_init(&camera->position);
-	vector3_init(&actor_distance);
+    uint8_t average_count = 0;
 
-    for (uint8_t i = 0; i < ACTOR_COUNT - 1; i++)
-    {	
-		actor_distance = vector3_difference(&actor[i + 1].body.position, &actor[i].body.position);
-        vector3_addScaledVector(&camera->target, &actor_distance, 0.5f);
+    vector3_init(&camera->position);
+    vector3_init(&camera_target);
+
+    for (uint8_t i = 0; i < ACTOR_COUNT; i++)
+    {
+        if (!player[i].died) {
+
+            vector3_add(&camera_target, &actor[i].body.position);
+            average_count++;
+        }
     }
 
+    if (average_count > 0) vector3_divideByNumber(&camera_target, average_count);
+    camera_target.z = 200;
+
+    if (camera_target.x != camera->target.x || camera_target.y != camera->target.y)
+    camera->target = vector3_lerp(&camera->target, &camera_target, 0.2f);
+    
     camera->position = camera->target;
     
     vector3_add(&camera->position, &camera_distance);
@@ -253,7 +263,7 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 	if(activePlayer < MAXPLAYERS)
 	{
 		player[activePlayer].position.x = (actor[selectedCharacter[activePlayer]].body.position.x * 3.6f) - 30.0f;
-		player[activePlayer].position.z = 275.0f;
+		player[activePlayer].position.z = 125.0f;
 		ui_print_playerNum(&player[activePlayer], &game->screen);
 	}
 
@@ -545,15 +555,15 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 			currentTime += game->timing.fixed_time_s;
 			float t = currentTime / lerpTime;
 			if (t > 1.0f) t = 1.0f;
-			Vector3 camPos = vector3_lerp(&introStartPos, &hexagons[1].home, t);
-			camera_getOrbitalPosition(&game->scene.camera, camPos, game->timing.fixed_time_s);
+			Vector3 camPos = vector3_lerp(&introStartPos, &hexagons[10].home, t);
+			camera_getMinigamePosition(&game->scene.camera, actor, player, camPos);
 		} else {
 
 			if(camSwitch == 0)
 			{
-				camera_getOrbitalPosition(&game->scene.camera, hexagons[1].home, game->timing.fixed_time_s);
+				camera_getOrbitalPosition(&game->scene.camera, (Vector3){0, -1000, 525}, game->timing.fixed_time_s);
 			} else {
-				camera_getMinigamePosition(&game->scene.camera, actor, (Vector3){0, -800, 1000});
+				camera_getMinigamePosition(&game->scene.camera, actor, player, (Vector3){0, -800, 1000});
 			}
 		}
 		camera_set(&game->scene.camera, &game->screen);

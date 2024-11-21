@@ -103,24 +103,6 @@ Camera camera_create()
 		.field_of_view = 80,
 		.near_clipping = 100,
 		.far_clipping = 3000,
-
-        .settings = {
-        
-        	.orbitational_acceleration_rate = 15,
-        	.orbitational_max_velocity = {120, 100},
-        	.zoom_acceleration_rate = 60,
-        	.zoom_deceleration_rate = 20,
-        	.zoom_max_speed = 300,
-        	.distance_from_baricenter = 500,
-        	.field_of_view = 58,
-	    	.field_of_view_aim = 45,
-        	.offset_acceleration_rate = 25,
-        	.offset_deceleration_rate = 45,
-        	.offset_max_speed = 160,
-        	.offset_angle = 45,
-        	.offset_angle_aim = 45,
-        	.max_pitch = 70,
-        },
     };
 
     return camera;
