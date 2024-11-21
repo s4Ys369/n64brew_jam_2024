@@ -153,11 +153,6 @@ void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* sc
 
 void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 {
-	//for (size_t j = 0; j < PLATFORM_COUNT; j++)
-	//{
-	//	
-	//	platform_loop(&hexagons[j], NULL);
-	//}
 
 	static uint8_t activePlayer = 0;
 	const uint8_t totalPlayers = core_get_playercount();
@@ -170,24 +165,30 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 
 	if (player[activePlayer].control.pressed.d_right)
 	{
+		uint8_t initialSelection = selectedCharacter[activePlayer];
 		do {
-    		selectedCharacter[activePlayer] = (selectedCharacter[activePlayer] + 1) % ACTOR_COUNT;
-		} while (actorSelected[selectedCharacter[activePlayer]]);
+			selectedCharacter[activePlayer] = (selectedCharacter[activePlayer] + 1) % ACTOR_COUNT;
+		} while (actorSelected[selectedCharacter[activePlayer]] && selectedCharacter[activePlayer] != initialSelection);
 	}
 
 	if (player[activePlayer].control.pressed.d_left)
 	{
+		uint8_t initialSelection = selectedCharacter[activePlayer];
 		do {
-	    	selectedCharacter[activePlayer] = (selectedCharacter[activePlayer] - 1 + ACTOR_COUNT) % ACTOR_COUNT;
-		} while (actorSelected[selectedCharacter[activePlayer]]);
+			selectedCharacter[activePlayer] = (selectedCharacter[activePlayer] - 1 + ACTOR_COUNT) % ACTOR_COUNT;
+		} while (actorSelected[selectedCharacter[activePlayer]] && selectedCharacter[activePlayer] != initialSelection);
 	}
 
 	if (player[activePlayer].control.pressed.a)
 	{
-		uint8_t selectedActorId = selectedCharacter[activePlayer];
-		player[activePlayer].actor_id = selectedActorId;
-		actorSelected[selectedActorId] = true;
-		activePlayer++;
+		// Bugfix: Ensure selected actor is next available one
+		if(!actorSelected[selectedCharacter[activePlayer]])
+		{
+			uint8_t selectedActorId = selectedCharacter[activePlayer];
+			player[activePlayer].actor_id = selectedActorId;
+			actorSelected[selectedActorId] = true;
+			activePlayer++;
+		}
 
 		// Automatically assign actors to AI players
 		if (activePlayer >= totalPlayers)
@@ -274,12 +275,6 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
     if (countdownTimer > 0)
     {
 		if(countdownTimer % 45 == 0) sound_wavPlay(SFX_JUMP, false);
-
-		// ======== Update Scenery ======== //
-		//for (size_t j = 0; j < PLATFORM_COUNT; j++)
-		//{
-		//	platform_loop(&hexagons[j], NULL);
-		//}
 
 		move_lava(scenery);
 
