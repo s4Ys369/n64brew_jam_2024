@@ -194,6 +194,10 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 			uint8_t selectedActorId = selectedCharacter[activePlayer];
 			player[activePlayer].actor_id = selectedActorId;
 			actorSelected[selectedActorId] = true;
+
+			// Visual feedback for selecting actor
+			actor[selectedActorId].body.rotation.z = actor[selectedActorId].body.rotation.z + 180.0f;
+
 			activePlayer++;
 		} else {
 			// Audio feedback for selecting unavailable actor
