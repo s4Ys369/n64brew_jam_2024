@@ -15,12 +15,12 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery);
 void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* scenery);
 void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery);
 
-void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes);
+void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact);
 void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scenery);
 
 void gameState_setGameOver();
 
-void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes);
+void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact);
 
 static uint32_t frameCounter = 0;
 
@@ -280,7 +280,7 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 }
 
 static uint8_t countdownTimer = 150;
-void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes)
+void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact)
 {
 
 	frameCounter++;
@@ -527,7 +527,7 @@ void gameState_setGameOver()
     minigame_end();
 }
 
-void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box* boxes)
+void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact)
 {
 	for(;;)
 	{
@@ -565,12 +565,6 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 
 		sound_spatial(&hexagons[1].home, &hexagons[1].home,  &game->scene.camera);
 
-		// Precompute all collision boxes to avoid recomputing them repeatedly.
-    	for (size_t i = 0, boxIndex = 0; i < PLATFORM_COUNT; i++) {
-    	    memcpy(&boxes[boxIndex], hexagons[i].collider.box, sizeof(Box) * 3);
-    	    boxIndex += 3;
-    	}
-
 		switch(game->state)
 		{
 			case INTRO:{
@@ -587,7 +581,7 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 			}
 			case GAMEPLAY:{
 				if(countdownTimer == 0) camSwitch = 1;
-				gameState_setGameplay(game, player, ai, actor, scenery, actor_collider, actor_contact, boxes);
+				gameState_setGameplay(game, player, ai, actor, scenery, actor_collider, actor_contact);
 				break;
 			}
 			case PAUSE:{

@@ -81,8 +81,6 @@ ActorContactData actor_contact[ACTOR_COUNT];
 
 Scenery scenery[SCENERY_COUNT];
 
-Box allBoxes[PLATFORM_COUNT * 3];
-
 void minigame_init()
 {      
 	game_init(&minigame);
@@ -143,7 +141,7 @@ void minigame_init()
 void minigame_fixedloop(float dt)
 {
 
-    game_play(&minigame, player, aiPlayer, actors, scenery, actor_collider, actor_contact, allBoxes);
+    game_play(&minigame, player, aiPlayer, actors, scenery, actor_collider, actor_contact);
     
 }
 
