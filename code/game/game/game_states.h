@@ -275,12 +275,11 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 	sound_update();
 }
 
-static uint8_t countdownTimer = 150;
+
 void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact)
 {
 
-	static bool actorSet = false;
-	if (!actorSet)
+	if (!game->actorSet)
 	{
 		for (size_t i = 0; i < ACTOR_COUNT; i++) 
 		{
@@ -288,13 +287,13 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 			actor[i].body.position.z = actor[i].body.position.z + 150.0f; // Adjust height to prevent spawning inside platform
 			actor[i].home = actor[i].body.position;
 		}
-		actorSet ^= 1;
+		game->actorSet ^= 1;
 	}
 
 // ======== Countdown ======== //
-    if (countdownTimer > 0)
+    if (game->countdownTimer > 0)
     {
-		if(countdownTimer % 45 == 0) sound_wavPlay(SFX_JUMP, false);
+		if(game->countdownTimer % 45 == 0) sound_wavPlay(SFX_JUMP, false);
 
 		move_lava(scenery);
 
@@ -317,10 +316,10 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		game->syncPoint = rspq_syncpoint_new();
 
 		// Convert frames to seconds based on refresh rate
-		uint8_t secondsLeft = (countdownTimer / display_get_refresh_rate()) + 1;
+		uint8_t secondsLeft = (game->countdownTimer / display_get_refresh_rate()) + 1;
 		ui_countdown(secondsLeft);
 
-		countdownTimer--;
+		game->countdownTimer--;
 
 		rdpq_detach_show();
 		sound_update();
@@ -331,17 +330,15 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 // ======== Gameplay ======== //
 
 	// AI
-	static bool winnerSet = false;
 	for (size_t i = 0; i < AI_COUNT; i++)
 	{
 		if(player[i+PLAYER_COUNT].died) continue;
-		if(winnerSet) continue;
+		if(game->winnerSet) continue;
 		ai_generateControlData(&ai[i], &player[i+PLAYER_COUNT].control, &actor[i+PLAYER_COUNT], hexagons, game->scene.camera.offset_angle);
 	}
 
 	// Actors
 	uint8_t loserCount = 0;
-	static uint8_t winnerID = 0;
 	uint8_t aliveCount = 0;
     uint8_t lastAlivePlayer = 0;
 
@@ -354,7 +351,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		player[i].position = currentActor->body.position;
 		if (currentActor->state != DEATH)
 		{
-			if (!winnerSet)
+			if (!game->winnerSet)
 			{
 				aliveCount++;
 				lastAlivePlayer = i; // Track the last alive player
@@ -367,12 +364,11 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 			// Bugfix: Center dead actor's position to not break camera 
 			currentActor->body.position = (Vector3){0,0,250};
-			static bool rumbled[MAXPLAYERS] = {false};
 			static int8_t timer[MAXPLAYERS] = {0};
-			if (!rumbled[i])
+			if (!player[i].control.has_rumbled)
 			{
 				controllerData_rumbleFrames(&player[i].control, i, 5);
-				if (++timer[i] > 25) rumbled[i] = true;
+				if (++timer[i] > 25) player[i].control.has_rumbled = true;
 			} else {
 				controllerData_rumbleStop(&player[i].control, i);
 			}
@@ -382,11 +378,11 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	}
 
 	// Check if we have a winner (only one alive player left)
-	if (aliveCount == 1 && !winnerSet)
+	if (aliveCount == 1 && !game->winnerSet)
 	{
 		core_set_winner(lastAlivePlayer); // Set the winner to the last remaining player
-		winnerID = lastAlivePlayer;
-		winnerSet = true;
+		game->winnerID = lastAlivePlayer;
+		game->winnerSet = true;
 	}
 
 
@@ -426,19 +422,19 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 	game->syncPoint = rspq_syncpoint_new();
 
-	static int8_t winTimer = 0;
+
 	if(loserCount == 3)
 	{
-		if(winnerSet)
+		if(game->winnerSet)
 		{
-			winTimer++;
-			if(winTimer < 120) ui_print_winner(winnerID+1);
-			if(winTimer >= 118) game->state = GAME_OVER;
+			game->winTimer++;
+			if(game->winTimer < 120) ui_print_winner(game->winnerID+1);
+			if(game->winTimer >= 118) game->state = GAME_OVER;
 		}
 	} else if(loserCount > 3) {
-		winTimer++;
-		if(winTimer < 120) ui_print_winner(5);
-		if(winTimer >= 118) game->state = GAME_OVER;
+		game->winTimer++;
+		if(game->winTimer < 120) ui_print_winner(5);
+		if(game->winTimer >= 118) game->state = GAME_OVER;
 	}
 
 	for (size_t i = 0; i < ACTOR_COUNT; i++)

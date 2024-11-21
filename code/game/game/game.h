@@ -21,6 +21,11 @@ typedef struct
     TimeData timing;
   	rspq_syncpoint_t syncPoint;
 	int diff;
+	int8_t winTimer;
+	uint8_t winnerID;
+	uint8_t countdownTimer;
+	bool actorSet;
+	bool winnerSet;
     Scene scene;
 
 }Game;

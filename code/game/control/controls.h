@@ -11,6 +11,7 @@ typedef struct {
 
     // RUMBLE
     bool rumble_active;
+    bool has_rumbled;
     uint8_t rumble_time;
 
 } ControllerData;
@@ -66,8 +67,9 @@ void controllerData_rumbleFrames(ControllerData*data, uint8_t port, uint8_t fram
 
 }
 
+///// 8 WAY /////
 
-#define DEAD_ZONE 70
+#define DEAD_ZONE 50
 #define INPUT_DELAY 0.3f
 
 // Treats joystick inputs as digital pad buttons, for menu navigation
