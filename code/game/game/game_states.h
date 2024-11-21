@@ -536,10 +536,10 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 //// CAMERA /////
 		if(player[0].control.pressed.l) game->scene.camera.cam_mode ^= 1;
 
-		Vector3 introStartPos = (Vector3){0,-1200,1200};
+		Vector3 introStartPos = (Vector3){0,3000,100};
 		Vector3 centerHex = hexagons[10].home;
 		Vector3 csPos = (Vector3){0, -1000, 525};
-		Vector3 gamePlayPos = (Vector3){0, -800, 1000};
+		Vector3 gamePlayPos = (Vector3){0, -600, 1000};
 
 		game->scene.camera.camTime += game->timing.fixed_time_s;
 
