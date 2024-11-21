@@ -58,4 +58,28 @@ Vector3 player_getBillboard(Player* player, T3DViewport* viewport)
     return result;
 }
 
+void player_drawShadow(Vector3 position, T3DViewport* viewport)
+{
+    Vector3 billboardPos = (Vector3){
+      position.x,
+      position.y,
+      position.z - 100
+    };
+
+    T3DVec3 billboardPosConvert = Vector3_to_T3DVec3(billboardPos);
+
+    T3DVec3 billboardScreenPos;
+    t3d_viewport_calc_viewspace_pos(viewport, &billboardScreenPos, &billboardPosConvert);
+
+    int x = floorf(billboardScreenPos.v[0]);
+    int y = floorf(billboardScreenPos.v[1]);
+    int offset = 2;
+
+    rdpq_sync_pipe();
+    rdpq_set_mode_standard();
+    rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
+    rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
+    rdpq_set_prim_color(RGBA32(0,0,0,127));
+    rdpq_fill_rectangle(x-offset,y-offset,x+offset,y+offset);
+}
 #endif

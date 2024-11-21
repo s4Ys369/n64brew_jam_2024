@@ -393,6 +393,13 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	platform_drawBatch();
 	light_resetAmbient(&game->scene.light);
 
+	for (size_t s = 0; s < ACTOR_COUNT; s++)
+	{
+		if(actor[s].state == FALLING || actor[s].state == JUMP) player_drawShadow(actor[s].body.position, &game->screen.gameplay_viewport);
+	}
+
+	t3d_frame_start(); // reset after drawing shadows
+
 	actor_draw(actor);
 
 	t3d_matrix_pop(1);
