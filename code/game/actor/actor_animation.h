@@ -122,7 +122,7 @@ void actor_init(Actor* actor)
 void actor_update(Actor* actor, ControllerData *control, TimeData* timing, float camera_angle_around, float camera_offset, rspq_syncpoint_t* syncpoint)
 {
 	if(control != NULL) actor_setControlData(actor, control, timing->frame_time_s, camera_angle_around, camera_offset);
-	actor_setState(actor, actor->state);
+	if(actor->previous_state != actor->state) actor_setState(actor, actor->state); // Skip setting state if it hasn't changed
 	actor_setAnimation(actor, &actor->animation, timing->frame_time_s, syncpoint);
 	actor_setMotion(actor, timing->fixed_time_s);
 }

@@ -83,7 +83,7 @@ void vector2_set(Vector2 *v, float x, float y)
 
 float vector2_magnitude(const Vector2* v)
 {
-    return 1 / qi_sqrt(v->x * v->x + v->y * v->y);
+    return sqrtf(v->x * v->x + v->y * v->y);
 }
 
 
