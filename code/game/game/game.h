@@ -51,6 +51,7 @@ void game_init(Game *game)
 	sound_load();
 	//
 	
+	game->countdownTimer = 150; // Oops, forget to set this
   	game->syncPoint = 0;
 	game->state = INTRO;
 }
