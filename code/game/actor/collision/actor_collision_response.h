@@ -116,10 +116,11 @@ void actorCollision_setResponse(Actor* actor, ActorContactData* contact, ActorCo
     actorCollider_setVertical(collider, &actor->body.position);
 }
 
-
-// HEXAGON TEST
-void actorCollision_updateBoxes(Actor* actor, ActorContactData* actor_contact, ActorCollider* actor_collider, Box box_collider[], size_t numBoxes)
+void actorCollision_collidePlatforms(Actor* actor, ActorContactData* actor_contact, ActorCollider* actor_collider, Platform* platforms)
 {
+
+//////////
+    // @TODO: this whole block should be its own function
     actorContactData_clear(actor_contact);
 	actorCollider_setVertical(actor_collider, &actor->body.position);
 
@@ -134,30 +135,67 @@ void actorCollision_updateBoxes(Actor* actor, ActorContactData* actor_contact, A
 		actor->grounding_height = -200.0f; // magic number
         
 	}
+//////////
 
-	
+    // Calculate the grid cell the actor is in
+    int xCell = (int)floorf((actor->body.position.x + 700) / 350);
+    int yCell = (int)floorf((actor->body.position.y + 700) / 350);
 
-	for (size_t i = 0; i < numBoxes; ++i)
+    if (xCell < 0 || xCell >= 7 || yCell < 0 || yCell >= 7) {
+        // Actor is out of bounds; skip collision
+        return;
+    }
+
+    // Reset actor's collision state
+    actor->hasCollided = false;
+
+    // Iterate through platforms in the same and adjacent cells
+    for (int dx = -1; dx <= 1; dx++)
     {
-		if (actorCollision_contactBox(actor_collider, &box_collider[i]))
+        for (int dy = -1; dy <= 1; dy++)
         {
-			actorCollision_contactBoxSetData(actor_contact, actor_collider, &box_collider[i]);
-			actorCollision_setGroundResponse(actor, actor_contact, actor_collider);
-        
-			actor->hasCollided = true; // Set to true only if collision occurs
-			actor->grounded = true;    // Set grounded if we have a collision
+            int nx = xCell + dx;
+            int ny = yCell + dy;
 
-			actor->state = STAND_IDLE;
-			break; // Exit after the first collision
-		} else {
-			actor->hasCollided = false;
-		}
-	}
+            if (nx < 0 || nx >= 7 || ny < 0 || ny >= 7) continue; // Skip out-of-bounds cells
 
-	// Call setState after processing collision responses
+            PlatformGridCell* cell = &platformGrid[nx][ny];
+            for (size_t i = 0; i < cell->count; i++) 
+            {
+                Platform* platform = &platforms[cell->platformIndices[i]];
+
+                // Check collision with each box in the platform's collider
+                for (int j = 0; j < 3; j++)
+                {
+                    Box* box = &platform->collider.box[j];
+
+                    // If the actor hits a box
+                    if (actorCollision_contactBox(actor_collider, box))
+                    {
+                        // Set collision response
+                        actorCollision_contactBoxSetData(actor_contact, actor_collider, box);
+			            actorCollision_setGroundResponse(actor, actor_contact, actor_collider);
+
+                        // Set collided state parameters
+                        actor->hasCollided = true;
+                        actor->grounded = true;
+			            actor->state = STAND_IDLE;
+
+                        // Handle platform collision here instead again for the platforms
+                        platform->contact = true;
+
+                        return; // Early exit if collision is detected
+                    }
+                }
+            }
+        }
+    }
+
+    // Call setState after processing collision responses
 	actor_setState(actor, actor->state);
 
-	if(actor->body.position.z <= -50.0f) actorState_setDeath(actor);
+	if(actor->body.position.z <= -50.0f) actorState_setDeath(actor); // @TODO: Make this death plane Z
 }
+
 
 #endif

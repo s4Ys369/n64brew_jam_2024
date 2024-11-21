@@ -366,12 +366,12 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 				// Update the assigned actor using its actor ID
 				actor_update(currentActor, &player[i].control, &game->timing, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
 				// Update collision data for the assigned actor
-				actorCollision_updateBoxes(currentActor, &actor_contact[actorIndex], &actor_collider[actorIndex], boxes, PLATFORM_COUNT * 3);
+				actorCollision_collidePlatforms(currentActor, &actor_contact[actorIndex], &actor_collider[actorIndex], hexagons);
 			}
 		} else {
 
 			// Bugfix: Center dead actor's position to not break camera 
-			currentActor->body.position = (Vector3){0,0,0};
+			currentActor->body.position = (Vector3){0,0,250};
 			static bool rumbled[MAXPLAYERS] = {false};
 			static int8_t timer[MAXPLAYERS] = {0};
 			if (!rumbled[i])
@@ -396,11 +396,6 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 
 	// Platforms
-	for (size_t i = 0; i < ACTOR_COUNT; i++)
-	{
-		platform_collideCheckOptimized(hexagons, &actor[i]);
-	}
-
 	for (size_t j = 0; j < PLATFORM_COUNT; j++)
 	{
 		platform_loop(&hexagons[j], actor, game->diff);

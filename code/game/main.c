@@ -39,15 +39,15 @@
 #include "actor/actor_control.h"
 #include "actor/actor_animation.h"
 
-#include "actor/collision/actor_collision_detection.h"
-#include "actor/collision/actor_collision_response.h"
-
 #include "player/player.h"
 
 #include "scene/scene.h"
 #include "scene/scenery.h"
 #include "scene/platform.h"
 #include "scene/room.h"
+
+#include "actor/collision/actor_collision_detection.h"
+#include "actor/collision/actor_collision_response.h"
 
 #include "player/ai.h"
 
