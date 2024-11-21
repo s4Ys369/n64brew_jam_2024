@@ -355,6 +355,9 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 				actorCollision_updateBoxes(currentActor, &actor_contact[actorIndex], &actor_collider[actorIndex], boxes, PLATFORM_COUNT * 3);
 			}
 		} else {
+
+			// Bugfix: Center dead actor's position to not break camera 
+			currentActor->body.position = (Vector3){0,0,0};
 			static bool rumbled[MAXPLAYERS] = {false};
 			static int8_t timer[MAXPLAYERS] = {0};
 			if (!rumbled[i])
