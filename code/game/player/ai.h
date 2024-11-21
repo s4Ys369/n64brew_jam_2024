@@ -11,7 +11,7 @@ typedef struct {
 } AI;
 
 void ai_init(AI *ai, uint8_t difficulty);
-void ai_generateControlData(AI *ai, ControllerData *control, Actor *actor, Platform *platforms, size_t platform_count, float camera_angle);
+void ai_generateControlData(AI *ai, ControllerData *control, Actor *actor, Platform *platforms, float camera_angle);
 
 void ai_init(AI *ai, uint8_t difficulty)
 {
@@ -60,30 +60,45 @@ void ai_updateCam(ControllerData *control, float camera_angle)
     control->input.stick_y = (int8_t)(original_x * fm_sinf(angle_rad) + original_y * fm_cosf(angle_rad));
 }
 
-// Function to find the nearest platform at a safe height (position.z > 0)
-Platform* find_nearest_safe_platform(AI *ai, Actor *actor, Platform* platforms, size_t platform_count) {
+// Function to find the nearest platform at a safe height
+Platform* find_nearest_safe_platform(AI *ai, Actor *actor, Platform* platforms) {
     Platform* nearest_platform = NULL;
-    float min_distance = FLT_MAX; // Large initial value
-    const float current_platform_threshold = 0.01f;
+    float min_distance_sq = FLT_MAX; // Store squared distance to avoid square root computation
+    const float current_platform_threshold_sq = 0.01f * 0.01f; // Squared threshold to ignore the current platform
 
-    for (size_t i = 0; i < platform_count; ++i)
-    {
-        Platform* platform = &platforms[i];
+    // Calculate grid cell for the actor's current position
+    int xCell = (int)floorf((actor->body.position.x + 700) / GRID_SIZE);
+    int yCell = (int)floorf((actor->body.position.y + 700) / GRID_SIZE);
 
-        // Skip platforms not at a safe height
-        if (platform->position.z <= ai->safe_height) continue;
+    // Iterate through platforms in the same and adjacent grid cells
+    for (int dx = -1; dx <= 1; dx++) {
+        for (int dy = -1; dy <= 1; dy++) {
+            int nx = xCell + dx;
+            int ny = yCell + dy;
 
-        // Calculate the vector distance to the platform
-        float distance = vector3_distance(&platform->position, &actor->body.position);
+            // Check if the cell is within bounds
+            if (nx >= 0 && nx < MAX_GRID_CELLS && ny >= 0 && ny < MAX_GRID_CELLS) {
+                PlatformGridCell* cell = &platformGrid[nx][ny];
+                for (size_t i = 0; i < cell->count; i++) {
+                    size_t platformIndex = cell->platformIndices[i];
+                    Platform* platform = &platforms[platformIndex];
 
-        // Ignore the current platform the AI is standing on
-        if (distance < current_platform_threshold) continue;
+                    // Skip platforms not at a safe height
+                    if (platform->position.z <= ai->safe_height) continue;
 
-        // Check if this platform is the nearest valid one
-        if (distance < min_distance)
-        {
-            min_distance = distance;
-            nearest_platform = platform;
+                    // Calculate squared distance using vector3_squaredDistance
+                    float distance_sq = vector3_squaredDistance(&platform->position, &actor->body.position);
+
+                    // Ignore the current platform the AI is standing on
+                    if (distance_sq < current_platform_threshold_sq) continue;
+
+                    // Check if this platform is the nearest valid one
+                    if (distance_sq < min_distance_sq) {
+                        min_distance_sq = distance_sq;
+                        nearest_platform = platform;
+                    }
+                }
+            }
         }
     }
 
@@ -91,7 +106,7 @@ Platform* find_nearest_safe_platform(AI *ai, Actor *actor, Platform* platforms, 
 }
 
 // Generate control data for the AI
-void ai_generateControlData(AI *ai, ControllerData *control, Actor *actor, Platform *platforms, size_t platform_count, float camera_angle)
+void ai_generateControlData(AI *ai, ControllerData *control, Actor *actor, Platform *platforms, float camera_angle)
 {
     // Initialize control data to zero for each frame
     memset(control, 0, sizeof(ControllerData));
@@ -103,7 +118,7 @@ void ai_generateControlData(AI *ai, ControllerData *control, Actor *actor, Platf
     }
 
     // Find the nearest safe platform
-    Platform* target_platform = find_nearest_safe_platform(ai, actor, platforms, platform_count);
+    Platform* target_platform = find_nearest_safe_platform(ai, actor, platforms);
     if (target_platform == NULL) return; // No valid platform found, do nothing
 
     // Calculate direction towards the target platform
@@ -123,7 +138,8 @@ void ai_generateControlData(AI *ai, ControllerData *control, Actor *actor, Platf
     control->input.stick_y += (rand() % ai->error_margin) - (ai->error_margin / 2);
 
     // Calculate horizontal speed as the magnitude of the x and y velocity components
-    float horizontal_speed = sqrtf(actor->body.velocity.x * actor->body.velocity.x + actor->body.velocity.y * actor->body.velocity.y);
+    Vector2 horizontal_velocity = { actor->body.velocity.x, actor->body.velocity.y };
+    float horizontal_speed = vector2_magnitude(&horizontal_velocity);
 
     // Check if the actor should jump when horizontal speed is greater than 10
     if (horizontal_speed > ai->jump_threshold && actor->state != FALLING)
@@ -133,7 +149,7 @@ void ai_generateControlData(AI *ai, ControllerData *control, Actor *actor, Platf
     }
 
     // Adjust for camera angle if needed
-    ai_updateCam(control, camera_angle);
+    //ai_updateCam(control, camera_angle);
 
 }
 

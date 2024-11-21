@@ -331,7 +331,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	{
 		if(player[i+PLAYER_COUNT].died) continue;
 		if(winnerSet) continue;
-		ai_generateControlData(&ai[i], &player[i+PLAYER_COUNT].control, &actor[i+PLAYER_COUNT], hexagons, PLATFORM_COUNT, game->scene.camera.offset_angle);
+		ai_generateControlData(&ai[i], &player[i+PLAYER_COUNT].control, &actor[i+PLAYER_COUNT], hexagons, game->scene.camera.offset_angle);
 	}
 
 	// Actors
