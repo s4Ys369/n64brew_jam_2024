@@ -22,6 +22,17 @@ typedef struct {
 
 } Platform;
 
+#define OFFSET  350
+#define GRID_SIZE OFFSET // Size of each grid cell
+#define MAX_GRID_CELLS 7 // Adjust based on level size
+
+typedef struct {
+  size_t platformIndices[PLATFORM_COUNT]; // Indices of platforms in this cell
+  size_t count; // Number of platforms in this cell
+} PlatformGridCell;
+
+PlatformGridCell platformGrid[MAX_GRID_CELLS][MAX_GRID_CELLS];
+
 Platform hexagons[PLATFORM_COUNT];
 
 // Forward Declarations
@@ -51,9 +62,9 @@ void platform_init(Platform* platform, T3DModel* model, Vector3 position, color_
       .size = {200.0f, 300.0f, 65.0f},
       .center = platform->position,
       .rotation = { 
-        // Set the rotations explicitly
-        (j == 0) ? 180.0f : (j == 2) ? 180.0f : 0.0f, // X rotation for boxes[0] and boxes[2]
-        (j == 0) ? -180.0f : (j == 2) ? -180.0f : 0.0f, // Y rotation for boxes[0] and boxes[2]
+        // Set only Z rotation explicitly
+        0.0f,
+        0.0f,
         (j == 0) ? 90.0f : (j == 1) ? 30.0f : 30.0f   // Z rotation for boxes[0], boxes[1], and boxes[2]
       }
     };
@@ -67,6 +78,23 @@ void platform_init(Platform* platform, T3DModel* model, Vector3 position, color_
 
   platformIdx++;
 
+}
+
+void platform_assignGrid(Platform* platforms) {
+  memset(platformGrid, 0, sizeof(platformGrid)); // Clear the grid
+
+  for (size_t i = 0; i < PLATFORM_COUNT; i++)
+  {
+    int xCell = (int)floorf((platforms[i].position.x + (OFFSET*2)) / GRID_SIZE);
+    int yCell = (int)floorf((platforms[i].position.y + (OFFSET*2)) / GRID_SIZE);
+
+    if (xCell >= 0 && xCell < MAX_GRID_CELLS && yCell >= 0 && yCell < MAX_GRID_CELLS) 
+    {
+      PlatformGridCell* cell = &platformGrid[xCell][yCell];
+      if (cell->count < PLATFORM_COUNT) // Ensure we don't exceed bounds
+        cell->platformIndices[cell->count++] = i;
+    }
+  }
 }
 
 //// BEHAVIORS ~ Start ////
@@ -91,18 +119,66 @@ void platform_collideCheck(Platform* platform, Actor* actor)
 {
   if(platform->contact) return; // If already in collided state, do nothing
 
+  const float squaredDistanceThreshold = 150.0f * 150.0f;
+
   for (size_t i = 0; i < ACTOR_COUNT; i++)
   {
-    float distance = vector3_distance(&platform->position, &actor[i].body.position);
+    // Skip actors that are not grounded (not relevant for collision)
+    if (!actor[i].grounded) continue;
 
-    // If actor is within AABB
-    if (distance <= 150.0f && actor[i].grounded)
+    // Calculate the difference vector
+    Vector3 diff = vector3_difference(&platform->position, &actor[i].body.position);
+
+    // Calculate squared distance
+    float distanceSq = vector3_squaredMagnitude(&diff);
+
+    if (distanceSq <= squaredDistanceThreshold)
     {
       platform->contact = true;
+      return; // Exit early on first collision
     }
   }
 
 }
+
+void platform_collideCheckOptimized(Platform* platforms, Actor* actor)
+{
+  int xCell = (int)floorf((actor->body.position.x + (OFFSET*2)) / GRID_SIZE);
+  int yCell = (int)floorf((actor->body.position.y + (OFFSET*2)) / GRID_SIZE);
+
+  if (xCell < 0 || xCell >= MAX_GRID_CELLS || yCell < 0 || yCell >= MAX_GRID_CELLS)
+  {
+    return; // Actor is out of bounds
+  }
+
+  const float collisionRangeSq = 150.0f * 150.0f;
+
+  // Check platforms in the same and adjacent cells
+  for (int dx = -1; dx <= 1; dx++)
+  {
+    for (int dy = -1; dy <= 1; dy++)
+    {
+      int nx = xCell + dx;
+      int ny = yCell + dy;
+
+      if (nx >= 0 && nx < MAX_GRID_CELLS && ny >= 0 && ny < MAX_GRID_CELLS)
+      {
+        PlatformGridCell* cell = &platformGrid[nx][ny];
+        for (size_t i = 0; i < cell->count; i++)
+        {
+          size_t platformIndex = cell->platformIndices[i];
+          float distanceSq = vector3_squaredDistance(&actor->body.position, &platforms[platformIndex].position);
+          if (distanceSq <= collisionRangeSq)
+          {
+            platforms[platformIndex].contact = true;
+            return; // Early exit on collision
+          }
+        }
+      }
+    }
+  }
+}
+
 
 void platform_loop(Platform* platform, Actor* actor, int diff)
 {
@@ -112,7 +188,7 @@ void platform_loop(Platform* platform, Actor* actor, int diff)
   for (int j = 0; j < 3; j++) platform->collider.box[j].center = platform->position;
 
   // Run behaviors
-  if(actor != NULL) platform_collideCheck(platform, actor);
+  //if(actor != NULL) platform_collideCheck(platform, actor);
   if(platform->contact) 
   {
     platform->platformTimer++;
@@ -224,8 +300,8 @@ inline void platform_drawBatch(void)
 // Generate a hexagonal grid of 19 platforms at desired height, with desired model and color
 void platform_hexagonGrid(Platform* platform, T3DModel* model, float z, color_t color)
 {
-  float x_offset = 350.0f;    // Horizontal distance between centers of adjacent columns
-  float y_offset = 350.0f;    // Vertical distance between centers of adjacent rows
+  float x_offset = OFFSET;    // Horizontal distance between centers of adjacent columns
+  float y_offset = OFFSET;    // Vertical distance between centers of adjacent rows
   float start_x = 0.0f;       // Starting X coordinate for the first row
   float start_y = -500.0f;       // Starting Y coordinate for the first row
 
@@ -251,6 +327,8 @@ void platform_hexagonGrid(Platform* platform, T3DModel* model, float z, color_t 
   {
     platform_init(&platform[p], model, platform[p].position, color);
   }
+
+  platform_assignGrid(platform);
 
   platform_createBatch(platform, model);
 

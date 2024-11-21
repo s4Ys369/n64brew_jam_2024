@@ -386,6 +386,11 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 
 	// Platforms
+	for (size_t i = 0; i < ACTOR_COUNT; i++)
+	{
+		platform_collideCheckOptimized(hexagons, &actor[i]);
+	}
+
 	for (size_t j = 0; j < PLATFORM_COUNT; j++)
 	{
 		platform_loop(&hexagons[j], actor, game->diff);
