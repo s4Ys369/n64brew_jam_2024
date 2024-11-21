@@ -7,6 +7,7 @@
 typedef struct
 {
 
+    uint32_t frame_counter;
     float frame_time_s;
     float fixed_time_s;
     float frame_rate;
@@ -26,6 +27,7 @@ void time_setData(TimeData *time);
 /* sets time data values to zero */
 void time_init(TimeData *time)
 {
+    time->frame_counter = 0;
     time->frame_time_s = 0.0f;
     time->fixed_time_s = 0.04f; // Hardcoded
     time->frame_rate = 0.0f;
@@ -39,6 +41,7 @@ void time_setData(TimeData *time)
     // Update timing values
     time->frame_rate = display_get_fps();        // Retrieve current frames per second
     time->subtick = core_get_subtick();          // Retrieve subtick of the frame
+    if(time->subtick == 1.0f) time->frame_counter++;
 }
 
 #endif

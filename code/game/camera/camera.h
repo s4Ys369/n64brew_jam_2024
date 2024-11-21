@@ -77,6 +77,10 @@ typedef struct {
 	float near_clipping;
 	float far_clipping;
 
+	uint8_t cam_mode;
+	float lerpTime;
+	float camTime;
+
 	CameraSettings settings;
 } Camera;
 
@@ -94,6 +98,7 @@ void camera_set(Camera *camera, Screen* screen);
 Camera camera_create()
 {
     Camera camera = {
+		.position = (Vector3){0,-1200,1200},
         .distance_from_barycenter = 500,
         .target_distance = 200,
         .angle_around_barycenter = 0,
@@ -103,6 +108,9 @@ Camera camera_create()
 		.field_of_view = 80,
 		.near_clipping = 100,
 		.far_clipping = 3000,
+		.cam_mode = 0,
+		.lerpTime = 13.0f,
+		.camTime = 0,
     };
 
     return camera;

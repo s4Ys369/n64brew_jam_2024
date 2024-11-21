@@ -22,8 +22,6 @@ void gameState_setGameOver();
 
 void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact);
 
-static uint32_t frameCounter = 0;
-
 
 // new camera code ////
 
@@ -104,8 +102,6 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 
 void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* scenery)
 {
-
-	frameCounter++;
 	move_lava(scenery);
 
 	// ======== Draw ======== //
@@ -151,11 +147,11 @@ void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* sc
 
 #ifdef PROFILING
 	rspq_profile_next_frame();
-	if(frameCounter > 29)
+	if(game->timing.frame_counter > 29)
 	{
 		rspq_profile_dump();
 		rspq_profile_reset();
-		frameCounter = 0;
+		game->timing.frame_counter = 0;
 	}
     rspq_profile_get_data(&profile_data);
 #endif // PROFILING
@@ -283,7 +279,17 @@ static uint8_t countdownTimer = 150;
 void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact)
 {
 
-	frameCounter++;
+	static bool actorSet = false;
+	if (!actorSet)
+	{
+		for (size_t i = 0; i < ACTOR_COUNT; i++) 
+		{
+			actor[i].body.position = hexagons[9].position; // Center Platform
+			actor[i].body.position.z = actor[i].body.position.z + 150.0f; // Adjust height to prevent spawning inside platform
+			actor[i].home = actor[i].body.position;
+		}
+		actorSet ^= 1;
+	}
 
 // ======== Countdown ======== //
     if (countdownTimer > 0)
@@ -323,17 +329,6 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 
 // ======== Gameplay ======== //
-	static bool actorSet = false;
-	if (!actorSet)
-	{
-		for (size_t i = 0; i < ACTOR_COUNT; i++) 
-		{
-			actor[i].body.position = hexagons[9].position; // Center Platform
-			actor[i].body.position.z = actor[i].body.position.z + 150.0f; // Adjust height to prevent spawning inside platform
-			actor[i].home = actor[i].body.position;
-		}
-		actorSet ^= 1;
-	}
 
 	// AI
 	static bool winnerSet = false;
@@ -461,11 +456,11 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 #ifdef PROFILING
 	rspq_profile_next_frame();
-	if(frameCounter > 29)
+	if(game->timing.frame_counter > 29)
 	{
 		rspq_profile_dump();
 		rspq_profile_reset();
-		frameCounter = 0;
+		game->timing.frame_counter = 0;
 	}
     rspq_profile_get_data(&profile_data);
 #endif // PROFILING
@@ -475,7 +470,6 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scenery)
 {
 
-	frameCounter++;
 	move_lava(scenery);
 
 	// ======== Draw ======== //
@@ -511,11 +505,11 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 
 #ifdef PROFILING
 	rspq_profile_next_frame();
-	if(frameCounter > 29)
+	if(game->timing.frame_counter > 29)
 	{
 		rspq_profile_dump();
 		rspq_profile_reset();
-		frameCounter = 0;
+		game->timing.frame_counter = 0;
 	}
     rspq_profile_get_data(&profile_data);
 #endif // PROFILING
@@ -531,39 +525,47 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 {
 	for(;;)
 	{
-		game_setControlData(game, player);
 
+		// Tme
 		time_setData(&game->timing);
 
+		// Controls
+		game_setControlData(game, player);
 		player_setControlData(player);
 
-		static uint8_t camSwitch = 0;
-
-		if(player[0].control.pressed.l) camSwitch ^= 1;
+//// CAMERA /////
+		if(player[0].control.pressed.l) game->scene.camera.cam_mode ^= 1;
 
 		Vector3 introStartPos = (Vector3){0,-1200,1200};
+		Vector3 centerHex = hexagons[10].home;
+		Vector3 csPos = (Vector3){0, -1000, 525};
+		Vector3 gamePlayPos = (Vector3){0, -800, 1000};
+
+		game->scene.camera.camTime += game->timing.fixed_time_s;
 
 		if(game->state == INTRO)
 		{
-			const float lerpTime = 13.0f;
-			static float currentTime = 0;
-			currentTime += game->timing.fixed_time_s;
-			float t = currentTime / lerpTime;
-			if (t > 1.0f) t = 1.0f;
-			Vector3 camPos = vector3_lerp(&introStartPos, &hexagons[10].home, t);
+			float t = game->scene.camera.camTime / game->scene.camera.lerpTime;
+			t = clamp(t, 0.0f, 1.0f);
+			Vector3 camPos = vector3_lerp(&introStartPos, &centerHex, t);
 			camera_getMinigamePosition(&game->scene.camera, actor, player, camPos);
 		} else {
 
-			if(camSwitch == 0)
+			if(game->scene.camera.cam_mode == 0)
 			{
-				camera_getOrbitalPosition(&game->scene.camera, (Vector3){0, -1000, 525}, game->timing.fixed_time_s);
+				camera_getOrbitalPosition(&game->scene.camera, csPos, game->timing.fixed_time_s);
 			} else {
-				camera_getMinigamePosition(&game->scene.camera, actor, player, (Vector3){0, -800, 1000});
+				float t = game->scene.camera.camTime / game->scene.camera.lerpTime;
+				t = clamp(t, 0.0f, 1.0f);
+				Vector3 camPos = vector3_lerp(&csPos, &gamePlayPos, t);
+				camera_getMinigamePosition(&game->scene.camera, actor, player, camPos);
 			}
 		}
 		camera_set(&game->scene.camera, &game->screen);
+//// CAMERA /////
 
-		sound_spatial(&hexagons[1].home, &hexagons[1].home,  &game->scene.camera);
+		// Sound: spatial reverb
+		sound_spatial(&centerHex, &centerHex,  &game->scene.camera);
 
 		switch(game->state)
 		{
@@ -580,7 +582,7 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 				break;
 			}
 			case GAMEPLAY:{
-				if(countdownTimer == 0) camSwitch = 1;
+				game->scene.camera.cam_mode = 1;
 				gameState_setGameplay(game, player, ai, actor, scenery, actor_collider, actor_contact);
 				break;
 			}
