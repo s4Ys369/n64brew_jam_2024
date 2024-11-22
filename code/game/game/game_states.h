@@ -237,6 +237,13 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
     	}
 	}
 
+	// Sync RSPQ once, and then update each actors' skeleton
+	if(game->syncPoint)rspq_syncpoint_wait(game->syncPoint);
+	for (size_t i = 0; i < ACTOR_COUNT; i++)
+	{
+		t3d_skeleton_update(&actor[i].armature.main);
+	}
+
 	move_lava(scenery);
 
 	// ======== Draw ======== //
