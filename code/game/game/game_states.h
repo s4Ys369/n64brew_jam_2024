@@ -440,7 +440,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	t3d_frame_start(); // reset after drawing shadows
 	rdpq_mode_zbuf(true, false);
 	actor_draw(actor);
-
+	rdpq_mode_zbuf(true, true);
 	t3d_matrix_pop(1);
 
 	game->syncPoint = rspq_syncpoint_new();
@@ -602,6 +602,7 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 			}
 			case GAMEPLAY:{
 				game->scene.camera.cam_mode = 1;
+				display_set_fps_limit((display_get_refresh_rate() / 4) * 2);
 				gameState_setGameplay(game, player, ai, actor, scenery, actor_collider, actor_contact);
 				break;
 			}

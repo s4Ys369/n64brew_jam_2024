@@ -68,7 +68,7 @@ void actorCollision_setGroundResponse(Actor* actor, ActorContactData* contact, A
     actor->state = actor->previous_state;
 
     // Lower the ground height slightly when on a slope
-    if (contact->slope > 7.0f && contact->slope < 50.0f && contact->ground_distance > 0.1f)
+    if (contact->slope > 1.0f && contact->slope < 50.0f && contact->ground_distance > 0.1f)
     {
         float slope_offset = 0.1f * contact->slope;
         actor->grounding_height -= slope_offset;
@@ -138,15 +138,15 @@ void actorCollision_collidePlatforms(Actor* actor, ActorContactData* actor_conta
 //////////
 
     // Calculate the grid cell the actor is in
-    int xCell = (int)floorf((actor->body.position.x + 750) / 350);
-    int yCell = (int)floorf((actor->body.position.y + 750) / 350);
+    int xCell = (int)floorf((actor->body.position.x + 775) / 350);
+    int yCell = (int)floorf((actor->body.position.y + 775) / 350);
 
     if (xCell < 0 || xCell >= 7 || yCell < 0 || yCell >= 7) {
         // Actor is out of bounds; skip collision
         return;
     }
 
-    const float collisionRangeSq = 150.0f * 150.0f;
+    const float collisionRangeSq = 175.0f * 175.0f;
 
     // Reset actor's collision state
     actor->hasCollided = false;
@@ -179,12 +179,13 @@ void actorCollision_collidePlatforms(Actor* actor, ActorContactData* actor_conta
                     {
                         // Set collision response
                         actorCollision_contactBoxSetData(actor_contact, actor_collider, box);
+                        actorCollision_solvePenetration(actor, actor_contact, actor_collider);
 			            actorCollision_setGroundResponse(actor, actor_contact, actor_collider);
 
                         // Set collided state parameters
                         actor->hasCollided = true;
-                        actor->grounded = true;
-			            actor->state = STAND_IDLE;
+                        //actor->grounded = true;
+			            //actor->state = STAND_IDLE;
 
                         // Handle platform collision here instead again for the platforms
                         platform->contact = true;
