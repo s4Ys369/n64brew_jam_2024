@@ -389,6 +389,13 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		game->winnerSet = true;
 	}
 
+	// Sync RSPQ once, and then update each actors' skeleton
+	if(game->syncPoint)rspq_syncpoint_wait(game->syncPoint);
+	for (size_t i = 0; i < ACTOR_COUNT; i++)
+	{
+		t3d_skeleton_update(&actor[i].armature.main);
+	}
+
 
 	// Platforms
 	for (size_t j = 0; j < PLATFORM_COUNT; j++)

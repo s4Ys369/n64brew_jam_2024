@@ -108,8 +108,14 @@ void actor_setAnimation(Actor* actor, ActorAnimation* animation, const float fra
         }
     }
 	
-	if(syncpoint)rspq_syncpoint_wait(*syncpoint);
-	t3d_skeleton_update(&actor->armature.main);
+	/* 
+	* The original engine only accounts for 1 actor,
+	* but looping through the actor update for each
+	* means that the syncpoint would be updated
+	* 4 times, which is 3 too many.
+	*/
+	//if(syncpoint)rspq_syncpoint_wait(*syncpoint);
+	//t3d_skeleton_update(&actor->armature.main);
 }
 
 // temporary place for this until i solve the circular dependency
