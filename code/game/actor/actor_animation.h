@@ -25,45 +25,37 @@ void animationSet_init(const Actor* actor, AnimationSet* set)
 void actorAnimation_init(const Actor* actor, ActorAnimation* animation)
 {
 	animationSet_init(actor, &animation->main);
-	animationSet_init(actor, &animation->blend);
+	//animationSet_init(actor, &animation->blend);
 	// attach main
 	t3d_anim_attach(&animation->main.breathing_idle, &actor->armature.main);
 	t3d_anim_attach(&animation->main.falling_left, &actor->armature.main);
+	t3d_anim_attach(&animation->main.running_left, &actor->armature.main);
 
 	// attach blend
-	t3d_anim_attach(&animation->blend.running_left, &actor->armature.blend);
+	//t3d_anim_attach(&animation->blend.running_left, &actor->armature.blend);
 }	
 
 void actorAnimation_setStandIdle(Actor* actor, ActorAnimation* animation, const float frame_time, rspq_syncpoint_t* syncpoint)
 {
-	if (animation->previous == RUNNING || animation->current == RUNNING) {
-
-		animation->blending_ratio = actor->horizontal_speed / 320;
-		if(animation->blending_ratio > 1.0f) animation->blending_ratio = 1.0f;
-
-		t3d_anim_update(&animation->main.breathing_idle, frame_time);
-		t3d_anim_update(&animation->blend.running_left, frame_time);
-		t3d_skeleton_blend(&actor->armature.main, &actor->armature.main, &actor->armature.blend, animation->blending_ratio);
-	}
-	else t3d_anim_update(&animation->main.breathing_idle, frame_time);
+	t3d_anim_update(&animation->main.breathing_idle, frame_time);
 }
 
 void actorAnimation_setRunning(Actor* actor, ActorAnimation* animation, const float frame_time, rspq_syncpoint_t* syncpoint)
 {
-	if (animation->previous == STAND_IDLE || animation->current == STAND_IDLE) {
-
-		animation->blending_ratio = actor->horizontal_speed / 320;
-		if (animation->blending_ratio > 1.0f) animation->blending_ratio = 1.0f;
-		if (animation->current == STAND_IDLE) t3d_anim_set_time(&animation->blend.running_left, 0.0f);
-
-		t3d_anim_update(&animation->main.breathing_idle, frame_time);
-
-		t3d_anim_set_speed(&animation->blend.running_left, animation->blending_ratio);
-		t3d_anim_update(&animation->blend.running_left, frame_time);
-		
-		t3d_skeleton_blend(&actor->armature.main, &actor->armature.main, &actor->armature.blend, animation->blending_ratio);
-	}
-	else
+	//if (animation->previous == STAND_IDLE || animation->current == STAND_IDLE) {
+	//	animation->blending_ratio = actor->horizontal_speed / 320;
+	//	if (animation->blending_ratio > 1.0f) animation->blending_ratio = 1.0f;
+	//	if (animation->current == STAND_IDLE) t3d_anim_set_time(&animation->blend.running_left, 0.0f);
+	//	if(animation->blending_ratio > 0.0f && animation->blending_ratio < 1.0f)
+	//	{
+	//		t3d_anim_update(&animation->main.breathing_idle, frame_time);
+	//		t3d_anim_set_speed(&animation->blend.running_left, animation->blending_ratio);
+	//		t3d_anim_update(&animation->blend.running_left, frame_time);
+	//	
+	//		t3d_skeleton_blend(&actor->armature.main, &actor->armature.main, &actor->armature.blend, animation->blending_ratio);
+	//	}
+	//}
+	//else
 		t3d_anim_update(&animation->main.running_left, frame_time);
 }
 

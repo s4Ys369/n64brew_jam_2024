@@ -209,10 +209,10 @@ void actor_delete(Actor *actor)
 	//t3d_anim_destroy(&actor->animation.main.jump_left);
 	//t3d_anim_destroy(&actor->animation.main.land_left);
 	
-	t3d_skeleton_destroy(&actor->armature.blend);
-	t3d_anim_destroy(&actor->animation.blend.breathing_idle);
-	t3d_anim_destroy(&actor->animation.blend.running_left);
-	t3d_anim_destroy(&actor->animation.blend.falling_left);
+	//t3d_skeleton_destroy(&actor->armature.blend);
+	//t3d_anim_destroy(&actor->animation.blend.breathing_idle);
+	//t3d_anim_destroy(&actor->animation.blend.running_left);
+	//t3d_anim_destroy(&actor->animation.blend.falling_left);
 	//t3d_anim_destroy(&actor->animation.blend.jump_left);
 	//t3d_anim_destroy(&actor->animation.blend.land_left);
 	
