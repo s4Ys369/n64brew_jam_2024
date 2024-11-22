@@ -41,7 +41,7 @@ void time_setData(TimeData *time)
     // Update timing values
     time->frame_rate = display_get_fps();        // Retrieve current frames per second
     time->subtick = core_get_subtick();          // Retrieve subtick of the frame
-    if(time->subtick == 1.0f) time->frame_counter++;
+    time->frame_counter++;
 }
 
 #endif
