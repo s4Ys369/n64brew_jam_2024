@@ -72,6 +72,7 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 	
 	screen_clearDisplay(&game->screen);
 	screen_clearT3dViewport(&game->screen);
+	screen_applyColor_Depth(&game->screen);
 
 	light_set(&game->scene.light);
 
@@ -108,6 +109,7 @@ void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* sc
 	
 	screen_clearDisplay(&game->screen);
 	screen_clearT3dViewport(&game->screen);
+	screen_applyColor_Depth(&game->screen);
 
 	light_set(&game->scene.light);
 
@@ -250,6 +252,7 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 	
 	screen_clearDisplay(&game->screen);
 	screen_clearT3dViewport(&game->screen);
+	screen_applyColor_Depth(&game->screen);
 
 	light_set(&game->scene.light);
 
@@ -311,6 +314,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
         // ======== Draw ======== //
 		screen_clearDisplay(&game->screen);
 		screen_clearT3dViewport(&game->screen);
+		screen_applyColor_Depth(&game->screen);
 
 		light_set(&game->scene.light);
 
@@ -416,6 +420,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	
 	screen_clearDisplay(&game->screen);
 	screen_clearT3dViewport(&game->screen);
+	screen_applyColor(&game->screen);
 
 	light_set(&game->scene.light);
 
@@ -433,7 +438,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	}
 
 	t3d_frame_start(); // reset after drawing shadows
-
+	rdpq_mode_zbuf(true, false);
 	actor_draw(actor);
 
 	t3d_matrix_pop(1);

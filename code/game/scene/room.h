@@ -59,11 +59,12 @@ void move_lava(Scenery *scenery)
 void room_draw(Scenery *scenery)
 {
     //rspq_block_run(scenery[0].dl);
-    
+    rdpq_mode_zbuf(false, true);
     t3d_model_draw_custom(scenery[0].model, (T3DModelDrawConf){
         .userData = &scenery[1].tile_offset,
         .tileCb = tile_scroll,
     });
+    rdpq_mode_zbuf(true, true);
     
 }
 
