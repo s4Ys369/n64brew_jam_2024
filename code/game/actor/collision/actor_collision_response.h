@@ -138,13 +138,15 @@ void actorCollision_collidePlatforms(Actor* actor, ActorContactData* actor_conta
 //////////
 
     // Calculate the grid cell the actor is in
-    int xCell = (int)floorf((actor->body.position.x + 700) / 350);
-    int yCell = (int)floorf((actor->body.position.y + 700) / 350);
+    int xCell = (int)floorf((actor->body.position.x + 750) / 350);
+    int yCell = (int)floorf((actor->body.position.y + 750) / 350);
 
     if (xCell < 0 || xCell >= 7 || yCell < 0 || yCell >= 7) {
         // Actor is out of bounds; skip collision
         return;
     }
+
+    const float collisionRangeSq = 150.0f * 150.0f;
 
     // Reset actor's collision state
     actor->hasCollided = false;
@@ -163,6 +165,9 @@ void actorCollision_collidePlatforms(Actor* actor, ActorContactData* actor_conta
             for (size_t i = 0; i < cell->count; i++) 
             {
                 Platform* platform = &platforms[cell->platformIndices[i]];
+                float distanceSq = vector3_squaredDistance(&actor->body.position, &platform->position);
+                if (distanceSq <= collisionRangeSq)
+                {
 
                 // Check collision with each box in the platform's collider
                 for (int j = 0; j < 3; j++)
@@ -186,6 +191,7 @@ void actorCollision_collidePlatforms(Actor* actor, ActorContactData* actor_conta
 
                         return; // Early exit if collision is detected
                     }
+                }
                 }
             }
         }

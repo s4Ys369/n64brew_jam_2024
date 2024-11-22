@@ -162,10 +162,10 @@ Actor actor_create(uint32_t id, const char *model_path)
 			.walk_to_roll_target_speed = 400,
 			.run_to_roll_target_speed = 780,
 			.sprint_to_roll_target_speed = 980,
-			.jump_target_speed = 600, 
-			.jump_timer_max = 0.13,
+			.jump_target_speed = 700, 
+			.jump_timer_max = 0.15,
 			.fall_max_speed = -2650.0f,
-			.jump_max_speed = 600.0f
+			.jump_max_speed = 700.0f
         },
     };
 

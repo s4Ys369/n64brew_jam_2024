@@ -67,8 +67,8 @@ Platform* find_nearest_safe_platform(AI *ai, Actor *actor, Platform* platforms) 
     const float current_platform_threshold_sq = 0.01f * 0.01f; // Squared threshold to ignore the current platform
 
     // Calculate grid cell for the actor's current position
-    int xCell = (int)floorf((actor->body.position.x + 700) / GRID_SIZE);
-    int yCell = (int)floorf((actor->body.position.y + 700) / GRID_SIZE);
+    int xCell = (int)floorf((actor->body.position.x + 750) / GRID_SIZE);
+    int yCell = (int)floorf((actor->body.position.y + 750) / GRID_SIZE);
 
     // Iterate through platforms in the same and adjacent grid cells
     for (int dx = -1; dx <= 1; dx++) {
@@ -149,7 +149,7 @@ void ai_generateControlData(AI *ai, ControllerData *control, Actor *actor, Platf
     }
 
     // Adjust for camera angle if needed
-    //ai_updateCam(control, camera_angle);
+    ai_updateCam(control, camera_angle);
 
 }
 
