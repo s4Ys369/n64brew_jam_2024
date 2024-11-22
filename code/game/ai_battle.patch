@@ -1,0 +1,32 @@
+diff --git a/code/game/game/game_states.h b/code/game/game/game_states.h
+index c1ed7ca..f50f915 100644
+--- a/code/game/game/game_states.h
++++ b/code/game/game/game_states.h
+@@ -334,11 +334,11 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
+ // ======== Gameplay ======== //
+ 
+ 	// AI
+-	for (size_t i = 0; i < AI_COUNT; i++)
++	for (size_t i = 0; i < ACTOR_COUNT; i++)
+ 	{
+-		if(player[i+PLAYER_COUNT].died) continue;
++		if(player[i].died) continue;
+ 		if(game->winnerSet) continue;
+-		ai_generateControlData(&ai[i], &player[i+PLAYER_COUNT].control, &actor[i+PLAYER_COUNT], hexagons, game->scene.camera.offset_angle);
++		ai_generateControlData(&ai[i], &player[i].control, &actor[i], hexagons, game->scene.camera.offset_angle);
+ 	}
+ 
+ 	// Actors
+diff --git a/code/game/main.c b/code/game/main.c
+index 862bcbf..ab7ee1c 100644
+--- a/code/game/main.c
++++ b/code/game/main.c
+@@ -8,7 +8,7 @@
+ 
+ #define ACTOR_COUNT 4
+ #define PLAYER_COUNT core_get_playercount()
+-#define AI_COUNT ACTOR_COUNT - PLAYER_COUNT
++#define AI_COUNT ACTOR_COUNT
+ 
+ #define SCENERY_COUNT 1
+ #define PLATFORM_COUNT 19
