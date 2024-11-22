@@ -154,6 +154,10 @@ void minigame_loop(float dt)
 void minigame_cleanup()
 {
 
+#ifdef PROFILING
+    rspq_profile_stop();
+#endif
+
     // Step 1: Disable Frame Limiter
     display_set_fps_limit(0);
 
