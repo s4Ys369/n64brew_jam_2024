@@ -355,12 +355,21 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 // ======== Gameplay ======== //
 
 	// AI
+#ifndef AI_BATTLE
 	for (size_t i = 0; i < AI_COUNT; i++)
 	{
 		if(player[i+PLAYER_COUNT].died) continue;
 		if(game->winnerSet) continue;
 		ai_generateControlData(&ai[i], &player[i+PLAYER_COUNT].control, &actor[player[i+PLAYER_COUNT].actor_id], hexagons, game->scene.camera.offset_angle);
 	}
+#else
+	for (size_t i = 0; i < AI_COUNT; i++)
+	{
+		if(player[i].died) continue;
+		if(game->winnerSet) continue;
+		ai_generateControlData(&ai[i], &player[i].control, &actor[player[i].actor_id], hexagons, game->scene.camera.offset_angle);
+	}
+#endif
 
 	// Actors
 	uint8_t loserCount = 0;

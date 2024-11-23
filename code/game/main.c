@@ -6,9 +6,17 @@
 #include <t3d/t3danim.h>
 #include <t3d/t3ddebug.h>
 
+// May make this an easter egg
+#define AI_BATTLE
+
 #define ACTOR_COUNT 4
 #define PLAYER_COUNT core_get_playercount()
+
+#ifndef AI_BATTLE
 #define AI_COUNT ACTOR_COUNT - PLAYER_COUNT
+#else
+#define AI_COUNT ACTOR_COUNT
+#endif
 
 #define SCENERY_COUNT 1
 #define PLATFORM_COUNT 19
