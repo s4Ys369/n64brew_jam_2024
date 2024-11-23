@@ -141,7 +141,6 @@ void ui_countdown(int secondsLeft)
 void ui_main_menu(ControllerData* control, int diff)
 {
     // Panels
-    ui_spriteDrawPanel(TILE1, sprite_gloss, TRANSPARENT, 0, 0, 320, 240, 0, 0, 64, 64);
     ui_spriteDrawPanel(TILE2, sprite_gloss, T_RED, 90, 40, 230, 124, 0, 0, 64, 64);
     ui_spriteDrawPanel(TILE3, sprite_tessalate, T_BLACK, 100, 45, 220, 114, 0, 0, 64, 64);
 
@@ -200,7 +199,7 @@ void ui_main_menu(ControllerData* control, int diff)
 
 void ui_pause(ControllerData* control)
 {
-    ui_spriteDrawPanel(TILE1, sprite_gloss, TRANSPARENT, 0, 0, 320, 240, 0, 0, 64, 64);
+
     ui_spriteDrawPanel(TILE2, sprite_gloss, T_RED, 90, 60, 230, 144, 0, 0, 64, 64);
     ui_spriteDrawPanel(TILE3, sprite_tessalate, T_BLACK, 100, 65, 220, 134, 0, 0, 64, 64);
 
