@@ -30,14 +30,14 @@ void ai_init(AI *ai, uint8_t difficulty)
             ai->max_reaction_delay = 8;
             break;
         case DIFF_MEDIUM:
-            ai->jump_threshold = 200.0f;
+            ai->jump_threshold = 175.0f;
             ai->safe_height = 230.0f;
             ai->difficulty = DIFF_MEDIUM;
             ai->error_margin = 8;
             ai->max_reaction_delay = 4;
             break;
         case DIFF_HARD:
-            ai->jump_threshold = 200.0f;
+            ai->jump_threshold = 150.0f;
             ai->safe_height = 225.0f;
             ai->difficulty = DIFF_HARD;
             ai->error_margin = 4;
@@ -67,8 +67,8 @@ Platform* find_nearest_safe_platform(AI *ai, Actor *actor, Platform* platforms) 
     const float current_platform_threshold_sq = 0.01f * 0.01f; // Squared threshold to ignore the current platform
 
     // Calculate grid cell for the actor's current position
-    int xCell = (int)floorf((actor->body.position.x + 750) / GRID_SIZE);
-    int yCell = (int)floorf((actor->body.position.y + 750) / GRID_SIZE);
+    int xCell = (int)floorf((actor->body.position.x + 700) / GRID_SIZE);
+    int yCell = (int)floorf((actor->body.position.y + 700) / GRID_SIZE);
 
     // Iterate through platforms in the same and adjacent grid cells
     for (int dx = -1; dx <= 1; dx++) {
