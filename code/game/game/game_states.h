@@ -405,7 +405,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 				actorCollision_collidePlatforms(currentActor, &actor_contact[actorIndex], &actor_collider[actorIndex], hexagons);
 
 				// Update matrix
-				actor_updateMat(&actor[i]);
+				actor_updateMat(currentActor);
 			}
 		} else {
 
