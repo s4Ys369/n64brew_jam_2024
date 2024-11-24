@@ -25,7 +25,6 @@ void game_setControlData(Game* game, Player *player)
                     game->state = CHARACTER_SELECT;
                     break;
                 case CHARACTER_SELECT:
-                    game->state = GAMEPLAY;
                     break;
             }
         }
