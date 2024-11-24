@@ -170,7 +170,7 @@ Actor actor_create(uint32_t id, const char *model_path)
     };
 
 	actor.armature.main = t3d_skeleton_create(actor.model);
-	actor.armature.blend = t3d_skeleton_clone(&actor.armature.main, false);
+	//actor.armature.blend = t3d_skeleton_clone(&actor.armature.main, false);
 
     rspq_block_begin();
 	t3d_matrix_set(actor.modelMat, true);
