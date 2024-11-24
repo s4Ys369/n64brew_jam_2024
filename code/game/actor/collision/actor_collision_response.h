@@ -141,11 +141,15 @@ void actorCollision_collidePlatforms(Actor* actor, ActorContactData* actor_conta
 //////////
 
     // Calculate the grid cell the actor is in
-    int xCell = (int)floorf((actor->body.position.x + 800) / 350);
-    int yCell = (int)floorf((actor->body.position.y + 800) / 350);
+    int xCell = (int)floorf((actor->body.position.x + 775) / 350);
+    int yCell = (int)floorf((actor->body.position.y + 775) / 350);
 
     if (xCell < 0 || xCell >= 7 || yCell < 0 || yCell >= 7) {
-        // Actor is out of bounds; skip collision
+        // Actor is out of bounds; fall and skip collision
+        actor->state = FALLING;
+		actor->grounded = false;
+		actor->grounding_height = -200.0f; // magic number
+        if(actor->body.position.z <= -50.0f) actorState_setDeath(actor);
         return;
     }
 
@@ -162,7 +166,15 @@ void actorCollision_collidePlatforms(Actor* actor, ActorContactData* actor_conta
             int nx = xCell + dx;
             int ny = yCell + dy;
 
-            if (nx < 0 || nx >= 7 || ny < 0 || ny >= 7) continue; // Skip out-of-bounds cells
+            if (nx < 0 || nx >= 7 || ny < 0 || ny >= 7)
+            {
+                // Actor is out of bounds; fall and skip collision
+                actor->state = FALLING;
+		        actor->grounded = false;
+		        actor->grounding_height = -200.0f; // magic number
+                if(actor->body.position.z <= -50.0f) actorState_setDeath(actor);
+                continue;
+            }
 
             PlatformGridCell* cell = &platformGrid[nx][ny];
             for (size_t i = 0; i < cell->count; i++) 
