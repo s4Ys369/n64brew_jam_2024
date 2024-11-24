@@ -24,6 +24,8 @@ typedef struct
 	int8_t winTimer;
 	uint8_t winnerID;
 	uint8_t countdownTimer;
+	uint8_t humanCount;
+	uint8_t deadPool;
 	bool actorSet;
 	bool winnerSet;
     Scene scene;
@@ -54,6 +56,8 @@ void game_init(Game *game)
 	game->countdownTimer = 150; // Oops, forget to set this
   	game->syncPoint = 0;
 	game->state = INTRO;
+	game->humanCount = core_get_playercount();
+	game->deadPool = 0;
 }
 
 

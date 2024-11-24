@@ -197,6 +197,7 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 		{
 			uint8_t selectedActorId = selectedCharacter[activePlayer];
 			player[activePlayer].actor_id = selectedActorId;
+			player[activePlayer].isHuman = true;
 			actorSelected[selectedActorId] = true;
 
 			// Visual feedback for selecting actor
@@ -218,6 +219,7 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 					if (!actorSelected[j]) // Assign the first unselected actor
 					{
 						player[i].actor_id = j;
+						player[i].isHuman = false;
 						actorSelected[j] = true;
 						break;
 					}
@@ -640,7 +642,21 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 			}
 			case GAMEPLAY:{
 				game->scene.camera.cam_mode = 1;
-				display_set_fps_limit((display_get_refresh_rate() / 4) * 2);
+				for(uint8_t p = 0; p < game->humanCount; p++)
+				{
+					if(player[p].isHuman && player[p].died && !player[p].deathCounted)
+					{
+						game->deadPool++;
+						player[p].deathCounted = true;
+					}
+
+				}
+				if(game->deadPool == game->humanCount)
+				{
+					display_set_fps_limit(0);
+				} else {
+					display_set_fps_limit((display_get_refresh_rate() / 4) * 2);
+				}
 				gameState_setGameplay(game, player, ai, actor, scenery, actor_collider, actor_contact);
 				break;
 			}

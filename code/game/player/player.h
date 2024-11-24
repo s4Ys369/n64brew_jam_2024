@@ -8,6 +8,8 @@ typedef struct {
     uint8_t id;
     uint8_t actor_id;
     bool died;
+    bool isHuman;
+    bool deathCounted;
     ControllerData control;
 
 } Player;
@@ -20,6 +22,8 @@ void player_init(Player* player, uint8_t id,uint8_t actor_id)
     player->id = id;
     player->actor_id = actor_id;
     player->died = false;
+    player->isHuman = false;
+    player->deathCounted = false;
 
 }
 
