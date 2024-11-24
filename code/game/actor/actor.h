@@ -173,7 +173,7 @@ Actor actor_create(uint32_t id, const char *model_path)
 	actor.armature.blend = t3d_skeleton_clone(&actor.armature.main, false);
 
     rspq_block_begin();
-    rdpq_set_prim_color(RGBA32(255, 255, 255, 255));
+	t3d_matrix_set(actor.modelMat, true);
     t3d_model_draw_skinned(actor.model, &actor.armature.main);
     actor.dl = rspq_block_end();
 
@@ -182,18 +182,23 @@ Actor actor_create(uint32_t id, const char *model_path)
     return actor;
 }
 
+void actor_updateMat(Actor *actor) 
+{
+	if(actor->state == 9) return; // DEATH
+
+	t3d_mat4fp_from_srt_euler(actor->modelMat,
+		(float[3]){actor->scale.x, actor->scale.y, actor->scale.z},
+		(float[3]){rad(actor->body.rotation.x), rad(actor->body.rotation.y), rad(actor->body.rotation.z)},
+		(float[3]){actor->body.position.x, actor->body.position.y, actor->body.position.z}
+	);
+}
+
 void actor_draw(Actor *actor) 
 {	
 	for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
 				
 		if(actor[i].state == 9) continue; // DEATH
-
-		t3d_mat4fp_from_srt_euler(actor[i].modelMat,
-			(float[3]){actor[i].scale.x, actor[i].scale.y, actor[i].scale.z},
-			(float[3]){rad(actor[i].body.rotation.x), rad(actor[i].body.rotation.y), rad(actor[i].body.rotation.z)},
-			(float[3]){actor[i].body.position.x, actor[i].body.position.y, actor[i].body.position.z}
-		);
-		t3d_matrix_set(actor[i].modelMat, true);
+		
 		rspq_block_run(actor[i].dl);
 	};
 }

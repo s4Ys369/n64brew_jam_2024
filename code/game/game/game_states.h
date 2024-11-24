@@ -239,6 +239,8 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
         	actor[i].body.position = actor[i].home;
         	actor[i].body.rotation.z = 0;
     	}
+
+		actor_updateMat(&actor[i]);
 	}
 
 	// Sync RSPQ once, and then update each actors' skeleton
@@ -371,6 +373,14 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	}
 #endif
 
+	// Platforms
+	for (size_t j = 0; j < PLATFORM_COUNT; j++)
+	{
+		platform_loop(&hexagons[j], actor, game->diff);
+	}
+
+	move_lava(scenery);
+
 	// Actors
 	uint8_t loserCount = 0;
 	uint8_t aliveCount = 0;
@@ -393,6 +403,9 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 				actor_update(currentActor, &player[i].control, &game->timing, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
 				// Update collision data for the assigned actor
 				actorCollision_collidePlatforms(currentActor, &actor_contact[actorIndex], &actor_collider[actorIndex], hexagons);
+
+				// Update matrix
+				actor_updateMat(&actor[i]);
 			}
 		} else {
 
@@ -426,15 +439,6 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		t3d_skeleton_update(&actor[i].armature.main);
 	}
 
-
-	// Platforms
-	for (size_t j = 0; j < PLATFORM_COUNT; j++)
-	{
-		platform_loop(&hexagons[j], actor, game->diff);
-	}
-
-	move_lava(scenery);
-
 	// ======== Draw ======== //
 	
 	screen_clearDisplay(&game->screen);
@@ -462,7 +466,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	t3d_frame_start(); // reset after drawing shadows
 	rdpq_mode_zbuf(true, false);
 	actor_draw(actor);
-	rdpq_mode_zbuf(true, true);
+
 	t3d_matrix_pop(1);
 
 	game->syncPoint = rspq_syncpoint_new();
