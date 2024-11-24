@@ -113,7 +113,7 @@ void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* sc
 
 	light_set(&game->scene.light);
 	// Instead drawing a dark transparent texture over the scene, just change the light direction
-	game->scene.light.direction = (T3DVec3){{-1,-1,-1}};
+	game->scene.light.direction1 = (T3DVec3){{-1,-1,-1}};
 
 	t3d_matrix_push_pos(1);
 
@@ -261,7 +261,10 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 	light_set(&game->scene.light);
 
 	// Change light direction to illuminate players
-	game->scene.light.direction = (T3DVec3){{0,-1,0}};
+	game->scene.light.direction1 = (T3DVec3){{0,-1,0}};
+	game->scene.light.directional_color1[0] = 200;
+	game->scene.light.directional_color1[1] = 200;
+	game->scene.light.directional_color1[2] = 200;
 
 	t3d_matrix_push_pos(1);
 
@@ -328,7 +331,10 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		// Lerp light direction back to default during countdown
 		T3DVec3 dirLightPos;
 		t3d_vec3_lerp(&dirLightPos,&(T3DVec3){{1,1,1}},&(T3DVec3){{0,-1,0}},(float)(game->countdownTimer)*0.006f);
-		game->scene.light.direction = dirLightPos;
+		game->scene.light.direction1 = dirLightPos;
+		game->scene.light.directional_color1[0] = 200;
+		game->scene.light.directional_color1[1] = 100;
+		game->scene.light.directional_color1[2] = 50;
 
 		t3d_matrix_push_pos(1);
 
@@ -448,7 +454,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	light_set(&game->scene.light);
 
 	// Reset light direction to default in case players have paused
-	game->scene.light.direction = (T3DVec3){{1,1,1}};
+	game->scene.light.direction1 = (T3DVec3){{1,1,1}};
 
 	t3d_matrix_push_pos(1);
 
@@ -466,13 +472,17 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	}
 
 	t3d_frame_start(); // reset after drawing shadows
-	rdpq_mode_zbuf(true, false);
+
 	actor_draw(actor);
 
 	t3d_matrix_pop(1);
 
 	game->syncPoint = rspq_syncpoint_new();
 
+	for (size_t i = 0; i < ACTOR_COUNT; i++)
+	{
+		if(!game->winnerSet) ui_print_playerNum(&player[i], &game->screen);
+	}
 
 	if(loserCount == 3)
 	{
@@ -488,10 +498,6 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		if(game->winTimer >= 118) game->state = GAME_OVER;
 	}
 
-	for (size_t i = 0; i < ACTOR_COUNT; i++)
-	{
-		ui_print_playerNum(&player[i], &game->screen);
-	}
 	if(player[0].control.held.r)
 	{
 		ui_fps(game->timing.frame_rate);
@@ -528,7 +534,7 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 	light_set(&game->scene.light);
 
 	// Instead drawing a dark transparent texture over the scene, just change the light direction
-	game->scene.light.direction = (T3DVec3){{-1,-1,-1}};
+	game->scene.light.direction1 = (T3DVec3){{-1,-1,-1}};
 
 	t3d_matrix_push_pos(1);
 

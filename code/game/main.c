@@ -7,7 +7,7 @@
 #include <t3d/t3ddebug.h>
 
 // May make this an easter egg
-#define AI_BATTLE
+//#define AI_BATTLE
 
 #define ACTOR_COUNT 4
 #define PLAYER_COUNT core_get_playercount()
