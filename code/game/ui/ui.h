@@ -47,6 +47,13 @@ const char* uiMainMenuStrings[MENU_TEXT_COUNT] = {
     "Insert Rumble Pak now!"
 };
 
+const char* uiTipStrings[ACTOR_COUNT] = {
+    "Platforms will fall when stood on.\nHurry to the closest safe one.",
+    "Hold A to extend jump time.\nSee if you can make\na 2 platform gap.",
+    "Try to corner opponents\nand reducing their exit routes.",
+    "Remember to roll 10d10\nwhen you fall in the lava."
+};
+
 const char* uiCharacterSelectStrings[ACTOR_COUNT] = {
     "s4ys",
     "Wolfie",
@@ -134,6 +141,11 @@ void ui_countdown(int secondsLeft)
 
     ui_syncText();
     rdpq_text_printf(&txt_titleParms, ID_TITLE, 150, 110, "%s", countdownText);
+
+    // One of the four tips at random during countdown
+    static int randomTip = -1;
+    if(randomTip == -1) randomTip = rand() % 4;
+    rdpq_text_printf(&txt_titleParms, ID_DEFAULT, 80, 150, "%s", uiTipStrings[randomTip]);
 }
 
 
