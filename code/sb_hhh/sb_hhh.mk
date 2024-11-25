@@ -1,5 +1,5 @@
 # Project-specific assets
-ASSETS = filesystem/game
+ASSETS = filesystem/sb_hhh
 SOUND_DIR = $(ASSETS)/sound
 UI_DIR = $(ASSETS)/ui
 

@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 // Base directory for UI assets.
-const char* basePath = "rom:/game/ui/";
+const char* basePath = "rom:/sb_hhh/ui/";
 
 // Arrays for font file names and paths:
 // - uiFontFileName: Array of pointers to store full paths to font files after initialization.

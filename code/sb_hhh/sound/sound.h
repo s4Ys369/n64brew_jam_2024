@@ -13,7 +13,7 @@
 xm64player_t xmPlayer;
 
 const char* xmFileNames[1] = {
-    "rom:/game/sound/tribeof.xm64",
+    "rom:/sb_hhh/sound/tribeof.xm64",
 };
 
 // WAV files
@@ -28,9 +28,9 @@ enum SFX_WAV {
 wav64_t soundEffects[NUM_WAV];
 
 const char* wavFileNames[NUM_WAV] = {
-    "rom:/game/sound/grunt-01.wav64",
-	"rom:/game/sound/stones-falling.wav64",
-	"rom:/game/sound/lava-loop-2.wav64",
+    "rom:/sb_hhh/sound/grunt-01.wav64",
+	"rom:/sb_hhh/sound/stones-falling.wav64",
+	"rom:/sb_hhh/sound/lava-loop-2.wav64",
 };
 
 /* Function Declarations */

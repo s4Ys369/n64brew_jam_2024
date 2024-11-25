@@ -105,10 +105,10 @@ void minigame_init()
     display_set_fps_limit((display_get_refresh_rate() / 3) * 2); // @TODO
 
     // actors
-    actors[S4YS] = actor_create(0, "rom:/game/s4ys.t3dm");
-    actors[WOLFIE] = actor_create(1, "rom:/game/wolfie.t3dm");
-    actors[MEW] = actor_create(2, "rom:/game/mew.t3dm");
-    actors[DOGMAN] = actor_create(3, "rom:/game/dogman.t3dm");
+    actors[S4YS] = actor_create(0, "rom:/sb_hhh/s4ys.t3dm");
+    actors[WOLFIE] = actor_create(1, "rom:/sb_hhh/wolfie.t3dm");
+    actors[MEW] = actor_create(2, "rom:/sb_hhh/mew.t3dm");
+    actors[DOGMAN] = actor_create(3, "rom:/sb_hhh/dogman.t3dm");
 
     for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
         actor_init(&actors[i]);
@@ -135,7 +135,7 @@ void minigame_init()
     }
     
 	// scenery
-    scenery[0] = scenery_create(0, "rom:/game/lava.t3dm");
+    scenery[0] = scenery_create(0, "rom:/sb_hhh/lava.t3dm");
 
     for (uint8_t i = 0; i < SCENERY_COUNT; i++)
 	{
@@ -143,7 +143,7 @@ void minigame_init()
     }
 
     // platforms
-    platform_hexagonGrid(hexagons, t3d_model_load("rom:/game/platform.t3dm"), 250.0f, ui_color(N_YELLOW));
+    platform_hexagonGrid(hexagons, t3d_model_load("rom:/sb_hhh/platform.t3dm"), 250.0f, ui_color(N_YELLOW));
 
     // Sound: Play lava SFX
     sound_wavPlay(SFX_LAVA, true);
