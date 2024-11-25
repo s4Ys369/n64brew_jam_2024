@@ -37,33 +37,6 @@ void ptx_init(Particles *ptx)
     ptx->mat = malloc_uncached(sizeof(T3DMat4FP));
 }
 
-void ptx_randomPos(Particles *ptx, AABB aabb, T3DViewport* vp)
-{
-    for (int i = 0; i < ptx->count; i++)
-    {
-        int p = i / 2;
-        int8_t *ptxPos = (i % 2 == 0) ? ptx->buf[p].posA : ptx->buf[p].posB;
-
-        // Assign random sizes
-        ptx->buf[p].sizeA = 2 + (rand() % 5);
-        ptx->buf[p].sizeB = 2 + (rand() % 5);
-
-        // Random positions within the bounding box
-        T3DVec3 randomPos;
-        randomPos.v[0] = aabb.minCoordinates.x + ((float)rand() / 1000) * (aabb.maxCoordinates.x  - aabb.minCoordinates.x);
-        randomPos.v[1] = aabb.minCoordinates.y + ((float)rand() / 1000) * (aabb.maxCoordinates.y  - aabb.minCoordinates.y);
-        randomPos.v[2] = aabb.minCoordinates.z + ((float)rand() / 1000) * (aabb.maxCoordinates.z  - aabb.minCoordinates.z);
-
-        // Calculate from view space
-        T3DVec3 screenPos;
-        t3d_viewport_calc_viewspace_pos(vp, &screenPos, &randomPos);
-
-        ptxPos[0] = (int8_t)screenPos.v[0]; // Cast to match int8_t type
-        ptxPos[1] = (int8_t)screenPos.v[1]; 
-        ptxPos[2] = (int8_t)screenPos.v[2];
-    }
-}
-
 // Fire color: white -> yellow/orange -> red -> black
 void gradient_fire(uint8_t *color, float t)
 {
@@ -90,11 +63,49 @@ void gradient_fire(uint8_t *color, float t)
     }
 }
 
+void ptx_randomPos(Particles *ptx, AABB aabb, T3DViewport* vp)
+{
+    for (int i = 0; i < ptx->count; i++)
+    {
+        int p = i / 2;
+        int8_t *ptxPos = (i % 2 == 0) ? ptx->buf[p].posA : ptx->buf[p].posB;
+
+        // Assign random sizes
+        ptx->buf[p].sizeA = 2 + (rand() % 5);
+        ptx->buf[p].sizeB = 2 + (rand() % 5);
+
+        // Random positions within the bounding box
+        T3DVec3 randomPos;
+        randomPos.v[0] = aabb.minCoordinates.x + ((float)rand() / 1000) * (aabb.maxCoordinates.x  - aabb.minCoordinates.x);
+        randomPos.v[1] = aabb.minCoordinates.y;
+        randomPos.v[2] = aabb.minCoordinates.z + ((float)rand() / 1000) * (aabb.maxCoordinates.z  - aabb.minCoordinates.z);
+
+        gradient_fire(ptx->buf[p].colorA, (ptx->buf[p].posA[0] + 127) / 250.0f);
+        gradient_fire(ptx->buf[p].colorB, (ptx->buf[p].posB[0] + 127) / 250.0f);
+
+        // Calculate from view space
+        T3DVec3 screenPos;
+        t3d_viewport_calc_viewspace_pos(vp, &screenPos, &randomPos);
+
+        // Move particles upwards and oscillate
+        float frequency = 0.001f;
+        float amplitude = 0.5f;
+        float t = (float)i / ptx->count; // Vary by particle index
+        screenPos.v[1] += t * (aabb.maxCoordinates.y - aabb.minCoordinates.y); // Move upward
+        screenPos.v[0] += amplitude * fm_sinf(t * frequency * 2 * T3D_PI);
+        screenPos.v[2] += amplitude * fm_cosf(t * frequency * 2 * T3D_PI);
+
+        ptxPos[0] = (int8_t)screenPos.v[0]; // Cast to match int8_t type
+        ptxPos[1] = (int8_t)screenPos.v[1]; 
+        ptxPos[2] = (int8_t)screenPos.v[2];
+    }
+}
+
 void ptx_draw(T3DViewport* vp, Particles *ptx, float x, float y)
 {
 
     static int frameCounter = 0;
-    const int updateInterval = 3;
+    const int updateInterval = 6;
 
     // Prepare the RDPQ
     rdpq_sync_pipe();
@@ -105,18 +116,13 @@ void ptx_draw(T3DViewport* vp, Particles *ptx, float x, float y)
 
      
     AABB aabb = (AABB) {
-        .minCoordinates = {-1000,-1000,-1000},
+        .minCoordinates = {-1000, 0,-1000},
         .maxCoordinates = {1000,1000,1000}
     };
 
+
     if (frameCounter % updateInterval == 0)
     {
-        for (int p = 0; p < ptx->count; p++)
-        {
-            gradient_fire(ptx->buf[p].colorA, (ptx->buf[p].posA[1] + 127) / 150.0f);
-            gradient_fire(ptx->buf[p].colorB, (ptx->buf[p].posB[1] + 127) / 150.0f);
-        }
-
         ptx_randomPos(ptx, aabb, vp);
     }
     frameCounter++;
@@ -125,7 +131,7 @@ void ptx_draw(T3DViewport* vp, Particles *ptx, float x, float y)
         ptx->mat,
         (float[3]){50,50,50},
         (float[3]){0,0,0},
-        (float[3]){0,0,-250}
+        (float[3]){0,0,0}
     );
 
     tpx_state_from_t3d();
