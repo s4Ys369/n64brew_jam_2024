@@ -36,21 +36,30 @@ void screen_clearT3dViewport(Screen* screen)
 	t3d_viewport_attach(&screen->gameplay_viewport);
 }
 
-void screen_applyColor_Depth(Screen* screen)
+void screen_applyColor_Depth(Screen* screen, color_t color, bool fog)
 {
-	rdpq_mode_fog(RDPQ_FOG_STANDARD);
-    rdpq_set_fog_color(RGBA32(50, 11, 20, 0xFF));
-	t3d_screen_clear_color(RGBA32(50, 11, 20, 0xFF));
+	if(fog)
+	{
+		rdpq_mode_fog(RDPQ_FOG_STANDARD);
+    	rdpq_set_fog_color(color);
+	}
+
+	t3d_screen_clear_color(color);
 	t3d_screen_clear_depth();
-	t3d_fog_set_range(750.0f, 900.0f);
+
+	if(fog) t3d_fog_set_range(750.0f, 900.0f);
 }
 
-void screen_applyColor(Screen* screen)
+void screen_applyColor(Screen* screen, color_t color, bool fog)
 {
-	rdpq_mode_fog(RDPQ_FOG_STANDARD);
-    rdpq_set_fog_color(RGBA32(50, 11, 20, 0xFF));
-	t3d_screen_clear_color(RGBA32(50, 11, 20, 0xFF));
-	t3d_fog_set_range(750.0f, 900.0f);
+	if(fog)
+	{
+		rdpq_mode_fog(RDPQ_FOG_STANDARD);
+    	rdpq_set_fog_color(color);
+	}
+	t3d_screen_clear_color(color);
+
+	if(fog) t3d_fog_set_range(750.0f, 900.0f);
 }
 
 

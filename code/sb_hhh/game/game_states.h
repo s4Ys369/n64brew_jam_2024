@@ -72,7 +72,7 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 	
 	screen_clearDisplay(&game->screen);
 	screen_clearT3dViewport(&game->screen);
-	screen_applyColor_Depth(&game->screen);
+	screen_applyColor_Depth(&game->screen, ui_color(DARK_RED), true);
 
 	light_set(&game->scene.light);
 
@@ -112,7 +112,7 @@ void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* sc
 	
 	screen_clearDisplay(&game->screen);
 	screen_clearT3dViewport(&game->screen);
-	screen_applyColor_Depth(&game->screen);
+	screen_applyColor_Depth(&game->screen, ui_color(DARK_RED), true);
 
 	light_set(&game->scene.light);
 	// Instead drawing a dark transparent texture over the scene, just change the light direction
@@ -264,7 +264,7 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 	
 	screen_clearDisplay(&game->screen);
 	screen_clearT3dViewport(&game->screen);
-	screen_applyColor_Depth(&game->screen);
+	screen_applyColor_Depth(&game->screen, ui_color(DARK_RED), true);
 
 	light_set(&game->scene.light);
 
@@ -332,7 +332,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
         // ======== Draw ======== //
 		screen_clearDisplay(&game->screen);
 		screen_clearT3dViewport(&game->screen);
-		screen_applyColor_Depth(&game->screen);
+		screen_applyColor_Depth(&game->screen, ui_color(DARK_RED), true);
 
 		light_set(&game->scene.light);
 
@@ -457,7 +457,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	
 	screen_clearDisplay(&game->screen);
 	screen_clearT3dViewport(&game->screen);
-	screen_applyColor(&game->screen);
+	screen_applyColor(&game->screen, ui_color(DARK_RED), true);
 
 	light_set(&game->scene.light);
 
@@ -537,7 +537,7 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 	
 	screen_clearDisplay(&game->screen);
 	screen_clearT3dViewport(&game->screen);
-	screen_applyColor(&game->screen);
+	screen_applyColor(&game->screen, ui_color(DARK_RED), true);
 
 	light_set(&game->scene.light);
 
