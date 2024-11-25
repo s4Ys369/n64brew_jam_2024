@@ -76,28 +76,29 @@ void ptx_randomPos(Particles *ptx, AABB aabb, T3DViewport* vp)
 
         // Random positions within the bounding box
         T3DVec3 randomPos;
-        randomPos.v[0] = aabb.minCoordinates.x + ((float)rand() / 1000) * (aabb.maxCoordinates.x  - aabb.minCoordinates.x);
+        randomPos.v[0] = aabb.minCoordinates.x + ((float)rand() / aabb.maxCoordinates.x) * (aabb.maxCoordinates.x  - aabb.minCoordinates.x);
         randomPos.v[1] = aabb.minCoordinates.y;
-        randomPos.v[2] = aabb.minCoordinates.z + ((float)rand() / 1000) * (aabb.maxCoordinates.z  - aabb.minCoordinates.z);
-
-        gradient_fire(ptx->buf[p].colorA, (ptx->buf[p].posA[0] + 127) / 250.0f);
-        gradient_fire(ptx->buf[p].colorB, (ptx->buf[p].posB[0] + 127) / 250.0f);
+        randomPos.v[2] = aabb.minCoordinates.z + ((float)rand() / aabb.maxCoordinates.z) * (aabb.maxCoordinates.z  - aabb.minCoordinates.z);
 
         // Calculate from view space
         T3DVec3 screenPos;
         t3d_viewport_calc_viewspace_pos(vp, &screenPos, &randomPos);
 
         // Move particles upwards and oscillate
-        float frequency = 0.001f;
+        float frequency = 0.1f;
         float amplitude = 0.5f;
         float t = (float)i / ptx->count; // Vary by particle index
         screenPos.v[1] += t * (aabb.maxCoordinates.y - aabb.minCoordinates.y); // Move upward
         screenPos.v[0] += amplitude * fm_sinf(t * frequency * 2 * T3D_PI);
         screenPos.v[2] += amplitude * fm_cosf(t * frequency * 2 * T3D_PI);
 
-        ptxPos[0] = (int8_t)screenPos.v[0]; // Cast to match int8_t type
-        ptxPos[1] = (int8_t)screenPos.v[1]; 
+        // Clamp final values to fit within int8_t range
+        ptxPos[0] = (int8_t)screenPos.v[0];
+        ptxPos[1] = (int8_t)screenPos.v[1];
         ptxPos[2] = (int8_t)screenPos.v[2];
+
+        gradient_fire(ptx->buf[p].colorA, (ptxPos[0] + 127) / 250.0f);
+        gradient_fire(ptx->buf[p].colorB, (ptxPos[0] + 127) / 250.0f);
     }
 }
 
@@ -116,8 +117,8 @@ void ptx_draw(T3DViewport* vp, Particles *ptx, float x, float y)
 
      
     AABB aabb = (AABB) {
-        .minCoordinates = {-1000, 0,-1000},
-        .maxCoordinates = {1000,1000,1000}
+        .minCoordinates = {-127.9f, -127.9f,-127.9f},
+        .maxCoordinates = {126.9f,126.9f,126.9f}
     };
 
 
@@ -129,7 +130,7 @@ void ptx_draw(T3DViewport* vp, Particles *ptx, float x, float y)
 
     t3d_mat4fp_from_srt_euler(
         ptx->mat,
-        (float[3]){50,50,50},
+        (float[3]){50,25,50},
         (float[3]){0,0,0},
         (float[3]){0,0,0}
     );
