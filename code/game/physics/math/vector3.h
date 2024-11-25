@@ -147,7 +147,7 @@ inline Vector3 vector3_returnScaled(const Vector3 *v, float scalar)
     return (Vector3){v->x * scalar, v->y * scalar, v->z * scalar};
 }
 
-inline void vector3_divideByNumber(Vector3* v, float number) 
+void vector3_divideByNumber(Vector3* v, float number) 
 {
     assert(number > FLT_EPSILON);
     v->x /= number;
@@ -155,13 +155,13 @@ inline void vector3_divideByNumber(Vector3* v, float number)
     v->z /= number;
 }
 
-inline Vector3 vector3_returnQuotientByNumber(const Vector3* v, float number) 
+Vector3 vector3_returnQuotientByNumber(const Vector3* v, float number) 
 {
     assert(number > FLT_EPSILON);
     return (Vector3){v->x / number, v->y / number, v->z / number};
 }
 
-inline Vector3 vector3_returnQuotientByVector(const Vector3* v, const Vector3* w)
+Vector3 vector3_returnQuotientByVector(const Vector3* v, const Vector3* w)
 {
     assert(w->x > FLT_EPSILON);
     assert(w->y > FLT_EPSILON);
@@ -188,7 +188,7 @@ inline void vector3_crossProduct(Vector3 *v, const Vector3 *w)
     v->z = v->x * w->y - v->y * w->x;
 }
 
-inline Vector3 vector3_returnCrossProduct(const Vector3 *v, const Vector3 *w) 
+Vector3 vector3_returnCrossProduct(const Vector3 *v, const Vector3 *w) 
 {
     return (Vector3){v->y * w->z - v->z * w->y, v->z * w->x - v->x * w->z, v->x * w->y - v->y * w->x};
 }
@@ -215,7 +215,7 @@ inline float vector3_squaredMagnitude(const Vector3 *v)
     return v->x * v->x + v->y * v->y + v->z * v->z;
 }
 
-inline void vector3_normalize(Vector3 *v) 
+void vector3_normalize(Vector3 *v) 
 {
     float m = vector3_magnitude(v);
     if (m > 0) {
@@ -224,14 +224,14 @@ inline void vector3_normalize(Vector3 *v)
     }
 }
 
-inline Vector3 vector3_returnNormalized(const Vector3 *v)
+Vector3 vector3_returnNormalized(const Vector3 *v)
 {
     Vector3 result = *v;
     vector3_normalize(&result);
     return result;
 }
 
-inline Vector3 vector3_returnAbsoluteVector(const Vector3* v) 
+Vector3 vector3_returnAbsoluteVector(const Vector3* v) 
 {
     return (Vector3){fabsf(v->x), fabsf(v->y), fabsf(v->z)};
 
@@ -247,17 +247,17 @@ inline int vector3_returnMaxAxis(const Vector3* v)
     return (v->x < v->y ? (v->y < v->z ? 2 : 1) : (v->x < v->z ? 2 : 0));
 }
 
-inline bool vector3_isUnit(const Vector3* v) 
+bool vector3_isUnit(const Vector3* v) 
 {
     return approxEqual(vector3_squaredMagnitude(v), 1.0f);
 }
 
-inline bool vector3_isFinite(const Vector3* v) 
+bool vector3_isFinite(const Vector3* v) 
 {
     return isfinite(v->x) && isfinite(v->y) && isfinite(v->z);
 }
 
-inline bool vector3_isZero(const Vector3* v) 
+bool vector3_isZero(const Vector3* v) 
 {
     return approxEqual(vector3_squaredMagnitude(v), 0.0f);
 }
@@ -277,7 +277,7 @@ inline bool vector3_lessThan(const Vector3* v, const Vector3* w)
     return (v->x == w->x ? (v->y == w->y ? v->z < w->z : v->y < w->y) : v->x < w->x);
 }
 
-inline bool vector3_approxEquals(const Vector3* v, const Vector3* w)
+bool vector3_approxEquals(const Vector3* v, const Vector3* w)
 {
     return approxEqual(v->x, w->x) && approxEqual(v->y, w->y) && approxEqual(v->z, w->z);
 }
@@ -312,7 +312,7 @@ inline float vector3_returnMaxValue(const Vector3* v)
     return max3(v->x, v->y, v->z);
 }
 
-inline Vector3 vector3_lerp(const Vector3* v1, const Vector3* v2, float t) 
+Vector3 vector3_lerp(const Vector3* v1, const Vector3* v2, float t) 
 {
     Vector3 result;
     result.x = v1->x + (v2->x - v1->x) * t;

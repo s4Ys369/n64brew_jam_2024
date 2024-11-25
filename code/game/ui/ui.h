@@ -67,7 +67,7 @@ T3DVec3 fpsPos = {{20.0f,20.0f,1.0f}};
 /* Declarations */
 
 void ui_init(void);
-inline void ui_syncText(void);
+void ui_syncText(void);
 void ui_fps(float frame_rate);
 void ui_printf(const char *txt, ...);
 void ui_main_menu(ControllerData* control, int diff);
@@ -84,7 +84,7 @@ void ui_init(void)
 }
 
 // Optional RDPQ sync and set for text, to prevent bleeding if the autosync engine misses something.
-inline void ui_syncText(void)
+void ui_syncText(void)
 {
     rdpq_sync_pipe();
     rdpq_set_mode_standard();

@@ -38,7 +38,7 @@ surface_t surf_UIsprites;
 /* Declarations */
 
 void ui_spriteLoad(void);
-inline void ui_syncSprite(int color);
+void ui_syncSprite(int color);
 void ui_spriteDraw(rdpq_tile_t tile, sprite_t *sprite, int idx, int x, int y);
 void ui_spriteDrawPanel(rdpq_tile_t tile, sprite_t *sprite, int color, int x0, int y0, int x1, int y1, int s, int t, int s1, int t1);
 void ui_spriteDrawDynamic(rdpq_tile_t tile, sprite_t *sprite, color_t color, int x0, int y0, int x1, int y1, int s, int t, int s1, int t1);
@@ -73,7 +73,7 @@ void ui_spriteLoad(void)
 }
 
 // Optional RDPQ sync and set for sprites. Similar to ui_syncText, but sets the combiner for textures and allows for primitive color to added.
-inline void ui_syncSprite(int color)
+void ui_syncSprite(int color)
 {
     rdpq_sync_pipe();
     rdpq_set_mode_standard();

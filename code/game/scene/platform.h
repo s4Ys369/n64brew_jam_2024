@@ -281,7 +281,7 @@ void platform_createBatch(Platform* platform, T3DModel* model)
 
 
 // Iterate through and run RSPQ blocks
-inline void platform_drawBatch(void)
+void platform_drawBatch(void)
 {
 
   // Draw material once per batch
