@@ -9,6 +9,11 @@
 // May make this an easter egg
 //#define AI_BATTLE
 
+
+// This define is to test if running the game loop
+// in the fixed or the delta matters
+#define FIXED
+
 #define ACTOR_COUNT 4
 #define PLAYER_COUNT core_get_playercount()
 
@@ -150,18 +155,27 @@ void minigame_init()
 
 }
 
+#ifdef FIXED
 void minigame_fixedloop(float dt)
 {
-
+    minigame.timing.fixed_time_s = dt;
     game_play(&minigame, player, aiPlayer, actors, scenery, actor_collider, actor_contact);
-    
 }
-
-
 void minigame_loop(float dt)
 {
     minigame.timing.frame_time_s = dt;
 }
+#else
+void minigame_fixedloop(float dt)
+{
+    minigame.timing.fixed_time_s = dt;
+}
+void minigame_loop(float dt)
+{
+    minigame.timing.frame_time_s = dt;
+    game_play(&minigame, player, aiPlayer, actors, scenery, actor_collider, actor_contact);
+}
+#endif
 
 void minigame_cleanup()
 {
