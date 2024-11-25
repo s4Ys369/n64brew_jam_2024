@@ -64,10 +64,11 @@ Vector3 player_getBillboard(Player* player, T3DViewport* viewport)
 
 void player_drawShadow(Vector3 position, T3DViewport* viewport)
 {
+
     Vector3 billboardPos = (Vector3){
       position.x,
       position.y,
-      position.z - 100
+      255 // Lock at top height of the platforms
     };
 
     T3DVec3 billboardPosConvert = Vector3_to_T3DVec3(billboardPos);
@@ -77,13 +78,13 @@ void player_drawShadow(Vector3 position, T3DViewport* viewport)
 
     int x = floorf(billboardScreenPos.v[0]);
     int y = floorf(billboardScreenPos.v[1]);
-    int offset = 2;
+    int offset = 3; // Size (n * n) in pixels
 
     rdpq_sync_pipe();
     rdpq_set_mode_standard();
     rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
     rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
-    rdpq_set_prim_color(RGBA32(0,0,0,127));
+    rdpq_set_prim_color(RGBA32(0,0,0,100)); // Turn down alpha to hid when over lava
     rdpq_fill_rectangle(x-offset,y-offset,x+offset,y+offset);
 }
 #endif
