@@ -88,6 +88,9 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 
 	game->syncPoint = rspq_syncpoint_new();
 
+	// TPX
+	ptx_draw(&game->screen.gameplay_viewport, &lavaBubbles, 1,1);
+
 	ui_intro(&player[0].control);
 
 	if(player[0].control.held.r)
@@ -126,6 +129,9 @@ void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* sc
 	t3d_matrix_pop(1);
 
 	game->syncPoint = rspq_syncpoint_new();
+
+	// TPX
+	ptx_draw(&game->screen.gameplay_viewport, &lavaBubbles, 1,1);
 
 	if(core_get_playercount() == 4)
 	{

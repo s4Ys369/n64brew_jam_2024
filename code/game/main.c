@@ -61,6 +61,10 @@
 
 #include "ui/ui.h"
 
+// TPX
+#include <t3d/tpx.h>
+#include "scene/particles.h"
+
 #include "game/game.h"
 #include "game/game_control.h"
 #include "game/game_states.h"
@@ -172,6 +176,9 @@ void minigame_cleanup()
     // Step 2: Clean up Subsystems
     sound_cleanup();
     ui_cleanup();
+
+    // TPX
+    ptx_cleanup(&lavaBubbles);
 
     // Step 3: Destroy Tiny3D models, matrices, animations and RSPQ blocks
 	for (uint8_t i = 0; i < ACTOR_COUNT; i++) {

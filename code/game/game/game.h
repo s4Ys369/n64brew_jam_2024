@@ -44,6 +44,9 @@ void game_init(Game *game)
 
 	t3d_init((T3DInitParams){});
 
+	// TPX
+	ptx_init(&lavaBubbles);
+
 	time_init(&game->timing);
 
     scene_init(&game->scene);
