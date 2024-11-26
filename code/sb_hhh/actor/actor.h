@@ -111,6 +111,9 @@ typedef struct {
 	ActorSettings settings;
 	Actorinput input;
 
+	// Not me adding a dumb fields instead of refactoring
+	int colorID;
+
 } Actor;
 
 

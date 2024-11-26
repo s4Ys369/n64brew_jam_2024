@@ -62,25 +62,24 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 
 	for (size_t j = 0; j < PLATFORM_COUNT; j++)
 	{
-		
 		platform_loop(&hexagons[j], NULL, 0);
 	}
 
-	move_lava(scenery);
+	//move_lava(scenery);
 
 	// ======== Draw ======== //
 	
 	screen_clearDisplay(&game->screen);
 	screen_clearT3dViewport(&game->screen);
-	screen_applyColor_Depth(&game->screen, ui_color(DARK_RED), true);
+	screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
 
 	light_set(&game->scene.light);
 
 	t3d_matrix_push_pos(1);
 
-	room_draw(scenery);
+	//room_draw(scenery);
 
-	light_setAmbient(&game->scene.light, 0xBF);
+	light_setAmbient(&game->scene.light, 0xFF);
 	platform_drawBatch();
 	light_resetAmbient(&game->scene.light);
 
@@ -106,13 +105,13 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 
 void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* scenery)
 {
-	move_lava(scenery);
+	//move_lava(scenery);
 
 	// ======== Draw ======== //
 	
 	screen_clearDisplay(&game->screen);
 	screen_clearT3dViewport(&game->screen);
-	screen_applyColor_Depth(&game->screen, ui_color(DARK_RED), true);
+	screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
 
 	light_set(&game->scene.light);
 	// Instead drawing a dark transparent texture over the scene, just change the light direction
@@ -120,7 +119,7 @@ void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* sc
 
 	t3d_matrix_push_pos(1);
 
-	room_draw(scenery);
+	//room_draw(scenery);
 
 	light_setAmbient(&game->scene.light, 0xFF);
 	platform_drawBatch();
@@ -258,13 +257,13 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 		t3d_skeleton_update(&actor[i].armature.main);
 	}
 
-	move_lava(scenery);
+	//move_lava(scenery);
 
 	// ======== Draw ======== //
 	
 	screen_clearDisplay(&game->screen);
 	screen_clearT3dViewport(&game->screen);
-	screen_applyColor_Depth(&game->screen, ui_color(DARK_RED), true);
+	screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
 
 	light_set(&game->scene.light);
 
@@ -276,7 +275,7 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 
 	t3d_matrix_push_pos(1);
 
-	room_draw(scenery);
+	//room_draw(scenery);
 
 	light_setAmbient(&game->scene.light, 0xBF);
 	platform_drawBatch();
@@ -287,6 +286,9 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 	t3d_matrix_pop(1);
 
 	game->syncPoint = rspq_syncpoint_new();
+
+	// TPX
+	ptx_draw(&game->screen.gameplay_viewport, &lavaBubbles, 1,1);
 
 	if(activePlayer < MAXPLAYERS)
 	{
@@ -318,6 +320,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 			actor[i].body.position = hexagons[9].position; // Center Platform
 			actor[i].body.position.z = actor[i].body.position.z + 150.0f; // Adjust height to prevent spawning inside platform
 			actor[i].home = actor[i].body.position;
+			actor[player[i].actor_id].colorID = i;
 		}
 		game->actorSet ^= 1;
 	}
@@ -327,12 +330,12 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
     {
 		if(game->countdownTimer % 45 == 0) sound_wavPlay(SFX_JUMP, false);
 
-		move_lava(scenery);
+		//move_lava(scenery);
 
         // ======== Draw ======== //
 		screen_clearDisplay(&game->screen);
 		screen_clearT3dViewport(&game->screen);
-		screen_applyColor_Depth(&game->screen, ui_color(DARK_RED), true);
+		screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
 
 		light_set(&game->scene.light);
 
@@ -346,7 +349,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 		t3d_matrix_push_pos(1);
 
-		room_draw(scenery);
+		//room_draw(scenery);
 
 		light_setAmbient(&game->scene.light, 0xBF);
 		platform_drawBatch();
@@ -355,6 +358,9 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		t3d_matrix_pop(1);
 
 		game->syncPoint = rspq_syncpoint_new();
+
+		// TPX
+		ptx_draw(&game->screen.gameplay_viewport, &lavaBubbles, 1,1);
 
 		// Convert frames to seconds based on refresh rate
 		uint8_t secondsLeft = (game->countdownTimer / display_get_refresh_rate()) + 1;
@@ -393,7 +399,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		platform_loop(&hexagons[j], actor, game->diff);
 	}
 
-	move_lava(scenery);
+	//move_lava(scenery);
 
 	// Actors
 	uint8_t loserCount = 0;
@@ -438,11 +444,49 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		}
 	}
 
+	for (int i = 0; i < MAXPLAYERS; i++) {
+
+        // Get the player's actor colorID
+        int playerColorID = actor[player[i].actor_id].colorID;
+
+        // Count platforms with the same colorID
+        for (int j = 0; j < PLATFORM_COUNT; j++) {
+            if (hexagons[j].colorID == playerColorID) {
+                if(hexagons[j].platformTimer == 200) player[i].score++;
+            }
+        }
+    }
+
 	// Check if we have a winner (only one alive player left)
 	if (aliveCount == 1 && !game->winnerSet)
 	{
-		core_set_winner(lastAlivePlayer); // Set the winner to the last remaining player
-		game->winnerID = lastAlivePlayer;
+		int scores[4] = {
+			player[0].score,
+			player[1].score,
+			player[2].score,
+			player[3].score
+    	};
+
+		// Give last player alive bonus points
+		player[lastAlivePlayer].score++;
+		
+		// Default winner to player 1
+		int highestScore = scores[0];
+		int winnerIndex = 0;
+
+		// Check against all other players
+		for (int i = 1; i < 4; i++)
+		{
+			if (scores[i] > highestScore)
+			{
+				highestScore = scores[i];
+				winnerIndex = i;
+			}
+		}
+		
+		// Set the winner to the player with highest score
+		core_set_winner(winnerIndex);
+		game->winnerID = winnerIndex;
 		game->winnerSet = true;
 	}
 
@@ -457,7 +501,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	
 	screen_clearDisplay(&game->screen);
 	screen_clearT3dViewport(&game->screen);
-	screen_applyColor(&game->screen, ui_color(DARK_RED), true);
+	screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
 
 	light_set(&game->scene.light);
 
@@ -466,7 +510,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 	t3d_matrix_push_pos(1);
 
-	room_draw(scenery);
+	//room_draw(scenery);
 
 	light_setAmbient(&game->scene.light, 0xBF);
 	platform_drawBatch();
@@ -487,12 +531,15 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 	game->syncPoint = rspq_syncpoint_new();
 
+	// TPX
+	ptx_draw(&game->screen.gameplay_viewport, &lavaBubbles, 1,1);
+
 	for (size_t i = 0; i < ACTOR_COUNT; i++)
 	{
 		if(!game->winnerSet) ui_print_playerNum(&player[i], &game->screen);
 	}
 
-	if(loserCount == 3)
+	if(loserCount >= 3)
 	{
 		if(game->winnerSet)
 		{
@@ -500,17 +547,25 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 			if(game->winTimer < 120) ui_print_winner(game->winnerID+1);
 			if(game->winTimer >= 118) game->state = GAME_OVER;
 		}
-	} else if(loserCount > 3) {
-		game->winTimer++;
-		if(game->winTimer < 120) ui_print_winner(5);
-		if(game->winTimer >= 118) game->state = GAME_OVER;
 	}
 
 	if(player[0].control.held.r)
 	{
-		ui_fps(game->timing.frame_rate);
+		//ui_fps(game->timing.frame_rate);
 		if(core_get_playercount() == 1) ui_input_display(&player[0].control);
 	}
+
+	ui_fps(game->timing.frame_rate);
+	ui_printf(
+		"P1: %u\n"
+		"P2: %u\n"
+		"P3: %u\n"
+		"P4: %u\n",
+		player[0].score,
+		player[1].score,
+		player[2].score,
+		player[3].score
+	);
 
 	rdpq_detach_show();
 	sound_update();
@@ -531,13 +586,13 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scenery)
 {
 
-	move_lava(scenery);
+	//move_lava(scenery);
 
 	// ======== Draw ======== //
 	
 	screen_clearDisplay(&game->screen);
 	screen_clearT3dViewport(&game->screen);
-	screen_applyColor(&game->screen, ui_color(DARK_RED), true);
+	screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
 
 	light_set(&game->scene.light);
 
@@ -546,7 +601,7 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 
 	t3d_matrix_push_pos(1);
 
-	room_draw(scenery);
+	//room_draw(scenery);
 
 	light_setAmbient(&game->scene.light, 0xFF);
 	platform_drawBatch();
@@ -557,6 +612,9 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 	t3d_matrix_pop(1);
 
 	game->syncPoint = rspq_syncpoint_new();
+
+	// TPX
+	ptx_draw(&game->screen.gameplay_viewport, &lavaBubbles, 1,1);
 
 	ui_pause(&player[0].control);
 	if(player[0].control.held.r)

@@ -17,6 +17,7 @@ typedef struct {
   Vector3 home;
   PlatformCollider collider;
   color_t color;
+  int colorID;
   uint32_t platformTimer;
   bool contact;
 
@@ -182,7 +183,7 @@ void platform_collideCheckOptimized(Platform* platforms, Actor* actor)
 
 void platform_loop(Platform* platform, Actor* actor, int diff)
 {
-  int difficulty = (core_get_playercount() == 4) ? diff : core_get_aidifficulty();
+  int difficulty = (core_get_playercount() == 4) ? diff : 0;
 
   // Translate collision
   for (int j = 0; j < 3; j++) platform->collider.box[j].center = platform->position;
@@ -232,8 +233,8 @@ void platform_loop(Platform* platform, Actor* actor, int diff)
 //// RENDERING ~ Start ////
 
 // T3D MODEL DRAW BATCHING
-#define BATCH_LIMIT 19     // Number of objects per rspq block
-#define BLOCK_COUNT 1    // Pre-calculated block count
+#define BATCH_LIMIT 1     // Number of objects per rspq block
+#define BLOCK_COUNT 19    // Pre-calculated block count
 
 T3DModel *batchModel = NULL;
 rspq_block_t* rspqBlocks[BLOCK_COUNT] = {NULL};  // Static array of rspq block pointers
@@ -266,7 +267,6 @@ void platform_createBatch(Platform* platform, T3DModel* model)
 
     // Set the model matrix and draw
     t3d_matrix_set(platform[i].mat, true);
-    rdpq_set_prim_color(platform[i].color);
     t3d_model_draw_object(platform[i].obj, NULL);
 
     // End the current rspq block and start a new one every n objects
@@ -291,6 +291,7 @@ void platform_drawBatch(void)
   {
     if (rspqBlocks[i] != NULL)  // Check for NULL before running
     {
+      rdpq_set_prim_color(hexagons[i].color);
       rspq_block_run(rspqBlocks[i]);
     }
   }

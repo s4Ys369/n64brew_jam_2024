@@ -7,7 +7,7 @@
 #include <t3d/t3ddebug.h>
 
 // May make this an easter egg
-//#define AI_BATTLE
+#define AI_BATTLE
 
 
 // This define is to test if running the game loop
@@ -23,7 +23,7 @@
 #define AI_COUNT ACTOR_COUNT
 #endif
 
-#define SCENERY_COUNT 1
+//#define SCENERY_COUNT 1
 #define PLATFORM_COUNT 19
 
 #define S4YS 0
@@ -96,7 +96,7 @@ ActorCollider actor_collider[ACTOR_COUNT];
 
 ActorContactData actor_contact[ACTOR_COUNT];
 
-Scenery scenery[SCENERY_COUNT];
+//Scenery scenery[SCENERY_COUNT];
 
 void minigame_init()
 {      
@@ -140,15 +140,15 @@ void minigame_init()
     }
     
 	// scenery
-    scenery[0] = scenery_create(0, "rom:/sb_hhh/lava.t3dm");
+    //scenery[0] = scenery_create(0, "rom:/sb_hhh/lava.t3dm");
 
-    for (uint8_t i = 0; i < SCENERY_COUNT; i++)
-	{
-        scenery_set(&scenery[i]);
-    }
+    //for (uint8_t i = 0; i < SCENERY_COUNT; i++)
+	//{
+    //    scenery_set(&scenery[i]);
+    //}
 
     // platforms
-    platform_hexagonGrid(hexagons, t3d_model_load("rom:/sb_hhh/platform.t3dm"), 250.0f, ui_color(N_YELLOW));
+    platform_hexagonGrid(hexagons, t3d_model_load("rom:/sb_hhh/platform.t3dm"), 250.0f, ui_color(WHITE));
 
     // Sound: Play lava SFX
     sound_wavPlay(SFX_LAVA, true);
@@ -159,7 +159,7 @@ void minigame_init()
 void minigame_fixedloop(float dt)
 {
     minigame.timing.fixed_time_s = dt;
-    game_play(&minigame, player, aiPlayer, actors, scenery, actor_collider, actor_contact);
+    game_play(&minigame, player, aiPlayer, actors, 0, actor_collider, actor_contact);
 }
 void minigame_loop(float dt)
 {
@@ -173,7 +173,7 @@ void minigame_fixedloop(float dt)
 void minigame_loop(float dt)
 {
     minigame.timing.frame_time_s = dt;
-    game_play(&minigame, player, aiPlayer, actors, scenery, actor_collider, actor_contact);
+    game_play(&minigame, player, aiPlayer, actors, 0, actor_collider, actor_contact);
 }
 #endif
 
@@ -200,10 +200,9 @@ void minigame_cleanup()
 		actor_delete(&actors[i]);
 	};
 
-    for (uint8_t i = 0; i < SCENERY_COUNT; i++) {
-
-		scenery_delete(&scenery[i]);
-	}
+    //for (uint8_t i = 0; i < SCENERY_COUNT; i++) {
+	//	scenery_delete(&scenery[i]);
+	//}
     platform_destroy(hexagons);
     t3d_destroy(); // Then destroy library
 

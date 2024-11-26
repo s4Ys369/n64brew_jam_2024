@@ -205,6 +205,25 @@ void actorCollision_collidePlatforms(Actor* actor, ActorContactData* actor_conta
 
                         // Handle platform collision here instead again for the platforms
                         platform->contact = true;
+                        platform->colorID = actor->colorID;
+                        
+
+                        switch (actor->colorID)
+                        {
+                            case 0:
+                                platform->color = PLAYERCOLOR_1;
+                                break;
+                            case 1:
+                                platform->color = PLAYERCOLOR_2;
+                                break;
+                            case 2:
+                                platform->color = PLAYERCOLOR_3;
+                                break;
+                            case 3:
+                                platform->color = PLAYERCOLOR_4;
+                                break;        
+                        }
+
 
                         return; // Early exit if collision is detected
                     }

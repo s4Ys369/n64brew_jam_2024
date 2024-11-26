@@ -65,10 +65,10 @@ void scenery_set(Scenery *scenery)
 
 void scenery_draw(Scenery *scenery)
 {
-    for (int i = 0; i < SCENERY_COUNT; i++) {
-
-        rspq_block_run(scenery[i].dl);
-	};
+    //for (int i = 0; i < SCENERY_COUNT; i++) {
+//
+    //    rspq_block_run(scenery[i].dl);
+	//};
 }
 
 void scenery_delete(Scenery *scenery)

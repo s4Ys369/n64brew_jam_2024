@@ -37,30 +37,17 @@ void ptx_init(Particles *ptx)
     ptx->mat = malloc_uncached(sizeof(T3DMat4FP));
 }
 
-// Fire color: white -> yellow/orange -> red -> black
+// Brightness mask: white -> dark gray
 void gradient_fire(uint8_t *color, float t)
 {
     t = fminf(1.0f, fmaxf(0.0f, t));
-    t = 0.8f - t;
+    t = 0.1f - t;
     t *= t;
 
-    if (t < 0.25f) { // Dark red to bright red
-      color[0] = (uint8_t)(200 * (t / 0.25f)) + 55;
-      color[1] = 0;
-      color[2] = 0;
-    } else if (t < 0.5f) { // Bright red to yellow
-      color[0] = 255;
-      color[1] = (uint8_t)(255 * ((t - 0.25f) / 0.25f));
-      color[2] = 0;
-    } else if (t < 0.75f) { // Yellow to white (optional, if you want a bright white center)
-      color[0] = 255;
-      color[1] = 255;
-      color[2] = (uint8_t)(255 * ((t - 0.5f) / 0.25f));
-    } else { // White to black
-      color[0] = (uint8_t)(255 * (1.0f - (t - 0.75f) / 0.25f));
-      color[1] = (uint8_t)(255 * (1.0f - (t - 0.75f) / 0.25f));
-      color[2] = (uint8_t)(255 * (1.0f - (t - 0.75f) / 0.25f));
-    }
+
+    color[0] = (uint8_t)(255 * (1.0f - (t - 0.5f) / 0.5f));
+    color[1] = (uint8_t)(255 * (1.0f - (t - 0.5f) / 0.5f));
+    color[2] = (uint8_t)(255 * (1.0f - (t - 0.5f) / 0.5f));
 }
 
 void ptx_randomPos(Particles *ptx, AABB aabb, T3DViewport* vp)
@@ -71,8 +58,8 @@ void ptx_randomPos(Particles *ptx, AABB aabb, T3DViewport* vp)
         int8_t *ptxPos = (i % 2 == 0) ? ptx->buf[p].posA : ptx->buf[p].posB;
 
         // Assign random sizes
-        ptx->buf[p].sizeA = 2 + (rand() % 5);
-        ptx->buf[p].sizeB = 2 + (rand() % 5);
+        ptx->buf[p].sizeA = 10 + (rand() % 10);
+        ptx->buf[p].sizeB = 10 + (rand() % 10);
 
         // Random positions within the bounding box
         T3DVec3 randomPos;
@@ -85,7 +72,7 @@ void ptx_randomPos(Particles *ptx, AABB aabb, T3DViewport* vp)
         t3d_viewport_calc_viewspace_pos(vp, &screenPos, &randomPos);
 
         // Move particles upwards and oscillate
-        float frequency = 0.1f;
+        float frequency = 0.01f;
         float amplitude = 0.5f;
         float t = (float)i / ptx->count; // Vary by particle index
         screenPos.v[1] += t * (aabb.maxCoordinates.y - aabb.minCoordinates.y); // Move upward
@@ -97,8 +84,8 @@ void ptx_randomPos(Particles *ptx, AABB aabb, T3DViewport* vp)
         ptxPos[1] = (int8_t)screenPos.v[1];
         ptxPos[2] = (int8_t)screenPos.v[2];
 
-        gradient_fire(ptx->buf[p].colorA, (ptxPos[0] + 127) / 250.0f);
-        gradient_fire(ptx->buf[p].colorB, (ptxPos[0] + 127) / 250.0f);
+        gradient_fire(ptx->buf[p].colorA, (ptxPos[0] + 127) / 500.0f);
+        gradient_fire(ptx->buf[p].colorB, (ptxPos[0] + 127) / 500.0f);
     }
 }
 
@@ -106,13 +93,15 @@ void ptx_draw(T3DViewport* vp, Particles *ptx, float x, float y)
 {
 
     static int frameCounter = 0;
-    const int updateInterval = 6;
+    const int updateInterval = 30;
 
     // Prepare the RDPQ
     rdpq_sync_pipe();
     rdpq_sync_tile();
     rdpq_set_mode_standard();
-    rdpq_mode_combiner(RDPQ_COMBINER1((PRIM,0,ENV,0), (0,0,0,1)));
+    rdpq_mode_zbuf(true, true);
+    rdpq_mode_zoverride(true, 0, 0);
+    rdpq_mode_combiner(RDPQ_COMBINER1((PRIM,0,ENV,0), (0,0,ENV,1)));
     rdpq_set_env_color(ui_color(WHITE));
 
      
@@ -130,9 +119,9 @@ void ptx_draw(T3DViewport* vp, Particles *ptx, float x, float y)
 
     t3d_mat4fp_from_srt_euler(
         ptx->mat,
-        (float[3]){50,25,50},
+        (float[3]){7,7,7},
         (float[3]){0,0,0},
-        (float[3]){0,0,0}
+        (float[3]){0,250,0}
     );
 
     tpx_state_from_t3d();

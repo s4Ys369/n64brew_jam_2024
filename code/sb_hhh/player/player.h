@@ -7,6 +7,7 @@ typedef struct {
     Vector3 position;
     uint8_t id;
     uint8_t actor_id;
+    uint8_t score;
     bool died;
     bool isHuman;
     bool deathCounted;
