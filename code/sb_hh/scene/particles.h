@@ -31,7 +31,7 @@ Particles lavaBubbles;
 void ptx_init(Particles *ptx)
 {
     tpx_init((TPXInitParams){});
-    ptx->count = 2000;
+    ptx->count = 200;
     ptx->bufSize = sizeof(TPXParticle) * (ptx->count + 2);
     ptx->buf = malloc_uncached(ptx->bufSize);
     ptx->mat = malloc_uncached(sizeof(T3DMat4FP));
@@ -48,7 +48,7 @@ void gradient_fire(uint8_t *color, float t)
     color[0] = (uint8_t)(255 * (1.0f - (t - 0.5f) / 0.5f));
     color[1] = (uint8_t)(255 * (1.0f - (t - 0.5f) / 0.5f));
     color[2] = (uint8_t)(255 * (1.0f - (t - 0.5f) / 0.5f));
-    color[3] = (uint8_t)(200 * (1.0f - (t - 0.5f) / 0.5f));
+    color[3] = (uint8_t)(222 * (1.0f - (t - 0.5f) / 0.5f));
 }
 
 void ptx_randomPos(Particles *ptx, AABB aabb, T3DViewport* vp)
@@ -59,8 +59,8 @@ void ptx_randomPos(Particles *ptx, AABB aabb, T3DViewport* vp)
         int8_t *ptxPos = (i % 2 == 0) ? ptx->buf[p].posA : ptx->buf[p].posB;
 
         // Assign random sizes
-        ptx->buf[p].sizeA = 16 + (rand() % 8);
-        ptx->buf[p].sizeB = 16 + (rand() % 8);
+        ptx->buf[p].sizeA = 30 + (rand() % 10);
+        ptx->buf[p].sizeB = 30 + (rand() % 10);
 
         // Random positions within the bounding box
         T3DVec3 randomPos;
