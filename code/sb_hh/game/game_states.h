@@ -577,7 +577,15 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		if(game->winnerSet)
 		{
 			game->winTimer++;
-			if(game->winTimer < 120) ui_print_winner(game->winnerID+1);
+			if(game->winTimer < 120)
+			{
+				if(game->winnerID != 5)
+				{
+					ui_print_winner(game->winnerID+1);
+				} else {
+					ui_print_winner(game->winnerID); // TIE condition
+				}
+			}
 			if(game->winTimer >= 118) game->state = GAME_OVER;
 		}
 	}
