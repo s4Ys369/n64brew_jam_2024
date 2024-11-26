@@ -79,7 +79,7 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 
 	scenery_draw(scenery);
 
-	light_setAmbient(&game->scene.light, 0xFF);
+	//light_setAmbient(&game->scene.light, 0xFF);
 	platform_drawBatch();
 	light_resetAmbient(&game->scene.light);
 
@@ -115,13 +115,13 @@ void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* sc
 
 	light_set(&game->scene.light);
 	// Instead drawing a dark transparent texture over the scene, just change the light direction
-	game->scene.light.direction1 = (T3DVec3){{-1,-1,-1}};
+	game->scene.light.direction1 = (T3DVec3){{0,-1, 0}};
 
 	t3d_matrix_push_pos(1);
 
 	scenery_draw(scenery);
 
-	light_setAmbient(&game->scene.light, 0xFF);
+	//light_setAmbient(&game->scene.light, 0xFF);
 	platform_drawBatch();
 	light_resetAmbient(&game->scene.light);
 
@@ -269,15 +269,15 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 
 	// Change light direction to illuminate players
 	game->scene.light.direction1 = (T3DVec3){{0,-1,0}};
-	game->scene.light.directional_color1[0] = 200;
-	game->scene.light.directional_color1[1] = 200;
-	game->scene.light.directional_color1[2] = 200;
+	//game->scene.light.directional_color1[0] = 200;
+	//game->scene.light.directional_color1[1] = 200;
+	//game->scene.light.directional_color1[2] = 200;
 
 	t3d_matrix_push_pos(1);
 
 	scenery_draw(scenery);
 
-	light_setAmbient(&game->scene.light, 0xBF);
+	//light_setAmbient(&game->scene.light, 0xBF);
 	platform_drawBatch();
 	light_resetAmbient(&game->scene.light);
 
@@ -339,13 +339,10 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 		light_set(&game->scene.light);
 
-		// Lerp light direction back to default during countdown
-		T3DVec3 dirLightPos;
-		t3d_vec3_lerp(&dirLightPos,&(T3DVec3){{1,1,1}},&(T3DVec3){{0,-1,0}},(float)(game->countdownTimer)*0.006f);
-		game->scene.light.direction1 = dirLightPos;
-		game->scene.light.directional_color1[0] = 200;
-		game->scene.light.directional_color1[1] = 100;
-		game->scene.light.directional_color1[2] = 50;
+		game->scene.light.direction1 = (T3DVec3){{0,-1,0}};
+		//game->scene.light.directional_color1[0] = 200;
+		//game->scene.light.directional_color1[1] = 100;
+		//game->scene.light.directional_color1[2] = 50;
 
 		t3d_matrix_push_pos(1);
 
@@ -535,7 +532,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	light_set(&game->scene.light);
 
 	// Reset light direction to default in case players have paused
-	game->scene.light.direction1 = (T3DVec3){{1,1,1}};
+	game->scene.light.direction1 = (T3DVec3){{0,-1,0}};
 
 	t3d_matrix_push_pos(1);
 
@@ -595,7 +592,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		ui_fps(game->timing.frame_rate);
 		if(core_get_playercount() == 1) ui_input_display(&player[0].control);
 	}
-
+	ui_fps(game->timing.frame_rate);
 	rdpq_detach_show();
 	sound_update();
 
@@ -632,7 +629,7 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 
 	scenery_draw(scenery);
 
-	light_setAmbient(&game->scene.light, 0xFF);
+	//light_setAmbient(&game->scene.light, 0xFF);
 	platform_drawBatch();
 	light_resetAmbient(&game->scene.light);
 

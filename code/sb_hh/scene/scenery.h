@@ -65,9 +65,11 @@ void scenery_set(Scenery *scenery)
 
 void scenery_draw(Scenery *scenery)
 {
+    rdpq_mode_zbuf(false, true);
     for (int i = 0; i < SCENERY_COUNT; i++) {
         rspq_block_run(scenery[i].dl);
 	};
+    rdpq_mode_zbuf(true, true);
 }
 
 void scenery_delete(Scenery *scenery)

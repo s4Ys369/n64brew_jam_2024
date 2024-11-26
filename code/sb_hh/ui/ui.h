@@ -48,7 +48,7 @@ const char* uiMainMenuStrings[MENU_TEXT_COUNT] = {
 };
 
 const char* uiTipStrings[ACTOR_COUNT] = {
-    "Platforms fall when stood on.\nDrop as many platforms\nwith your player color\ninto the cloud to get points.\nA winner is selected after\n3 players fall.",
+    "Platforms fall when stood on.\nDrop as many platforms\nwith your player color\ninto the cloud to get points.\nA winner is selected after\n3 players fall. GLHF!",
     "Hold A to extend jump time.\nSee if you can make\na 2 platform gap.",
     "Try to corner opponents\nand reducing their exit routes.",
     "Remember to roll 10d10\nwhen you fall in the lava."

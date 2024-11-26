@@ -23,7 +23,7 @@ LightData light_create() {
     LightData light = {
         .ambient_color = {245, 232, 196, 0xFF},
         .directional_color1 = {245, 232, 196, 0xFF},
-        .direction1 = {{0.0f, 1.0f, 0.0f}},
+        .direction1 = {{0.0f, -1.0f, 0.0f}},
         .directional_color2 = {208, 242, 242, 0xFF},
         .direction2 = {{0.0f, 100.0f, 0.0f}},
     };

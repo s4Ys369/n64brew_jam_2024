@@ -45,9 +45,9 @@ void gradient_fire(uint8_t *color, float t)
     t *= t;
 
 
-    color[0] = (uint8_t)(255 * (1.0f - (t - 0.5f) / 0.5f));
-    color[1] = (uint8_t)(255 * (1.0f - (t - 0.5f) / 0.5f));
-    color[2] = (uint8_t)(255 * (1.0f - (t - 0.5f) / 0.5f));
+    color[0] = (uint8_t)(255);
+    color[1] = (uint8_t)(255);
+    color[2] = (uint8_t)(255);
     color[3] = (uint8_t)(222 * (1.0f - (t - 0.5f) / 0.5f));
 }
 
@@ -59,8 +59,8 @@ void ptx_randomPos(Particles *ptx, AABB aabb, T3DViewport* vp)
         int8_t *ptxPos = (i % 2 == 0) ? ptx->buf[p].posA : ptx->buf[p].posB;
 
         // Assign random sizes
-        ptx->buf[p].sizeA = 30 + (rand() % 10);
-        ptx->buf[p].sizeB = 30 + (rand() % 10);
+        ptx->buf[p].sizeA = 20 + (rand() % 10);
+        ptx->buf[p].sizeB = 20 + (rand() % 10);
 
         // Random positions within the bounding box
         T3DVec3 randomPos;
@@ -73,12 +73,8 @@ void ptx_randomPos(Particles *ptx, AABB aabb, T3DViewport* vp)
         t3d_viewport_calc_viewspace_pos(vp, &screenPos, &randomPos);
 
         // Move particles upwards and oscillate
-        float frequency = 0.01f;
-        float amplitude = 0.5f;
         float t = (float)i / ptx->count; // Vary by particle index
         screenPos.v[1] += t * (aabb.maxCoordinates.y - aabb.minCoordinates.y); // Move upward
-        screenPos.v[0] += amplitude * fm_sinf(t * frequency * 2 * T3D_PI);
-        screenPos.v[2] += amplitude * fm_cosf(t * frequency * 2 * T3D_PI);
 
         // Clamp final values to fit within int8_t range
         ptxPos[0] = (int8_t)screenPos.v[0];
@@ -100,7 +96,7 @@ void ptx_draw(T3DViewport* vp, Particles *ptx, float x, float y)
     rdpq_sync_pipe();
     rdpq_sync_tile();
     rdpq_set_mode_standard();
-    rdpq_mode_zbuf(true, true);
+    rdpq_mode_zbuf(true, false);
     rdpq_mode_zoverride(true, 0, 0);
     rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
     rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
