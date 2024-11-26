@@ -87,9 +87,6 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 
 	game->syncPoint = rspq_syncpoint_new();
 
-	// TPX
-	ptx_draw(&game->screen.gameplay_viewport, &lavaBubbles, 1,1);
-
 	ui_intro(&player[0].control);
 
 	if(player[0].control.held.r)
@@ -128,9 +125,6 @@ void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* sc
 	t3d_matrix_pop(1);
 
 	game->syncPoint = rspq_syncpoint_new();
-
-	// TPX
-	ptx_draw(&game->screen.gameplay_viewport, &lavaBubbles, 1,1);
 
 	if(core_get_playercount() == 4)
 	{
@@ -287,9 +281,6 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 
 	game->syncPoint = rspq_syncpoint_new();
 
-	// TPX
-	ptx_draw(&game->screen.gameplay_viewport, &lavaBubbles, 1,1);
-
 	if(activePlayer < MAXPLAYERS)
 	{
 		player[activePlayer].position.x = (actor[selectedCharacter[activePlayer]].body.position.x * 3.6f) - 30.0f;
@@ -355,9 +346,6 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		t3d_matrix_pop(1);
 
 		game->syncPoint = rspq_syncpoint_new();
-
-		// TPX
-		ptx_draw(&game->screen.gameplay_viewport, &lavaBubbles, 1,1);
 
 		// Convert frames to seconds based on refresh rate
 		uint8_t secondsLeft = (game->countdownTimer / display_get_refresh_rate()) + 1;
@@ -558,7 +546,9 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	game->syncPoint = rspq_syncpoint_new();
 
 	// TPX
-	ptx_draw(&game->screen.gameplay_viewport, &lavaBubbles, 1,1);
+	for (int j = 0; j < PLATFORM_COUNT; j++) {
+		ptx_draw(&hexagons[j], &lavaBubbles);
+	}
 
 	for (size_t i = 0; i < ACTOR_COUNT; i++)
 	{
@@ -618,7 +608,7 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 	
 	screen_clearDisplay(&game->screen);
 	screen_clearT3dViewport(&game->screen);
-	screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
+	screen_applyColor_Depth(&game->screen, ui_color(VIOLET), false);
 
 	light_set(&game->scene.light);
 
@@ -638,9 +628,6 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 	t3d_matrix_pop(1);
 
 	game->syncPoint = rspq_syncpoint_new();
-
-	// TPX
-	ptx_draw(&game->screen.gameplay_viewport, &lavaBubbles, 1,1);
 
 	ui_pause(&player[0].control);
 	if(player[0].control.held.r)

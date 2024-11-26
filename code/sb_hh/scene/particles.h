@@ -31,14 +31,14 @@ Particles lavaBubbles;
 void ptx_init(Particles *ptx)
 {
     tpx_init((TPXInitParams){});
-    ptx->count = 200;
+    ptx->count = 6;
     ptx->bufSize = sizeof(TPXParticle) * (ptx->count + 2);
     ptx->buf = malloc_uncached(ptx->bufSize);
     ptx->mat = malloc_uncached(sizeof(T3DMat4FP));
 }
 
-// Brightness mask: white -> dark gray
-void gradient_fire(uint8_t *color, float t)
+// Alpha gradient
+void gradient_alpha(uint8_t *color, float t)
 {
     t = fminf(1.0f, fmaxf(0.0f, t));
     t = 0.1f - t;
@@ -48,10 +48,10 @@ void gradient_fire(uint8_t *color, float t)
     color[0] = (uint8_t)(255);
     color[1] = (uint8_t)(255);
     color[2] = (uint8_t)(255);
-    color[3] = (uint8_t)(222 * (1.0f - (t - 0.5f) / 0.5f));
+    color[3] = (uint8_t)(200 * (1.0f - (t - 0.5f) / 0.5f));
 }
 
-void ptx_randomPos(Particles *ptx, AABB aabb, T3DViewport* vp)
+void ptx_randomPos(Particles *ptx)
 {
     for (int i = 0; i < ptx->count; i++)
     {
@@ -62,35 +62,34 @@ void ptx_randomPos(Particles *ptx, AABB aabb, T3DViewport* vp)
         ptx->buf[p].sizeA = 20 + (rand() % 10);
         ptx->buf[p].sizeB = 20 + (rand() % 10);
 
-        // Random positions within the bounding box
-        T3DVec3 randomPos;
-        randomPos.v[0] = aabb.minCoordinates.x + ((float)rand() / aabb.maxCoordinates.x) * (aabb.maxCoordinates.x  - aabb.minCoordinates.x);
-        randomPos.v[1] = aabb.minCoordinates.y;
-        randomPos.v[2] = aabb.minCoordinates.z + ((float)rand() / aabb.maxCoordinates.z) * (aabb.maxCoordinates.z  - aabb.minCoordinates.z);
+        // Random positions
+        T3DVec3 pos = {{
+            (i * 1 + rand()) % 128 - 64,
+            (i * 3 + rand()) % 128 - 64,
+            (i * 4 + rand()) % 128 - 64
+        }};
 
-        // Calculate from view space
-        T3DVec3 screenPos;
-        t3d_viewport_calc_viewspace_pos(vp, &screenPos, &randomPos);
+        t3d_vec3_norm(&pos);
+        float len = rand() % 40;
+        pos.v[0] *= len;
+        pos.v[1] *= len;
+        pos.v[2] *= len;
 
-        // Move particles upwards and oscillate
-        float t = (float)i / ptx->count; // Vary by particle index
-        screenPos.v[1] += t * (aabb.maxCoordinates.y - aabb.minCoordinates.y); // Move upward
+        ptxPos[0] = (rand() % 256) - 128;
+        ptxPos[1] = (rand() % 256) - 128;
+        ptxPos[2] = (rand() % 256) - 128;
 
-        // Clamp final values to fit within int8_t range
-        ptxPos[0] = (int8_t)screenPos.v[0];
-        ptxPos[1] = (int8_t)screenPos.v[1];
-        ptxPos[2] = (int8_t)screenPos.v[2];
 
-        gradient_fire(ptx->buf[p].colorA, (ptxPos[0] + 127) * 0.0012f);
-        gradient_fire(ptx->buf[p].colorB, (ptxPos[0] + 127) * 0.0012f);
+        gradient_alpha(ptx->buf[p].colorA, (ptxPos[0] + 127) * 0.0012f);
+        gradient_alpha(ptx->buf[p].colorB, (ptxPos[0] + 127) * 0.0012f);
     }
 }
 
-void ptx_draw(T3DViewport* vp, Particles *ptx, float x, float y)
+void ptx_draw(Platform* platform, Particles *ptx)
 {
 
     static int frameCounter = 0;
-    const int updateInterval = 12;
+    const int updateInterval = 3;
 
     // Prepare the RDPQ
     rdpq_sync_pipe();
@@ -101,32 +100,29 @@ void ptx_draw(T3DViewport* vp, Particles *ptx, float x, float y)
     rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
     rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
 
-     
-    AABB aabb = (AABB) {
-        .minCoordinates = {-127.9f, -127.9f,-127.9f},
-        .maxCoordinates = {126.9f,126.9f,126.9f}
-    };
 
-
-    if (frameCounter % updateInterval == 0)
+    if (platform->position.z <= 20.0f && platform->position.z >= -20.0f)
     {
-        ptx_randomPos(ptx, aabb, vp);
+        if (frameCounter % updateInterval == 0)
+        {
+            ptx_randomPos(ptx);
+        }
+        frameCounter++;
+
+        tpx_state_from_t3d();
+
+        tpx_matrix_push_pos(1);
+        tpx_matrix_set(ptx->mat, true);
+            tpx_state_set_scale(1,1);
+            t3d_mat4fp_from_srt_euler(
+                ptx->mat,
+                (float[3]){1,1,1},
+                (float[3]){0,0,0},
+                (float[3]){platform->position.x,platform->position.y,0}
+            );
+            tpx_particle_draw(ptx->buf, ptx->count);
+        tpx_matrix_pop(1);
     }
-    frameCounter++;
-
-    t3d_mat4fp_from_srt_euler(
-        ptx->mat,
-        (float[3]){7,7,7},
-        (float[3]){0,0,0},
-        (float[3]){0,250,0}
-    );
-
-    tpx_state_from_t3d();
-
-    tpx_matrix_push(ptx->mat);
-        tpx_state_set_scale(x,y);
-        tpx_particle_draw(ptx->buf, ptx->count);
-    tpx_matrix_pop(1);
 }
 
 void ptx_cleanup(Particles *ptx)

@@ -56,7 +56,7 @@ $(ASSETS)/wolfie.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/dogman.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/mew.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/platform.t3dm: T3DM_FLAGS = --base-scale=1
-$(ASSETS)/cloud_base.t3dm: T3DM_FLAGS = --base-scale=15
+$(ASSETS)/cloud_base.t3dm: T3DM_FLAGS = --base-scale=1
 
 # audioconv flags
 $(ASSETS)/Floating-Down.xm64: AUDIOCONV_FLAGS = ''

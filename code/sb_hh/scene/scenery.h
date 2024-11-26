@@ -37,7 +37,7 @@ Scenery scenery_create(uint32_t id, const char *model_path)
         .model = t3d_model_load(model_path),
         .modelMat = malloc_uncached(sizeof(T3DMat4FP)), // needed for t3d
 
-        .scale = {1.0f, 1.0f, 1.0f},
+        .scale = {12.0f, 11.0f, 15.0f},
         .position = {0.0f, 150.0f, -200.0f},
         .rotation = {0.0f, 0.0f, 0.0f},
     };
