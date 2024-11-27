@@ -68,7 +68,7 @@ void player_drawShadow(Vector3 position, T3DViewport* viewport)
     Vector3 billboardPos = (Vector3){
       position.x,
       position.y,
-      255 // Lock at top height of the platforms
+      275 // Lock at top height of the platforms
     };
 
     T3DVec3 billboardPosConvert = Vector3_to_T3DVec3(billboardPos);
