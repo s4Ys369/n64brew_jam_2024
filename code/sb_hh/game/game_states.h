@@ -674,6 +674,21 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 		game_setControlData(game, player);
 		player_setControlData(player);
 
+		// Hold Z to quit on the Pause screen
+		static int resetTimer = 0;
+		if(game->state == PAUSE && player[0].control.held.z)
+		{
+			resetTimer++;
+			if(resetTimer == 30)
+			{
+				sound_wavPlay(SFX_JUMP, false);
+			} else if (resetTimer > 40) {
+				game->state = GAME_OVER;
+			}
+		}
+
+		if(game->state == PAUSE && player[0].control.released.z) resetTimer = 0;
+
 //// CAMERA /////
 		if(player[0].control.pressed.l) game->scene.camera.cam_mode ^= 1;
 

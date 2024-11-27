@@ -227,14 +227,16 @@ void ui_pause(ControllerData* control)
 
     if(control->pressed.start || control->held.start)
     {
-        ui_spriteDraw(TILE3, sprite_faceButtons0, 1, 170, 110);
+        ui_spriteDraw(TILE4, sprite_faceButtons0, 1, 170, 110);
     } else {
-        ui_spriteDraw(TILE3, sprite_faceButtons0, 0, 170, 110);
+        ui_spriteDraw(TILE4, sprite_faceButtons0, 0, 170, 110);
     }
+
+    ui_spriteDraw(TILE5, sprite_dPadTriggers, 5, 160, 180);
 
     ui_syncText();
     rdpq_text_print(&txt_titleParms, ID_TITLE, 106, 84, " Halcyon\nHexagons");
-    rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 122, "Press\n\n\n  PAUSED");
+    rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 122, "Press\n\n\n  PAUSED\n\nHold       to\nQuit Game");
 }
 
 void ui_character_select(ControllerData* control, uint8_t selectedActor)
