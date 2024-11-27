@@ -7,12 +7,12 @@
 void gameState_setIntro();
 void gameState_setMainMenu();
 
-void gameState_setGameplay(Game* game, Player* player, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[], size_t numBoxes);
+void gameState_setGameplay(Game* game, Player* player, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact);
 void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scenery);
 
 void gameState_setGameOver();
 
-void game_play(Game* game, Player* player, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[], size_t numBoxes);
+void game_play(Game* game, Player* player, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact);
 
 
 void gameState_setIntro()
@@ -22,7 +22,7 @@ void gameState_setMainMenu()
 {
 }
 
-void gameState_setGameplay(Game* game, Player* player, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[], size_t numBoxes)
+void gameState_setGameplay(Game* game, Player* player, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact)
 {
 	
 	// ======== Update ======== //
@@ -33,8 +33,6 @@ void gameState_setGameplay(Game* game, Player* player, Actor* actor, Scenery* sc
 	for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
 		
 		actor_update(&actor[i], &player[i].control, game->timing.frame_time_s, game->scene.camera.angle_around_barycenter, game->scene.camera.offset_angle, &game->syncPoint);
-
-		actorCollision_updateBoxes(&actor[i], actor_contact, actor_collider, box_collider, numBoxes);
 	
 	}
 
@@ -87,7 +85,9 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 
 	t3d_matrix_push_pos(1);
 
-	scenery_draw(scenery);
+	//scenery_draw(scenery);
+	//move_lava(scenery);
+	room_draw(scenery);
 	
 	actor_draw(actor);
 
@@ -105,7 +105,7 @@ void gameState_setGameOver()
     // code for the game over state
 }
 
-void game_play(Game* game, Player* player, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact, Box box_collider[], size_t numBoxes)
+void game_play(Game* game, Player* player, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact)
 {
 	for(;;)
 	{
@@ -121,7 +121,7 @@ void game_play(Game* game, Player* player, Actor* actor, Scenery* scenery, Actor
 				break;
 			}
 			case GAMEPLAY:{
-				gameState_setGameplay(game, player, actor, scenery, actor_collider, actor_contact, box_collider, numBoxes);
+				gameState_setGameplay(game, player, actor, scenery, actor_collider, actor_contact);
 				break;
 			}
 			case PAUSE:{
