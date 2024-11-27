@@ -559,8 +559,9 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		if(!game->winnerSet)
 		{
 			ui_print_playerNum(&player[i], &game->screen);
-			ui_playerScores(&player[i]);
 		}
+
+		ui_playerScores(&player[i]);
 	}
 
 	if(loserCount >= 3)

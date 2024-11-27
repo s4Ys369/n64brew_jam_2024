@@ -120,7 +120,7 @@ void ui_print_winner(int winner)
         winnerTextParms.style_id = STYLE_PLAYER + winner-1;
         rdpq_text_printf(&winnerTextParms, ID_DEFAULT, 110, 120, "Player %d Wins", winner);
     } else {
-        rdpq_text_print(&txt_gameParms, ID_DEFAULT, 132, 120, "TIE!");
+        rdpq_text_print(&txt_gameParms, ID_DEFAULT, 140, 120, "TIE!");
     }
 }
 
