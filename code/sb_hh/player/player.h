@@ -66,26 +66,32 @@ Vector3 player_getBillboard(Player* player, T3DViewport* viewport)
 void player_drawShadow(Vector3 position, T3DViewport* viewport)
 {
 
-    Vector3 billboardPos = (Vector3){
+    Vector3 shadowPos = (Vector3){
       position.x,
       position.y,
       275 // @TODO: in a bigger game, I'd probably just raycasst for the floor Z
     };
 
-    T3DVec3 billboardPosConvert = Vector3_to_T3DVec3(billboardPos);
+    T3DVec3 playerPosConvert = Vector3_to_T3DVec3(position);
+    T3DVec3 shadowPosConvert = Vector3_to_T3DVec3(shadowPos);
 
-    T3DVec3 billboardScreenPos;
-    t3d_viewport_calc_viewspace_pos(viewport, &billboardScreenPos, &billboardPosConvert);
+    T3DVec3 playerScreenPos;
+    T3DVec3 shadowScreenPos;
+    t3d_viewport_calc_viewspace_pos(viewport, &playerScreenPos, &playerPosConvert);
+    t3d_viewport_calc_viewspace_pos(viewport, &shadowScreenPos, &shadowPosConvert);
 
-    int x = floorf(billboardScreenPos.v[0]);
-    int y = floorf(billboardScreenPos.v[1]);
-    int offset = 3; // Size (n * n) in pixels
+    int pX = floorf(playerScreenPos.v[0]);
+    int pY = floorf(playerScreenPos.v[1]);
+    int sX = floorf(shadowScreenPos.v[0]);
+    int sY = floorf(shadowScreenPos.v[1]);
+    int offset = 4; // Size (n * n) in pixels
 
     rdpq_sync_pipe();
     rdpq_set_mode_standard();
     rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
     rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
     rdpq_set_prim_color(RGBA32(0,0,0,196)); // Turn up because blue player color is dark
-    rdpq_fill_rectangle(x-offset,y-offset,x+offset,y+offset);
+    rdpq_fill_rectangle(pX-2,pY-4,sX+2,sY-4); // Draw a line from the player to the shadow
+    rdpq_fill_rectangle(sX-offset,sY-offset,sX+offset,sY+offset);
 }
 #endif
