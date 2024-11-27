@@ -109,7 +109,7 @@ Camera camera_create()
 		.near_clipping = 100,
 		.far_clipping = 3000,
 		.cam_mode = 0,
-		.lerpTime = 13.0f,
+		.lerpTime = 6.1f,
 		.camTime = 0,
     };
 
