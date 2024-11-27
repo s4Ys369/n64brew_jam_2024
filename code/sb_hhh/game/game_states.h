@@ -36,7 +36,7 @@ void camera_getMinigamePosition(Camera* camera, Actor* actor, Player* player, Ve
 
     for (uint8_t i = 0; i < ACTOR_COUNT; i++)
     {
-        if (!player[i].died) {
+        if (!player[i].died && player[i].isHuman) {
 
             vector3_add(&camera_target, &actor[i].body.position);
             average_count++;
