@@ -7,7 +7,7 @@
 #include <t3d/t3ddebug.h>
 
 // May make this an easter egg
-#define AI_BATTLE
+//#define AI_BATTLE
 
 
 // This define is to test if running the game loop
@@ -156,23 +156,19 @@ void minigame_init()
 }
 
 #ifdef FIXED
-void minigame_fixedloop(float dt)
+void minigame_fixedloop()
 {
-    minigame.timing.fixed_time_s = dt;
     game_play(&minigame, player, aiPlayer, actors, scenery, actor_collider, actor_contact);
 }
-void minigame_loop(float dt)
+void minigame_loop()
 {
-    minigame.timing.frame_time_s = dt;
 }
 #else
 void minigame_fixedloop(float dt)
 {
-    minigame.timing.fixed_time_s = dt;
 }
 void minigame_loop(float dt)
 {
-    minigame.timing.frame_time_s = dt;
     game_play(&minigame, player, aiPlayer, actors, scenery, actor_collider, actor_contact);
 }
 #endif
