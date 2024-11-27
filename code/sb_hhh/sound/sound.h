@@ -13,14 +13,14 @@
 xm64player_t xmPlayer;
 
 const char* xmFileNames[1] = {
-    "rom:/snake3d/bottled_bubbles.xm64", // Yoink
+    "rom:/strawberry_byte/sound/tribeof.xm64",
 };
 
 // WAV files
 enum SFX_WAV {
 	SFX_JUMP,
 	SFX_STONES,
-	SFX_WIND,
+	SFX_LAVA,
 	NUM_WAV
 };
 
@@ -30,7 +30,7 @@ wav64_t soundEffects[NUM_WAV];
 const char* wavFileNames[NUM_WAV] = {
     "rom:/strawberry_byte/sound/grunt-01.wav64",
 	"rom:/strawberry_byte/sound/stones-falling.wav64",
-	"rom:/strawberry_byte/sound/strong_wind_blowing.wav64",
+	"rom:/strawberry_byte/sound/lava-loop-2.wav64",
 };
 
 /* Function Declarations */

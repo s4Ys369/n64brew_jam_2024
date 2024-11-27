@@ -12,7 +12,7 @@
 
 // This define is to test if running the game loop
 // in the fixed or the delta matters
-//#define FIXED
+#define FIXED
 
 #define ACTOR_COUNT 4
 #define PLAYER_COUNT core_get_playercount()
@@ -76,10 +76,10 @@
 
 
 const MinigameDef minigame_def = {
-    .gamename = "Halcyon Hexagons",
+    .gamename = "Hot Hot Hexagons",
     .developername = "Strawberry Byte: .zoncabe, s4ys, mewde",
-    .description = "Don't look down!",
-    .instructions = "Drop as many platforms as you can\nwith your player color."
+    .description = "The floor is lava!",
+    .instructions = "Jump from platform to platform\nto avoid a terrible fate."
 };
 
 Game minigame = {
@@ -140,7 +140,7 @@ void minigame_init()
     }
     
 	// scenery
-    scenery[0] = scenery_create(0, "rom:/strawberry_byte/cloud_base.t3dm");
+    scenery[0] = scenery_create(0, "rom:/strawberry_byte/lava.t3dm");
 
     for (uint8_t i = 0; i < SCENERY_COUNT; i++)
 	{
@@ -148,27 +148,31 @@ void minigame_init()
     }
 
     // platforms
-    platform_hexagonGrid(hexagons, t3d_model_load("rom:/strawberry_byte/platform2.t3dm"), 250.0f, ui_color(WHITE));
+    platform_hexagonGrid(hexagons, t3d_model_load("rom:/strawberry_byte/platform.t3dm"), 250.0f, ui_color(N_YELLOW));
 
     // Sound: Play lava SFX
-    sound_wavPlay(SFX_WIND, true);
+    sound_wavPlay(SFX_LAVA, true);
 
 }
 
 #ifdef FIXED
-void minigame_fixedloop()
+void minigame_fixedloop(float dt)
 {
+    minigame.timing.fixed_time_s = dt;
     game_play(&minigame, player, aiPlayer, actors, scenery, actor_collider, actor_contact);
 }
-void minigame_loop()
+void minigame_loop(float dt)
 {
+    minigame.timing.frame_time_s = dt;
 }
 #else
 void minigame_fixedloop(float dt)
 {
+    minigame.timing.fixed_time_s = dt;
 }
 void minigame_loop(float dt)
 {
+    minigame.timing.frame_time_s = dt;
     game_play(&minigame, player, aiPlayer, actors, scenery, actor_collider, actor_contact);
 }
 #endif
@@ -197,6 +201,7 @@ void minigame_cleanup()
 	};
 
     for (uint8_t i = 0; i < SCENERY_COUNT; i++) {
+
 		scenery_delete(&scenery[i]);
 	}
     platform_destroy(hexagons);

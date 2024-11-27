@@ -1,5 +1,5 @@
 # Project-specific assets
-ASSETS = filesystem/sb_hh
+ASSETS = filesystem/strawberry_byte
 SOUND_DIR = $(ASSETS)/sound
 UI_DIR = $(ASSETS)/ui
 
@@ -8,6 +8,8 @@ T3DM_FILES := $(ASSETS)/wolfie.t3dm \
               $(ASSETS)/dogman.t3dm \
               $(ASSETS)/mew.t3dm \
               $(ASSETS)/platform.t3dm \
+              $(ASSETS)/lava.t3dm \
+              $(ASSETS)/platform2.t3dm \
               $(ASSETS)/cloud_base.t3dm
 
 SPRITE_FILES := $(ASSETS)/wolf_eye.sprite \
@@ -22,10 +24,13 @@ SPRITE_FILES := $(ASSETS)/wolf_eye.sprite \
                 $(ASSETS)/dogman_eyebrow.sprite \
                 $(ASSETS)/dogman_mouth.sprite \
                 $(ASSETS)/fast64.sprite \
-                $(ASSETS)/bricks48.i8.sprite
+                $(ASSETS)/bricks48.i8.sprite \
+                $(ASSETS)/lava00.rgba16.sprite \
+                $(ASSETS)/lava08.rgba16.sprite
 
-SOUND_FILES := $(SOUND_DIR)/Floating-Down.xm64 \
+SOUND_FILES := $(SOUND_DIR)/tribeof.xm64 \
                $(SOUND_DIR)/grunt-01.wav64 \
+               $(SOUND_DIR)/lava-loop-2.wav64 \
                $(SOUND_DIR)/stones-falling.wav64 \
                $(SOUND_DIR)/strong_wind_blowing.wav64
 
@@ -56,10 +61,13 @@ $(ASSETS)/wolfie.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/dogman.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/mew.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/platform.t3dm: T3DM_FLAGS = --base-scale=1
+$(ASSETS)/lava.t3dm: T3DM_FLAGS = --base-scale=1
+$(ASSETS)/platform2.t3dm: T3DM_FLAGS = --base-scale=1
 $(ASSETS)/cloud_base.t3dm: T3DM_FLAGS = --base-scale=1
 
 # audioconv flags
-$(ASSETS)/Floating-Down.xm64: AUDIOCONV_FLAGS = ''
+$(ASSETS)/tribeof.xm64: AUDIOCONV_FLAGS = ''
+$(ASSETS)/lava-loop-2.wav64: AUDIOCONV_FLAGS = --wav-compress=3 --wav-mono
 $(ASSETS)/stones-falling.wav64: AUDIOCONV_FLAGS = --wav-compress=3 --wav-mono
 $(ASSETS)/strong_wind_blowing.wav64: AUDIOCONV_FLAGS = --wav-compress=3 --wav-mono
 $(ASSETS)/grunt-01.wav64: AUDIOCONV_FLAGS = --wav-compress=3 --wav-mono
