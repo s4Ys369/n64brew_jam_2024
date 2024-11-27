@@ -537,7 +537,7 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 	
 	screen_clearDisplay(&game->screen);
 	screen_clearT3dViewport(&game->screen);
-	screen_applyColor(&game->screen, ui_color(DARK_RED), true);
+	screen_applyColor(&game->screen, ui_color(BLACK), true);
 
 	light_set(&game->scene.light);
 
