@@ -33,7 +33,7 @@ void player_setControlData(Player* player)
     joypad_poll();
     
     for (int i = 0; i < PLAYER_COUNT; i++) {
-        if(player[i].died) continue;
+        if(i!=0 && player[i].died) continue; // Allow player one to still pause when eliminated
         controllerData_getInputs(&player[i].control, i);
     } 
 }
