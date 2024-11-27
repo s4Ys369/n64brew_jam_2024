@@ -69,7 +69,7 @@ void player_drawShadow(Vector3 position, T3DViewport* viewport)
     Vector3 billboardPos = (Vector3){
       position.x,
       position.y,
-      255 // Lock at top height of the platforms
+      275 // @TODO: in a bigger game, I'd probably just raycasst for the floor Z
     };
 
     T3DVec3 billboardPosConvert = Vector3_to_T3DVec3(billboardPos);
@@ -85,7 +85,7 @@ void player_drawShadow(Vector3 position, T3DViewport* viewport)
     rdpq_set_mode_standard();
     rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
     rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
-    rdpq_set_prim_color(RGBA32(0,0,0,100)); // Turn down alpha to hid when over lava
+    rdpq_set_prim_color(RGBA32(0,0,0,196)); // Turn up because blue player color is dark
     rdpq_fill_rectangle(x-offset,y-offset,x+offset,y+offset);
 }
 #endif
