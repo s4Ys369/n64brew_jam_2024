@@ -51,7 +51,7 @@ const char* uiTipStrings[ACTOR_COUNT] = {
     "Platforms fall when stood on.\nDrop as many platforms\nwith your player color\ninto the cloud to get points.\nA winner is selected after\n3 players fall. GLHF!",
     "Hold A to extend jump time.\nSee if you can make\na 2 platform gap.",
     "Try to corner opponents\nand reducing their exit routes.",
-    "Remember to roll 10d10\nwhen you fall in the lava."
+    "I should probably remove these placeholders"
 };
 
 const char* uiCharacterSelectStrings[ACTOR_COUNT] = {
@@ -407,7 +407,7 @@ void ui_intro(ControllerData* control)
             "- Original 'Olli' by FazanaJ\n"
             "Strawberry Sprite by Sonika Rud\n"
             "UI Sprites by Kenney\n"
-            "Music: 'Floating Down' by s4ys\n"
+            "Music: 'Bottled Bubbles' by Roald Strauss\n"
             "SFX obtained from Freesound");
     }
     
