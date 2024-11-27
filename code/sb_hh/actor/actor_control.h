@@ -36,7 +36,7 @@ void actorControl_setJump(Actor* actor, ControllerData *control, float frame_tim
 
 void actorControl_moveWithStick(Actor *actor, ControllerData *control, float camera_angle_around, float camera_offset)
 {
-    int deadzone = 6;
+    int deadzone = 4;
     float stick_magnitude = 0; 
 
     // Store previous camera angle and offset

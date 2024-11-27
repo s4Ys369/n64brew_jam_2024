@@ -53,8 +53,6 @@ void actorMotion_integrate (Actor *actor, float frame_time)
 
     if (actor->body.acceleration.x != 0 || actor->body.acceleration.y != 0 || actor->body.acceleration.z != 0){
         vector3_addScaledVector(&actor->body.velocity, &actor->body.acceleration, frame_time);
-        if (actor->body.velocity.z < actor->settings.fall_max_speed) actor->body.velocity.z = actor->settings.fall_max_speed;
-        if (actor->body.velocity.z > actor->settings.jump_max_speed) actor->body.velocity.z = actor->settings.jump_max_speed;
     }
 
 	if (fabsf(actor->body.velocity.x) < 10.0f && fabsf(actor->body.velocity.y) < 10.0f){
