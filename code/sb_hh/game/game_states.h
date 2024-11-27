@@ -582,7 +582,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		ui_fps(game->timing.frame_rate);
 		if(core_get_playercount() == 1) ui_input_display(&player[0].control);
 	}
-	ui_fps(game->timing.frame_rate);
+
 	rdpq_detach_show();
 	sound_update();
 
