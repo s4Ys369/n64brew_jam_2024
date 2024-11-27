@@ -8,7 +8,7 @@
 *
 * Description of changes or adaptations made:
 * - Generate positions randomly within an AABB
-* - Utilize `gradient_fire` in more of a random distribution
+* - Utilize `gradient_fire` as `gradient_alpha` to add random alpha values to white
 *
 *
 * Original source: https://github.com/HailToDodongo/tiny3d/tree/main/examples/18_particles
@@ -31,7 +31,7 @@ Particles lavaBubbles;
 void ptx_init(Particles *ptx)
 {
     tpx_init((TPXInitParams){});
-    ptx->count = 6;
+    ptx->count = 8;
     ptx->bufSize = sizeof(TPXParticle) * (ptx->count + 2);
     ptx->buf = malloc_uncached(ptx->bufSize);
     ptx->mat = malloc_uncached(sizeof(T3DMat4FP));
@@ -51,7 +51,7 @@ void gradient_alpha(uint8_t *color, float t)
     color[3] = (uint8_t)(200 * (1.0f - (t - 0.5f) / 0.5f));
 }
 
-void ptx_randomPos(Particles *ptx)
+void ptx_randomPos(T3DViewport *vp, Particles *ptx)
 {
     for (int i = 0; i < ptx->count; i++)
     {
@@ -62,22 +62,25 @@ void ptx_randomPos(Particles *ptx)
         ptx->buf[p].sizeA = 20 + (rand() % 10);
         ptx->buf[p].sizeB = 20 + (rand() % 10);
 
-        // Random positions
-        T3DVec3 pos = {{
-            (i * 1 + rand()) % 128 - 64,
-            (i * 3 + rand()) % 128 - 64,
-            (i * 4 + rand()) % 128 - 64
-        }};
+        // Random positions within the bounding box
+        float min = -127.9f;
+        float max = 126.9f;
+        T3DVec3 randomPos;
+        randomPos.v[0] = min + ((float)rand() / max) * (max  - min);
+        randomPos.v[1] = min;
+        randomPos.v[2] = min + ((float)rand() / max) * (max  - min);
 
-        t3d_vec3_norm(&pos);
-        float len = rand() % 40;
-        pos.v[0] *= len;
-        pos.v[1] *= len;
-        pos.v[2] *= len;
+        // Calculate from view space
+        T3DVec3 screenPos;
+        t3d_viewport_calc_viewspace_pos(vp, &screenPos, &randomPos);
 
-        ptxPos[0] = (rand() % 256) - 128;
-        ptxPos[1] = (rand() % 256) - 128;
-        ptxPos[2] = (rand() % 256) - 128;
+        float t = (float)i / ptx->count; // Vary by particle index
+        screenPos.v[1] += t * (max - min); // Move upward
+
+        // Clamp final values to fit within int8_t range
+        ptxPos[0] = (int8_t)screenPos.v[0];
+        ptxPos[1] = (int8_t)screenPos.v[1];
+        ptxPos[2] = (int8_t)screenPos.v[2];
 
 
         gradient_alpha(ptx->buf[p].colorA, (ptxPos[0] + 127) * 0.0012f);
@@ -85,17 +88,17 @@ void ptx_randomPos(Particles *ptx)
     }
 }
 
-void ptx_draw(Platform* platform, Particles *ptx)
+void ptx_draw(T3DViewport* vp, Platform* platform, Particles *ptx)
 {
 
     static int frameCounter = 0;
-    const int updateInterval = 3;
+    const int updateInterval = 12;
 
     // Prepare the RDPQ
     rdpq_sync_pipe();
     rdpq_sync_tile();
     rdpq_set_mode_standard();
-    rdpq_mode_zbuf(true, false);
+    rdpq_mode_zbuf(true, true);
     rdpq_mode_zoverride(true, 0, 0);
     rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
     rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
@@ -105,7 +108,7 @@ void ptx_draw(Platform* platform, Particles *ptx)
     {
         if (frameCounter % updateInterval == 0)
         {
-            ptx_randomPos(ptx);
+            ptx_randomPos(vp,ptx);
         }
         frameCounter++;
 
@@ -118,7 +121,7 @@ void ptx_draw(Platform* platform, Particles *ptx)
                 ptx->mat,
                 (float[3]){1,1,1},
                 (float[3]){0,0,0},
-                (float[3]){platform->position.x,platform->position.y,0}
+                (float[3]){platform->position.x,platform->position.y,platform->position.z}
             );
             tpx_particle_draw(ptx->buf, ptx->count);
         tpx_matrix_pop(1);

@@ -547,7 +547,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 	// TPX
 	for (int j = 0; j < PLATFORM_COUNT; j++) {
-		ptx_draw(&hexagons[j], &lavaBubbles);
+		ptx_draw(&game->screen.gameplay_viewport,&hexagons[j], &lavaBubbles);
 	}
 
 	for (size_t i = 0; i < ACTOR_COUNT; i++)
