@@ -306,10 +306,14 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 	if (!game->actorSet)
 	{
+		// Unique spawn positions
+		actor[0].body.position = hexagons[3].position;
+		actor[1].body.position = hexagons[6].position;
+		actor[2].body.position = hexagons[12].position;
+		actor[3].body.position = hexagons[15].position;
 		for (size_t i = 0; i < ACTOR_COUNT; i++) 
 		{
-			actor[i].body.position = hexagons[9].position; // Center Platform
-			actor[i].body.position.z = actor[i].body.position.z + 150.0f; // Adjust height to prevent spawning inside platform
+			actor[i].body.position.z = actor[i].body.position.z + 150.0f;
 			actor[i].home = actor[i].body.position;
 			actor[player[i].actor_id].colorID = i;
 		}
