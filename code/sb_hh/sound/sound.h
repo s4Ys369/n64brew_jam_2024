@@ -54,7 +54,7 @@ void sound_load(void)
 	// Open and play first XM in the list
     xm64player_open(&xmPlayer, xmFileNames[0]);
     xm64player_set_vol(&xmPlayer, 0.7f);
-    xm64player_play(&xmPlayer, MUSIC_CHANNEL);
+    //xm64player_play(&xmPlayer, MUSIC_CHANNEL);
 }
 
 // Stops current XM, opens and plays requested module with set volume and whether to loop
