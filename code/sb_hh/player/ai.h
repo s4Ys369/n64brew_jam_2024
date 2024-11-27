@@ -87,7 +87,7 @@ Platform* find_nearest_safe_platform(AI *ai, Actor *actor, Platform* platforms) 
                     if (platform->position.z <= ai->safe_height) continue;
 
                     // Skip platforms not at a safe height
-                    if (platform->contact) continue;
+                    //if (platform->contact) continue;
 
                     // Calculate squared distance using vector3_squaredDistance
                     float distance_sq = vector3_squaredDistance(&platform->position, &actor->body.position);
