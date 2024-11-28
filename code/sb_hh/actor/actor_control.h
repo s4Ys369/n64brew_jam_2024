@@ -12,33 +12,59 @@ void actor_setControlData(Actor* actor, ControllerData *control, float frame_tim
 // function implementations
 
 void actorControl_setJump(Actor* actor, ControllerData *control, float frame_time)
-{    
-    if (control->pressed.a && actor->grounded) {
+{
+    bool canJump = false;
+    bool wantJump = false;
+
+    switch(actor->state)
+    {
+        case FALLING:
+            if (control->held.a) actor->input.jump_time_buffer += frame_time;
+            actor->input.jump_released = true;
+            actor->input.jump_hold = false; 
+            canJump = false;
+            break;
+        case JUMP:
+            if (control->held.a) actor->input.jump_time_held += frame_time;
+            actor->input.jump_time_buffer = 0;
+            canJump = false;
+            wantJump = false;
+            break;
+        case STAND_IDLE:
+        case RUNNING:
+            actor->input.jump_released = true;
+            actor->input.jump_hold = false; 
+            canJump = true;
+            break;
+
+    }
+
+    if (control->pressed.a) wantJump = true;
+    if (actor->input.jump_time_buffer > 0.0f && actor->input.jump_time_buffer < 0.3f) wantJump = true;
+
+    if (wantJump && canJump)
+    {
         
-        actor->horizontal_speed = actor->settings.jump_horizontal_boost;
         actor->body.velocity.z = actor->settings.jump_horizontal_boost;
         actor->input.jump_hold = true;
         actor->input.jump_released = false;
         sound_wavPlay(SFX_JUMP, false);
         actor_setState(actor, JUMP);
-    }
-
-    else if (control->held.a && actor->state == JUMP) {
-        
-        actor->input.jump_time_held += frame_time;
-    }
-
-    else {
-
+    } else {
         actor->input.jump_released = true;
-        actor->input.jump_hold = false;    
+        actor->input.jump_hold = false; 
     }
+
+    if(control->released.a) actor->input.jump_time_buffer = 0;
+        
+
+
 }
 
 
 void actorControl_moveWithStick(Actor *actor, ControllerData *control, float camera_angle_around, float camera_offset)
 {
-    int deadzone = 4;
+    int deadzone = 2;
     float stick_magnitude = 0; 
 
     // Store previous camera angle and offset
@@ -71,7 +97,7 @@ void actorControl_moveWithStick(Actor *actor, ControllerData *control, float cam
     {
         Vector2 stick = {control->input.stick_x, control->input.stick_y};
         stick_magnitude = vector2_magnitude(&stick);
-        actor->horizontal_target_speed = stick_magnitude * 4;
+        actor->horizontal_target_speed = stick_magnitude * 6;
     }
 
     

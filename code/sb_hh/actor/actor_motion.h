@@ -108,8 +108,13 @@ void actorMotion_setJump(Actor *actor)
         actorMotion_setJumpAcceleration(actor, actor->settings.jump_target_speed, actor->settings.jump_acceleration_rate);
     } 
     else if (actor->body.velocity.z > 0) {
+
+        // Scale horizontal boost based on how long the jump button is held
+        float hold_factor = (float)actor->input.jump_time_held / actor->settings.jump_timer_max;
+        float boosted_speed = actor->horizontal_speed + (actor->settings.jump_horizontal_boost * (hold_factor*0.5f));
+
         // Maintain aerial control while falling
-        actorMotion_setHorizontalAcceleration(actor, actor->horizontal_speed, actor->settings.aerial_control_rate);
+        actorMotion_setHorizontalAcceleration(actor, boosted_speed, actor->settings.aerial_control_rate);
         actor->body.acceleration.z = ACTOR_GRAVITY;
     } 
     else {
