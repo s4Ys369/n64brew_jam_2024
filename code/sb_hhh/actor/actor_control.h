@@ -13,13 +13,14 @@ void actor_setControlData(Actor* actor, ControllerData *control, float frame_tim
 
 void actorControl_setJump(Actor* actor, ControllerData *control, float frame_time)
 {    
-    if (control->pressed.a && actor->state != JUMP && actor->state != FALLING) {
+    if (control->pressed.a && actor->grounded) {
         
+        actor->body.velocity.z = actor->settings.jump_horizontal_boost;
         actor->input.jump_hold = true;
         actor->input.jump_released = false;
         sound_wavPlay(SFX_JUMP, false);
         actor_setState(actor, JUMP);
-    }
+    } 
 
     else if (control->held.a && actor->state == JUMP) {
         

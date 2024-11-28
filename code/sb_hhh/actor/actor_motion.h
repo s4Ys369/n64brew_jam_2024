@@ -48,6 +48,7 @@ void actorMotion_setJumpAcceleration(Actor *actor, float target_speed, float acc
 }
 
 
+
 void actorMotion_integrate (Actor *actor, float frame_time)
 {
 
@@ -96,21 +97,24 @@ void actorMotion_setRunning(Actor *actor)
 
 void actorMotion_setJump(Actor *actor)
 {
-          
-    if (actor->input.jump_hold && !actor->input.jump_released && actor->input.jump_time_held < actor->settings.jump_timer_max){
-
-        actorMotion_setJumpAcceleration (actor, actor->settings.jump_target_speed, actor->settings.jump_acceleration_rate);
-        actorMotion_setHorizontalAcceleration (actor, actor->horizontal_speed, actor->settings.aerial_control_rate);
+    if (actor->input.jump_hold && !actor->input.jump_released && actor->input.jump_time_held < actor->settings.jump_timer_max) {
+        // Scale horizontal boost based on how long the jump button is held
+        float hold_factor = (float)actor->input.jump_time_held / actor->settings.jump_timer_max;
+        float boosted_speed = actor->horizontal_speed + (actor->settings.jump_horizontal_boost * hold_factor);
+        
+        // Set horizontal acceleration to the boosted speed
+        actorMotion_setHorizontalAcceleration(actor, boosted_speed, actor->settings.aerial_control_rate);
+        
+        // Maintain vertical acceleration for the jump
+        actorMotion_setJumpAcceleration(actor, actor->settings.jump_target_speed, actor->settings.jump_acceleration_rate);
     } 
-    
-    else if (actor->body.velocity.z > 0){
-
-        actorMotion_setHorizontalAcceleration (actor, actor->horizontal_speed, actor->settings.aerial_control_rate);
+    else if (actor->body.velocity.z > 0) {
+        // Maintain aerial control while falling
+        actorMotion_setHorizontalAcceleration(actor, actor->horizontal_speed, actor->settings.aerial_control_rate);
         actor->body.acceleration.z = ACTOR_GRAVITY;
-    }
-    
+    } 
     else {
-
+        // Transition to falling state
         actor->state = FALLING;
         actor->input.jump_time_held = 0;
         return;
@@ -130,7 +134,7 @@ void actorMotion_setFalling(Actor *actor)
         actor->body.velocity.z = 0;
         actor->body.position.z = actor->grounding_height;
 
-        actor->state = actor->locomotion_state;
+        actor->state = STAND_IDLE;
 
         return;
     }
