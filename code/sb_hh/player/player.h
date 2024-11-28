@@ -69,7 +69,7 @@ void player_drawShadow(Vector3 position, T3DViewport* viewport)
     Vector3 shadowPos = (Vector3){
       position.x,
       position.y,
-      275 // @TODO: in a bigger game, I'd probably just raycasst for the floor Z
+      290 // @TODO: in a bigger game, I'd probably just raycasst for the floor Z
     };
 
     T3DVec3 playerPosConvert = Vector3_to_T3DVec3(position);
@@ -80,18 +80,21 @@ void player_drawShadow(Vector3 position, T3DViewport* viewport)
     t3d_viewport_calc_viewspace_pos(viewport, &playerScreenPos, &playerPosConvert);
     t3d_viewport_calc_viewspace_pos(viewport, &shadowScreenPos, &shadowPosConvert);
 
-    int pX = floorf(playerScreenPos.v[0]);
-    int pY = floorf(playerScreenPos.v[1]);
-    int sX = floorf(shadowScreenPos.v[0]);
-    int sY = floorf(shadowScreenPos.v[1]);
-    int offset = 4; // Size (n * n) in pixels
+    int offset = 2;
+    float v1[] = { playerScreenPos.x, playerScreenPos.y-offset };
+    float v2[] = { shadowScreenPos.x-offset, shadowScreenPos.y };
+    float v3[] = { shadowScreenPos.x+offset, shadowScreenPos.y };
+    float v4[] = { shadowScreenPos.x, shadowScreenPos.y+offset };
+    
 
     rdpq_sync_pipe();
     rdpq_set_mode_standard();
     rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
     rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
-    rdpq_set_prim_color(RGBA32(0,0,0,196)); // Turn up because blue player color is dark
-    rdpq_fill_rectangle(pX-2,pY-4,sX+2,sY-4); // Draw a line from the player to the shadow
-    rdpq_fill_rectangle(sX-offset,sY-offset,sX+offset,sY+offset);
+    rdpq_set_prim_color(RGBA32(0,0,0,127));
+
+    // Draw rhombus shape with 2 tris
+    rdpq_triangle(&TRIFMT_FILL, v1, v2, v3);
+    rdpq_triangle(&TRIFMT_FILL, v3, v4, v2);
 }
 #endif
