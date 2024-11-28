@@ -23,25 +23,25 @@ void ai_init(AI *ai, uint8_t difficulty)
     switch(difficulty)
     {
         case DIFF_EASY:
-            ai->jump_threshold = 185.0f;
+            ai->jump_threshold = 400.0f;
             ai->safe_height = 222.0f;
             ai->difficulty = DIFF_EASY;
-            ai->error_margin = 4;
-            ai->max_reaction_delay = 4;
+            ai->error_margin = 12;
+            ai->max_reaction_delay = 3;
             break;
         case DIFF_MEDIUM:
-            ai->jump_threshold = 182.5f;
-            ai->safe_height = 221.0f;
+            ai->jump_threshold = 400.0f;
+            ai->safe_height = 222.0f;
             ai->difficulty = DIFF_MEDIUM;
-            ai->error_margin = 3;
+            ai->error_margin = 6;
             ai->max_reaction_delay = 2;
             break;
-        case DIFF_HARD:
-            ai->jump_threshold = 180.0f;
-            ai->safe_height = 220.0f;
+        case DIFF_HARD: // @TODO: THEY ARE DUMB NOW :.[
+            ai->jump_threshold = 375.0f;
+            ai->safe_height = 240.0f;
             ai->difficulty = DIFF_HARD;
-            ai->error_margin = 2;
-            ai->max_reaction_delay = 0;
+            ai->error_margin = 4;
+            ai->max_reaction_delay = 2;
             break;
     }
 
@@ -64,7 +64,7 @@ void ai_updateCam(ControllerData *control, float camera_angle)
 Platform* find_nearest_safe_platform(AI *ai, Actor *actor, Platform* platforms) {
     Platform* nearest_platform = NULL;
     float min_distance_sq = FLT_MAX; // Store squared distance to avoid square root computation
-    const float current_platform_threshold_sq = 0.01f * 0.01f; // Squared threshold to ignore the current platform
+    const float current_platform_threshold_sq = 0.02f * 0.02f; // Squared threshold to ignore the current platform
 
     // Calculate grid cell for the actor's current position
     int xCell = (int)floorf((actor->body.position.x + 700) / GRID_SIZE);
@@ -125,7 +125,7 @@ void ai_generateControlData(AI *ai, ControllerData *control, Actor *actor, Platf
     Vector3 direction_to_target = {
         target_platform->position.x - actor->body.position.x,
         target_platform->position.y - actor->body.position.y,
-        0  // Only move in x-y plane, no need for z movement
+        target_platform->position.z - actor->body.position.z,
     };
     vector3_normalize(&direction_to_target);
 
@@ -137,12 +137,8 @@ void ai_generateControlData(AI *ai, ControllerData *control, Actor *actor, Platf
     control->input.stick_x += (rand() % ai->error_margin) - (ai->error_margin / 2);
     control->input.stick_y += (rand() % ai->error_margin) - (ai->error_margin / 2);
 
-    // Calculate horizontal speed as the magnitude of the x and y velocity components
-    Vector2 horizontal_velocity = { actor->body.velocity.x, actor->body.velocity.y };
-    float horizontal_speed = vector2_magnitude(&horizontal_velocity);
-
     // Check if the actor should jump when horizontal speed is greater than 10
-    if (horizontal_speed > ai->jump_threshold && actor->state != FALLING)
+    if (actor->horizontal_speed > ai->jump_threshold && actor->state != FALLING)
     {
         control->pressed.a = 1; // Press jump button
         control->held.a = 1;    // Hold jump button
