@@ -45,7 +45,7 @@ void actorControl_setJump(Actor* actor, ControllerData *control, float frame_tim
     if (wantJump && canJump)
     {
         
-        actor->body.velocity.z = actor->settings.jump_horizontal_boost;
+        actor->body.velocity.z = 30;
         actor->input.jump_hold = true;
         actor->input.jump_released = false;
         sound_wavPlay(SFX_JUMP, false);

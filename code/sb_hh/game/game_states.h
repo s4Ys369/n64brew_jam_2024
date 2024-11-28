@@ -367,7 +367,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 // ======== Gameplay ======== //
 
-	float endTimerFactor = 25.7f;
+	float endTimerFactor = 22.0f;
 
 	// AI
 #ifndef AI_BATTLE
@@ -457,7 +457,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
         // Count platforms with the same colorID
         for (int j = 0; j < PLATFORM_COUNT; j++) {
             if (hexagons[j].colorID == playerColorID) {
-                if(hexagons[j].platformTimer == 120 - (core_get_aidifficulty()*10)) player[i].score++;
+                if(!game->winnerSet && hexagons[j].platformTimer == 120 - (core_get_aidifficulty()*10)) player[i].score++;
             }
         }
     }

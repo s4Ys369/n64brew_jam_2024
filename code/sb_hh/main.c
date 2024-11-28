@@ -79,7 +79,7 @@ const MinigameDef minigame_def = {
     .gamename = "Halcyon Hexagons",
     .developername = "Strawberry Byte: .zoncabe, s4ys, mewde",
     .description = "Don't look down!",
-    .instructions = "Drop as many platforms as you can\nwith your player color."
+    .instructions = "Turn as many platforms as you can\nto your player color."
 };
 
 Game minigame = {

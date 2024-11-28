@@ -69,7 +69,7 @@ void player_drawShadow(Vector3 position, T3DViewport* viewport)
     Vector3 shadowPos = (Vector3){
       position.x,
       position.y,
-      290 // @TODO: in a bigger game, I'd probably just raycasst for the floor Z
+      300 // @TODO: in a bigger game, I'd probably just raycasst for the floor Z
     };
 
     T3DVec3 playerPosConvert = Vector3_to_T3DVec3(position);
