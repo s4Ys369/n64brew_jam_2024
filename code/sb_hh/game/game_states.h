@@ -357,6 +357,8 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 		game->countdownTimer--;
 
+		game->timing.frame_counter = 0;
+
 		rdpq_detach_show();
 		sound_update();
 		return; // Exit early until countdown finishes
@@ -364,6 +366,8 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 
 // ======== Gameplay ======== //
+
+	float endTimerFactor = 25.7f;
 
 	// AI
 #ifndef AI_BATTLE
@@ -383,12 +387,24 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 #endif
 
 	// Platforms
-	for (size_t j = 0; j < PLATFORM_COUNT; j++)
+	if(game->timing.frame_counter > display_get_refresh_rate()*10)
 	{
-		platform_loop(&hexagons[j], actor, game->diff);
+		platform_dropGroup(hexagons, 2, game->timing.fixed_time_s);
+	}
+	if(game->timing.frame_counter > display_get_refresh_rate()*20)
+	{
+		platform_dropGroup(hexagons, 1, game->timing.fixed_time_s);
 	}
 
-	//move_lava(scenery);
+	if(!game->winnerSet)
+	{
+		for (size_t j = 0; j < PLATFORM_COUNT; j++)
+		{
+			platform_loop(&hexagons[j], actor, game->diff);
+		}
+	}
+
+
 
 	// Actors
 	uint8_t loserCount = 0;
@@ -441,13 +457,13 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
         // Count platforms with the same colorID
         for (int j = 0; j < PLATFORM_COUNT; j++) {
             if (hexagons[j].colorID == playerColorID) {
-                if(hexagons[j].platformTimer == 120) player[i].score++;
+                if(hexagons[j].platformTimer == 120 - (core_get_aidifficulty()*10)) player[i].score++;
             }
         }
     }
 
-	// Check if we have a winner (only one alive player left)
-	if (aliveCount <= 1 && !game->winnerSet)
+	// Check if we have a winner (only one alive player left) OR if there's only one platform left
+	if ((aliveCount <= 1 || game->timing.frame_counter > display_get_refresh_rate()*endTimerFactor) && !game->winnerSet)
 	{
 		int scores[4] = {
 			player[0].score,
@@ -564,7 +580,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		ui_playerScores(&player[i]);
 	}
 
-	if(loserCount >= 3)
+	if(loserCount >= 3 || game->timing.frame_counter > display_get_refresh_rate()*endTimerFactor)
 	{
 		if(game->winnerSet)
 		{

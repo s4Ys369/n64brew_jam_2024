@@ -36,6 +36,12 @@ PlatformGridCell platformGrid[MAX_GRID_CELLS][MAX_GRID_CELLS];
 
 Platform hexagons[PLATFORM_COUNT];
 
+Platform innerRing[6];
+Platform outerRing[12];
+
+int innerRingID[] = {4,5,8,10,13,14};
+int outerRingID[] = {0,1,2,3,6,7,11,12,15,16,17,18};
+
 // Forward Declarations
 
 void platform_init(Platform* platform, T3DModel* model, Vector3 position, color_t color);
@@ -72,6 +78,8 @@ void platform_init(Platform* platform, T3DModel* model, Vector3 position, color_
   }
 
   platform->color = color; // Set color
+
+  platform->colorID = -1;
 
   platform->platformTimer = 0;
 
@@ -115,6 +123,29 @@ void platform_updateHeight(Platform* platform, float time)
 {
   if (platform->position.z > -150.0f) platform->position.z = platform->position.z - time;
 }
+
+void platform_dropGroup(Platform* platform, int groupID, float time)
+{
+  int ringSize; // Variable to hold the size of the current ring group
+
+  if (groupID == 1)
+  {
+    ringSize = sizeof(innerRing) / sizeof(innerRing[0]);
+    for (int i = 0; i < ringSize; i++)
+    {
+      platform_shake(&platform[innerRingID[i]], (time*20) + rand() % 5);
+      platform_updateHeight(&platform[innerRingID[i]], (time*20) + rand() % 5);
+    }
+  } else {
+    ringSize = sizeof(outerRing) / sizeof(outerRing[0]);
+    for (int i = 0; i < ringSize; i++)
+    {
+      platform_shake(&platform[outerRingID[i]], (time*20) + rand() % 5);
+      platform_updateHeight(&platform[outerRingID[i]], (time*20) + rand() % 5);
+    }
+  }
+}
+
 
 void platform_collideCheck(Platform* platform, Actor* actor)
 {
@@ -183,7 +214,7 @@ void platform_collideCheckOptimized(Platform* platforms, Actor* actor)
 
 void platform_loop(Platform* platform, Actor* actor, int diff)
 {
-  int difficulty = (core_get_playercount() == 4) ? diff : DIFF_EASY;
+  int difficulty = (core_get_playercount() == 4) ? diff : core_get_aidifficulty();
 
   // Translate collision
   for (int j = 0; j < 3; j++) platform->collider.box[j].center = platform->position;
@@ -200,7 +231,7 @@ void platform_loop(Platform* platform, Actor* actor, int diff)
       sound_wavPlay(SFX_STONES, false);
 
     // Action 2: Shake platform
-    } else if(platform->platformTimer < 120) {
+    } else if(platform->platformTimer < 120 - (difficulty*10)) {
       platform_shake(platform, platform->platformTimer);
 
     // Action 3: Reset to idle
@@ -213,7 +244,7 @@ void platform_loop(Platform* platform, Actor* actor, int diff)
 
     // Reset to initial position
     platform->platformTimer = 0;
-    if(platform->position.z < platform->home.z) platform->position.z = platform->position.z + 1.0f + difficulty; 
+    //if(platform->position.z < platform->home.z) platform->position.z = platform->position.z + 1.0f + difficulty; 
   }
 
   // Update matrix
@@ -327,6 +358,18 @@ void platform_hexagonGrid(Platform* platform, T3DModel* model, float z, color_t 
   }
 
   platform_assignGrid(platform);
+
+  // Assign platforms to ring by predefined IDs
+  for (int g = 0; g < sizeof(innerRingID) / sizeof(innerRingID[0]); g++)
+  {
+    innerRing[g] = platform[innerRingID[g]];
+  }
+  for (int h = 0; h < sizeof(outerRingID) / sizeof(outerRingID[0]); h++)
+  {
+    outerRing[h] = platform[outerRingID[h]];
+  }
+
+  
 
   platform_createBatch(platform, model);
 

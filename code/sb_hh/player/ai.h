@@ -23,22 +23,22 @@ void ai_init(AI *ai, uint8_t difficulty)
     switch(difficulty)
     {
         case DIFF_EASY:
-            ai->jump_threshold = 160.0f;
-            ai->safe_height = 170.0f;
+            ai->jump_threshold = 130.0f;
+            ai->safe_height = 240.0f;
             ai->difficulty = DIFF_EASY;
             ai->error_margin = 4;
             ai->max_reaction_delay = 2;
             break;
         case DIFF_MEDIUM:
-            ai->jump_threshold = 180.0f;
-            ai->safe_height = 160.0f;
+            ai->jump_threshold = 125.0f;
+            ai->safe_height = 240.0f;
             ai->difficulty = DIFF_MEDIUM;
             ai->error_margin = 2;
-            ai->max_reaction_delay = 1;
+            ai->max_reaction_delay = 2;
             break;
         case DIFF_HARD:
-            ai->jump_threshold = 200.0f;
-            ai->safe_height = 150.0f;
+            ai->jump_threshold = 120.0f;
+            ai->safe_height = 240.0f;
             ai->difficulty = DIFF_HARD;
             ai->error_margin = 1;
             ai->max_reaction_delay = 0;
@@ -64,7 +64,7 @@ void ai_updateCam(ControllerData *control, float camera_angle)
 Platform* find_nearest_safe_platform(AI *ai, Actor *actor, Platform* platforms) {
     Platform* nearest_platform = NULL;
     float min_distance_sq = FLT_MAX; // Store squared distance to avoid square root computation
-    const float current_platform_threshold_sq = 0.02f * 0.02f; // Squared threshold to ignore the current platform
+    const float current_platform_threshold_sq = 0.011f * 0.011f; // Squared threshold to ignore the current platform
 
     // Calculate grid cell for the actor's current position
     int xCell = (int)floorf((actor->body.position.x + 700) / GRID_SIZE);
@@ -84,13 +84,8 @@ Platform* find_nearest_safe_platform(AI *ai, Actor *actor, Platform* platforms) 
                     Platform* platform = &platforms[platformIndex];
 
                     // Skip platforms not at a safe height
-                    if (platform->position.z <= ai->safe_height) continue;
-
-                    // Skip platforms not at a safe height
+                    if (platform->position.z < ai->safe_height) continue;
                     if (platform->contact) continue;
-
-                    // Skip already captured platforms
-                    if (platform->colorID == actor->colorID) continue;
 
                     // Calculate squared distance using vector3_squaredDistance
                     float distance_sq = vector3_squaredDistance(&platform->position, &actor->body.position);
@@ -143,16 +138,14 @@ void ai_generateControlData(AI *ai, ControllerData *control, Actor *actor, Platf
     control->input.stick_x += (rand() % ai->error_margin) - (ai->error_margin / 2);
     control->input.stick_y += (rand() % ai->error_margin) - (ai->error_margin / 2);
 
-    // Calculate horizontal speed as the magnitude of the x and y velocity components
-    Vector2 horizontal_velocity = { actor->body.velocity.x, actor->body.velocity.y };
-    float horizontal_speed = vector2_magnitude(&horizontal_velocity);
-
     // Check if the actor should jump when horizontal speed is greater than 10
-    if (horizontal_speed > ai->jump_threshold && actor->state != FALLING)
+    if (actor->horizontal_speed > ai->jump_threshold - (rand() % (ai->error_margin*2)) && actor->state != FALLING)
     {
         control->pressed.a = 1; // Press jump button
         control->held.a = 1;    // Hold jump button
     }
+
+    if(actor->state == JUMP) control->held.a = 1; 
 
     // Adjust for camera angle if needed
     ai_updateCam(control, camera_angle);
