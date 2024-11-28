@@ -31,7 +31,7 @@ Particles lavaBubbles;
 void ptx_init(Particles *ptx)
 {
     tpx_init((TPXInitParams){});
-    ptx->count = 8;
+    ptx->count = 100;
     ptx->bufSize = sizeof(TPXParticle) * (ptx->count + 2);
     ptx->buf = malloc_uncached(ptx->bufSize);
     ptx->mat = malloc_uncached(sizeof(T3DMat4FP));
@@ -45,9 +45,9 @@ void gradient_alpha(uint8_t *color, float t)
     t *= t;
 
 
-    color[0] = (uint8_t)(255);
-    color[1] = (uint8_t)(255);
-    color[2] = (uint8_t)(255);
+    color[0] = (uint8_t)(240);
+    color[1] = (uint8_t)(240);
+    color[2] = (uint8_t)(240);
     color[3] = (uint8_t)(200 * (1.0f - (t - 0.5f) / 0.5f));
 }
 
@@ -92,7 +92,7 @@ void ptx_draw(T3DViewport* vp, Platform* platform, Particles *ptx)
 {
 
     static int frameCounter = 0;
-    const int updateInterval = 12;
+    const int updateInterval = 3;
 
     // Prepare the RDPQ
     rdpq_sync_pipe();
@@ -104,7 +104,7 @@ void ptx_draw(T3DViewport* vp, Platform* platform, Particles *ptx)
     rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
 
 
-    if (platform->position.z <= 20.0f && platform->position.z >= -20.0f)
+    if (platform->position.z <= 50.0f && platform->position.z >= -50.0f)
     {
         if (frameCounter % updateInterval == 0)
         {
@@ -119,9 +119,9 @@ void ptx_draw(T3DViewport* vp, Platform* platform, Particles *ptx)
             tpx_state_set_scale(1,1);
             t3d_mat4fp_from_srt_euler(
                 ptx->mat,
-                (float[3]){1,1,1},
+                (float[3]){7,4,7},
                 (float[3]){0,0,0},
-                (float[3]){platform->position.x,platform->position.y,platform->position.z}
+                (float[3]){0,250,0}
             );
             tpx_particle_draw(ptx->buf, ptx->count);
         tpx_matrix_pop(1);

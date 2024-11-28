@@ -566,9 +566,8 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	game->syncPoint = rspq_syncpoint_new();
 
 	// TPX
-	for (int j = 0; j < PLATFORM_COUNT; j++) {
-		ptx_draw(&game->screen.gameplay_viewport,&hexagons[j], &lavaBubbles);
-	}
+	ptx_draw(&game->screen.gameplay_viewport,&hexagons[0], &lavaBubbles);
+	ptx_draw(&game->screen.gameplay_viewport,&hexagons[4], &lavaBubbles);
 
 	for (size_t i = 0; i < ACTOR_COUNT; i++)
 	{

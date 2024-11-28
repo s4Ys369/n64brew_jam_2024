@@ -55,7 +55,11 @@ void actorControl_setJump(Actor* actor, ControllerData *control, float frame_tim
         actor->input.jump_hold = false; 
     }
 
-    if(control->released.a) actor->input.jump_time_buffer = 0;
+    if(control->released.a)
+    {   
+        actor->input.jump_time_buffer = 0;
+    }
+
         
 
 

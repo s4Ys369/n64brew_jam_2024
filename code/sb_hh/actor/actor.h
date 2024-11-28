@@ -29,6 +29,7 @@ typedef struct {
 	float fall_max_speed;
 	float jump_max_speed;
 	float jump_horizontal_boost;
+	float jump_max_height;
 
 }ActorSettings;
 
@@ -157,7 +158,7 @@ Actor actor_create(uint32_t id, const char *model_path)
 			.run_acceleration_rate = 10,
 			.roll_acceleration_rate = 20,
 			.roll_acceleration_grip_rate = 2,
-			.jump_acceleration_rate = 50,
+			.jump_acceleration_rate = 100,
 			.aerial_control_rate = 4.0,
 			.walk_target_speed = 200,
 			.run_target_speed = 700,
@@ -171,7 +172,8 @@ Actor actor_create(uint32_t id, const char *model_path)
 			.jump_timer_max = 0.22,
 			.fall_max_speed = -2650.0f,
 			.jump_max_speed = 1000.0f,
-			.jump_horizontal_boost = 100.0f
+			.jump_horizontal_boost = 50.0f,
+			.jump_max_height = 50.0f
         },
     };
 
