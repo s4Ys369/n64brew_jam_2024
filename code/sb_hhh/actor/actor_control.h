@@ -23,7 +23,6 @@ void actorControl_setJump(Actor* actor, ControllerData *control, float frame_tim
             actor->input.jump_released = true;
             actor->input.jump_hold = false; 
             canJump = false;
-            wantJump = false;
             break;
         case JUMP:
             if (control->held.a) actor->input.jump_time_held += frame_time;
@@ -33,7 +32,6 @@ void actorControl_setJump(Actor* actor, ControllerData *control, float frame_tim
             break;
         case STAND_IDLE:
         case RUNNING:
-            actor->input.jump_time_buffer = 0;
             actor->input.jump_released = true;
             actor->input.jump_hold = false; 
             canJump = true;
@@ -41,9 +39,11 @@ void actorControl_setJump(Actor* actor, ControllerData *control, float frame_tim
 
     }
 
-    if((control->pressed.a) || (actor->input.jump_time_buffer > 0.0f && actor->input.jump_time_buffer < 0.1f && actor->hasCollided)) wantJump = true;
+    if (control->pressed.a) wantJump = true;
+    if (actor->input.jump_time_buffer > 0.0f && actor->input.jump_time_buffer < 0.3f) wantJump = true;
 
-    if (wantJump && canJump) {
+    if (wantJump && canJump)
+    {
         
         actor->body.velocity.z = actor->settings.jump_horizontal_boost;
         actor->input.jump_hold = true;
@@ -54,6 +54,8 @@ void actorControl_setJump(Actor* actor, ControllerData *control, float frame_tim
         actor->input.jump_released = true;
         actor->input.jump_hold = false; 
     }
+
+    if(control->released.a) actor->input.jump_time_buffer = 0;
         
 
 
