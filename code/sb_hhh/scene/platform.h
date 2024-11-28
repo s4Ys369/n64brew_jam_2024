@@ -182,7 +182,7 @@ void platform_collideCheckOptimized(Platform* platforms, Actor* actor)
 
 void platform_loop(Platform* platform, Actor* actor, int diff)
 {
-  int difficulty = (core_get_playercount() == 4) ? diff : core_get_aidifficulty();
+  int difficulty = (core_get_playercount() == 4) ? diff : DIFF_EASY;
 
   // Translate collision
   for (int j = 0; j < 3; j++) platform->collider.box[j].center = platform->position;
