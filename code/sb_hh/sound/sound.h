@@ -265,8 +265,11 @@ void sound_spatial( const Vector3 *spawner,
         volume = sound_reverb(volume, mix);
     }
 
-    // Set the channel volume and panning
-    mixer_ch_set_vol_pan(SFX_CHANNEL, volume, pan);
+    // Set the volume and panning for each SFX channel
+    for(int i = 0; i < NUM_WAV; i++)
+    {
+        mixer_ch_set_vol_pan(SFX_CHANNEL-i, volume, pan);
+    }
 }
 
 #endif // SOUND_H
