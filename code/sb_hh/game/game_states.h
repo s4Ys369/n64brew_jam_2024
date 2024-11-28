@@ -441,7 +441,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
         // Count platforms with the same colorID
         for (int j = 0; j < PLATFORM_COUNT; j++) {
             if (hexagons[j].colorID == playerColorID) {
-                if(hexagons[j].platformTimer == 200) player[i].score++;
+                if(hexagons[j].platformTimer == 120) player[i].score++;
             }
         }
     }

@@ -64,7 +64,7 @@ void ai_updateCam(ControllerData *control, float camera_angle)
 Platform* find_nearest_safe_platform(AI *ai, Actor *actor, Platform* platforms) {
     Platform* nearest_platform = NULL;
     float min_distance_sq = FLT_MAX; // Store squared distance to avoid square root computation
-    const float current_platform_threshold_sq = 0.01f * 0.01f; // Squared threshold to ignore the current platform
+    const float current_platform_threshold_sq = 0.02f * 0.02f; // Squared threshold to ignore the current platform
 
     // Calculate grid cell for the actor's current position
     int xCell = (int)floorf((actor->body.position.x + 700) / GRID_SIZE);
@@ -87,7 +87,10 @@ Platform* find_nearest_safe_platform(AI *ai, Actor *actor, Platform* platforms) 
                     if (platform->position.z <= ai->safe_height) continue;
 
                     // Skip platforms not at a safe height
-                    //if (platform->contact) continue;
+                    if (platform->contact) continue;
+
+                    // Skip already captured platforms
+                    if (platform->colorID == actor->colorID) continue;
 
                     // Calculate squared distance using vector3_squaredDistance
                     float distance_sq = vector3_squaredDistance(&platform->position, &actor->body.position);

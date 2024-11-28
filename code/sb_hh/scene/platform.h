@@ -200,15 +200,13 @@ void platform_loop(Platform* platform, Actor* actor, int diff)
       sound_wavPlay(SFX_STONES, false);
 
     // Action 2: Shake platform
-    } else if(platform->platformTimer < 60) {
+    } else if(platform->platformTimer < 120) {
       platform_shake(platform, platform->platformTimer);
-    
-    // Action 3: Drop platform
-    } else if(platform->platformTimer > 60 && platform->platformTimer < 240) {
-      platform_updateHeight(platform, 2.0f + difficulty);
 
-    // Action 4: Reset to idle
-    } else if(platform->platformTimer > (200 * (difficulty+1))){
+    // Action 3: Reset to idle
+    } else {
+      //change the platform color to white
+      platform->color = RGBA32(255,255,255,255);
       platform->contact = false;
     }
   } else {
