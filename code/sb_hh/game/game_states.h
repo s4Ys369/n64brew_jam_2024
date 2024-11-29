@@ -749,7 +749,12 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 		// Sound: reverb
 		for(int i = 0; i < NUM_WAV; i++)
     	{
-        	mixer_ch_set_vol_pan(SFX_CHANNEL-i, sound_reverb(0.9f, 0.5f), 0.5f);
+			if(i<4)
+			{
+				mixer_ch_set_vol_pan(SFX_CHANNEL-i, sound_reverb(0.9f, 0.6f), 0.5f);
+			} else {
+				mixer_ch_set_vol_pan(SFX_CHANNEL-i, sound_reverb(0.5f, 0.8f), 0.5f);
+			}
     	}
 
 		switch(game->state)
