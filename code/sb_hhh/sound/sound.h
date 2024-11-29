@@ -140,9 +140,9 @@ typedef struct {
 // Schroeder Reverberator Parameters
 ReverbParams paramsSchroeder = {
     {2.0f, 3.0f, 4.0f}, // Comb filter delays in frames
-    0.3f,
-    {1.0f, 2.0f}, // All-pass filter delays in frames
     0.4f,
+    {1.0f, 2.0f}, // All-pass filter delays in frames
+    0.3f,
     16000.0f,
 };
 

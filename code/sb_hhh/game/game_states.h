@@ -644,8 +644,12 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 		camera_set(&game->scene.camera, &game->screen);
 //// CAMERA /////
 
-		// Sound: spatial reverb
-		sound_spatial(&centerHex, &centerHex,  &game->scene.camera);
+		// Sound: reverb
+		for(int i = 0; i < NUM_WAV; i++)
+    	{
+        	mixer_ch_set_vol_pan(SFX_CHANNEL-i, sound_reverb(0.9f, 0.6f), 0.5f);
+    	}
+
 
 		switch(game->state)
 		{
