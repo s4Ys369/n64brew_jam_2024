@@ -465,15 +465,19 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	// Check if we have a winner (only one alive player left) OR if there's only one platform left
 	if ((aliveCount <= 1 || game->timing.frame_counter > display_get_refresh_rate()*endTimerFactor) && !game->winnerSet)
 	{
+		// Give last player alive bonus points
+		if(aliveCount == 1) 
+		{
+			player[lastAlivePlayer].score++;
+			wait_ms(1); // Loop is too fast, this doesn't count for the winner
+		}
+
 		int scores[4] = {
 			player[0].score,
 			player[1].score,
 			player[2].score,
 			player[3].score
 		};
-
-		// Give last player alive bonus points
-		player[lastAlivePlayer].score++;
 
 		// Find the highest score
 		int highestScore = scores[0];
