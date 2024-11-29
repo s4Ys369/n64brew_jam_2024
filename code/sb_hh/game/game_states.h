@@ -323,9 +323,9 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 // ======== Countdown ======== //
     if (game->countdownTimer > 0)
     {
-		if(game->countdownTimer % 45 == 0) sound_wavPlay(SFX_JUMP, false);
+		if(game->countdownTimer % 44 == 0) sound_wavPlay(SFX_COUNTDOWN, false);
 
-		//move_lava(scenery);
+		if(game->countdownTimer == 3) sound_wavPlay(SFX_START, false);
 
         // ======== Draw ======== //
 		screen_clearDisplay(&game->screen);
@@ -588,6 +588,13 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		if(game->winnerSet)
 		{
 			game->winTimer++;
+			xm64player_stop(&xmPlayer);
+			sound_wavClose(SFX_WIND);
+			sound_wavClose(SFX_JUMP);
+			sound_wavClose(SFX_STONES);
+			wait_ticks(4);
+			if(game->winTimer == 3) sound_wavPlay(SFX_STOP, false);
+			if(game->winTimer == 60) sound_wavPlay(SFX_WINNER, false);
 			if(game->winTimer < 120)
 			{
 				if(game->winnerID != 5)

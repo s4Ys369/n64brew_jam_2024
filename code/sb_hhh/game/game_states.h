@@ -325,7 +325,9 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 // ======== Countdown ======== //
     if (game->countdownTimer > 0)
     {
-		if(game->countdownTimer % 45 == 0) sound_wavPlay(SFX_JUMP, false);
+		if(game->countdownTimer % 44 == 0) sound_wavPlay(SFX_COUNTDOWN, false);
+
+		if(game->countdownTimer == 3) sound_wavPlay(SFX_START, false);
 
 		move_lava(scenery);
 
@@ -497,11 +499,30 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		if(game->winnerSet)
 		{
 			game->winTimer++;
+			if(game->winTimer == 3) 
+			{
+				// XM takes up a lot of the buffer, have to free everything
+				xm64player_stop(&xmPlayer);
+				sound_wavClose(SFX_LAVA);
+				sound_wavClose(SFX_JUMP);
+				sound_wavClose(SFX_STONES);
+				wait_ticks(4);
+				sound_wavPlay(SFX_START, false); // Stop nor Winner will work, buffer too small
+			}
 			if(game->winTimer < 120) ui_print_winner(game->winnerID+1);
 			if(game->winTimer >= 118) game->state = GAME_OVER;
 		}
 	} else if(loserCount > 3) {
 		game->winTimer++;
+		if(game->winTimer == 3) 
+		{
+			xm64player_stop(&xmPlayer);
+			sound_wavClose(SFX_LAVA);
+			sound_wavClose(SFX_JUMP);
+			sound_wavClose(SFX_STONES);
+			wait_ticks(4);
+			sound_wavPlay(SFX_START, false);
+		}
 		if(game->winTimer < 120) ui_print_winner(5);
 		if(game->winTimer >= 118) game->state = GAME_OVER;
 	}

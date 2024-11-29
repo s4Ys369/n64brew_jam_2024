@@ -21,6 +21,10 @@ enum SFX_WAV {
 	SFX_JUMP,
 	SFX_STONES,
 	SFX_LAVA,
+    SFX_START,
+    SFX_COUNTDOWN,
+    SFX_STOP,
+    SFX_WINNER,
 	NUM_WAV
 };
 
@@ -31,6 +35,10 @@ const char* wavFileNames[NUM_WAV] = {
     "rom:/strawberry_byte/sound/grunt-01.wav64",
 	"rom:/strawberry_byte/sound/stones-falling.wav64",
 	"rom:/strawberry_byte/sound/lava-loop-2.wav64",
+    "rom:/core/Start.wav64",
+    "rom:/core/Countdown.wav64",
+    "rom:/core/Stop.wav64",
+    "rom:/core/Winner.wav64",
 };
 
 /* Function Declarations */
