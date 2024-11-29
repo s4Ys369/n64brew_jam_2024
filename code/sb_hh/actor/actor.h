@@ -158,8 +158,8 @@ Actor actor_create(uint32_t id, const char *model_path)
 			.run_acceleration_rate = 10,
 			.roll_acceleration_rate = 20,
 			.roll_acceleration_grip_rate = 2,
-			.jump_acceleration_rate = 100,
-			.aerial_control_rate = 4.0,
+			.jump_acceleration_rate = 60,
+			.aerial_control_rate = 6.0,
 			.walk_target_speed = 200,
 			.run_target_speed = 700,
 			.sprint_target_speed = 900,
@@ -168,12 +168,12 @@ Actor actor_create(uint32_t id, const char *model_path)
 			.walk_to_roll_target_speed = 400,
 			.run_to_roll_target_speed = 780,
 			.sprint_to_roll_target_speed = 980,
-			.jump_target_speed = 600, 
-			.jump_timer_max = 0.22,
+			.jump_target_speed = 800, 
+			.jump_timer_max = 0.21,
 			.fall_max_speed = -2650.0f,
 			.jump_max_speed = 1000.0f,
-			.jump_horizontal_boost = 50.0f,
-			.jump_max_height = 50.0f
+			.jump_horizontal_boost = 125.0f,
+			.jump_max_height = 1000.0f
         },
     };
 
