@@ -47,6 +47,7 @@ UI_SPRITE_FILES := $(UI_DIR)/buttons/control_stick.ia8.sprite \
                    $(UI_DIR)/logos/sb_b1.rgba32.sprite \
                    $(UI_DIR)/logos/sb_top.rgba32.sprite \
                    $(UI_DIR)/panels/gloss.ia4.sprite \
+                   $(UI_DIR)/panels/earth.ia4.sprite \
                    $(UI_DIR)/panels/pattern_tessalate.ia4.sprite
 
 FONT_FILES := $(UI_DIR)/fonts/TitanOne-Regular.font64 \

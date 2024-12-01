@@ -32,10 +32,11 @@ const char* uiSpriteButtonPath[NUM_SPRITES] = {
 };
 
 // Arrays for button sprite file names and paths.
-const char* uiSpritePanelFileName[NUM_FONTS];
-const char* uiSpritePanelPath[NUM_FONTS] = {
+const char* uiSpritePanelFileName[3];
+const char* uiSpritePanelPath[3] = {
     "panels/gloss.ia4.sprite",
     "panels/pattern_tessalate.ia4.sprite",
+    "panels/earth.ia4.sprite",
 };
 
 // Arrays for logo sprite file names and paths. See LICENSE.txt for attribution.
@@ -86,7 +87,7 @@ void ui_fileSprites(void) {
     for (int i = 0; i < NUM_SPRITES; ++i) {
         uiSpriteButtonFileName[i] = ui_filePath(uiSpriteButtonPath[i]);
     }
-    for (int i = 0; i < NUM_FONTS; ++i) {
+    for (int i = 0; i < 3; ++i) {
         uiSpritePanelFileName[i] = ui_filePath(uiSpritePanelPath[i]);
     }
 }
@@ -111,7 +112,11 @@ void ui_fileCleanup(void)
 {
     for (int i = 0; i < NUM_FONTS; i++)
     {
-        free((char*)uiFontFileName[i]);
+        free((char*)uiFontFileName[i]);;
+    }
+
+    for (int i = 0; i < 3; i++)
+    {
         free((char*)uiSpritePanelFileName[i]);
     }
 

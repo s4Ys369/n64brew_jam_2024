@@ -73,6 +73,9 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 	screen_clearT3dViewport(&game->screen);
 	screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
 
+	ui_spriteDrawPanel(TILE2, sprite_earth, N_GREEN, 0,80,SCREEN_WIDTH,SCREEN_HEIGHT,0,0,64,64);
+	t3d_frame_start();
+
 	light_set(&game->scene.light);
 
 	t3d_matrix_push_pos(1);
@@ -109,6 +112,9 @@ void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* sc
 	screen_clearDisplay(&game->screen);
 	screen_clearT3dViewport(&game->screen);
 	screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
+
+	ui_spriteDrawPanel(TILE2, sprite_earth, N_GREEN, 0,80,SCREEN_WIDTH,SCREEN_HEIGHT,0,0,64,64);
+	t3d_frame_start();
 
 	light_set(&game->scene.light);
 	// Instead drawing a dark transparent texture over the scene, just change the light direction
@@ -259,6 +265,9 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 	screen_clearT3dViewport(&game->screen);
 	screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
 
+	ui_spriteDrawPanel(TILE2, sprite_earth, N_GREEN, 0,80,SCREEN_WIDTH,SCREEN_HEIGHT,0,0,64,64);
+	t3d_frame_start();
+
 	light_set(&game->scene.light);
 
 	// Change light direction to illuminate players
@@ -333,6 +342,9 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		screen_clearDisplay(&game->screen);
 		screen_clearT3dViewport(&game->screen);
 		screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
+
+		ui_spriteDrawPanel(TILE2, sprite_earth, N_GREEN, 0,80,SCREEN_WIDTH,SCREEN_HEIGHT,0,0,64,64);
+		t3d_frame_start();
 
 		light_set(&game->scene.light);
 
@@ -545,6 +557,9 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	screen_clearT3dViewport(&game->screen);
 	screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
 
+	ui_spriteDrawPanel(TILE2, sprite_earth, N_GREEN, 0,80,SCREEN_WIDTH,SCREEN_HEIGHT,0,0,64,64);
+	t3d_frame_start();
+
 	light_set(&game->scene.light);
 
 	// Reset light direction to default in case players have paused
@@ -644,6 +659,9 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 	screen_clearDisplay(&game->screen);
 	screen_clearT3dViewport(&game->screen);
 	screen_applyColor_Depth(&game->screen, ui_color(VIOLET), false);
+
+	ui_spriteDrawPanel(TILE2, sprite_earth, DARK_GREEN, 0,80,SCREEN_WIDTH,SCREEN_HEIGHT,0,0,64,64);
+	t3d_frame_start();
 
 	light_set(&game->scene.light);
 
