@@ -282,6 +282,11 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 	platform_drawBatch();
 	light_resetAmbient(&game->scene.light);
 
+	// TPX
+	lavaBubbles.count = 512;
+	ptx_draw(&game->screen.gameplay_viewport, &lavaBubbles, 1,1);
+
+	t3d_frame_start();
 	actor_draw(actor);
 
 	t3d_matrix_pop(1);
@@ -357,6 +362,9 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		t3d_matrix_pop(1);
 
 		game->syncPoint = rspq_syncpoint_new();
+
+		// TPX
+		ptx_draw(&game->screen.gameplay_viewport, &lavaBubbles, 1,1);
 
 		// Convert frames to seconds based on refresh rate
 		uint8_t secondsLeft = (game->countdownTimer / display_get_refresh_rate()) + 1;
@@ -474,6 +482,9 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	platform_drawBatch();
 	light_resetAmbient(&game->scene.light);
 
+	// TPX
+	ptx_draw(&game->screen.gameplay_viewport, &lavaBubbles, 1,1);
+
 	// Don't bother drawing shadows for the AI
 	for (size_t s = 0; s < PLAYER_COUNT; s++)
 	{
@@ -578,6 +589,9 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 	t3d_matrix_pop(1);
 
 	game->syncPoint = rspq_syncpoint_new();
+
+	// TPX
+	ptx_draw(&game->screen.gameplay_viewport, &lavaBubbles, 1,1);
 
 	ui_pause(&player[0].control);
 	if(player[0].control.held.r)
