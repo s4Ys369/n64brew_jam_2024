@@ -4,6 +4,21 @@
 #define DEATH_PLANE_HEIGHT -50.0f
 #define LOWER_LIMIT_HEIGHT -200.0f
 
+#define NUM_HARMONICS 4
+
+typedef struct {
+    float amplitude[NUM_HARMONICS];
+    float frequency[NUM_HARMONICS];
+    float phase[NUM_HARMONICS];
+} HarmonicData;
+
+// Precomputed harmonic data for the wobble effect
+static const HarmonicData wobbleData = {
+    .amplitude = {30.0f, 15.0f, 10.0f, 5.0f},
+    .frequency = {4.5f, 9.0f, 13.5f, 18.0f},
+    .phase = {0.0f, 0.5f, 1.0f, 1.5f}
+};
+
 // Hook/callback to modify tile settings set by t3d_model_draw
 void tile_scroll(void* userData, rdpq_texparms_t *tileParams, rdpq_tile_t tile) 
 {
@@ -28,29 +43,43 @@ void move_lava(Scenery *scenery)
     // If you have multiple models and want to only update one, you have to manually iterate over the objects.
     // see the implementation of t3d_model_draw_custom in that case.
     T3DVertPacked* verts = t3d_model_get_vertices(scenery[0].model);
-    float globalHeight = fm_sinf(scenery[0].transform_offset * 2.5f) * 30.0f;
+    float globalHeight = 0;
 
-    for(uint16_t i=0; i < scenery[0].model->totalVertCount; ++i)
+    // Calculate globalHeight as the sum of the harmonics
+    for (int i = 0; i < NUM_HARMONICS; ++i)
     {
-    // To better handle the interleaved vertex format,
-    // t3d provides a few helper functions to access attributes
-    int16_t *pos = t3d_vertbuffer_get_pos(verts, i);
+        globalHeight += wobbleData.amplitude[i] * 
+            fm_sinf(scenery[0].transform_offset * wobbleData.frequency[i] + wobbleData.phase[i]);
+    }
 
-    // water-like wobble effect
-    float height = fm_sinf(
-        scenery[0].transform_offset * 4.5f
-        + pos[0] * 30.1f
-        + pos[1] * 20.1f
-    );
-    pos[2] = 40.0f * height + globalHeight;
+    for (uint16_t i = 0; i < scenery[0].model->totalVertCount; ++i)
+    {
+        int16_t *pos = t3d_vertbuffer_get_pos(verts, i);
 
-    // make lower parts darker, and higher parts brighter
-    float color = height * 0.25f + 0.75f;
-    uint8_t* rgba = t3d_vertbuffer_get_rgba(verts, i);
-    rgba[0] = color * 255;
-    rgba[1] = color * 200;
-    rgba[2] = color * 200;
-    rgba[3] = 0xFF;
+        // Water-like wobble effect using a sum of sines
+        float height = 0.0f;
+        for (int j = 0; j < NUM_HARMONICS; ++j)
+        {
+            height += wobbleData.amplitude[j] * 
+                fm_sinf(
+                    scenery[0].transform_offset * wobbleData.frequency[j] +
+                    wobbleData.phase[j] + pos[0] * (30.1f + j) + pos[1] * (20.1f + j)
+                );
+        }
+
+        pos[2] = height + globalHeight;
+
+
+        // Adjust color more subtly based on height
+        float colorVariation = height * 0.01f; // Reduced scaling factor
+        float baseIntensity = 0.85f;          // Higher base intensity for consistent lighting
+        float color = baseIntensity + colorVariation;
+
+        uint8_t* rgba = t3d_vertbuffer_get_rgba(verts, i);
+        rgba[0] = fminf(color, 0.9f) * 255; // Clamp to avoid overflow
+        rgba[1] = fminf(color, 0.9f) * 200;
+        rgba[2] = fminf(color, 0.9f) * 200;
+        rgba[3] = 0xFF;
     }
 
     // Don't forget to flush the cache again! (or use an uncached buffer in the first place)
@@ -60,10 +89,10 @@ void move_lava(Scenery *scenery)
 
 void room_draw(Scenery *scenery)
 {
-    //rspq_block_run(scenery[0].dl);
+
     rdpq_mode_zbuf(false, true);
     t3d_model_draw_custom(scenery[0].model, (T3DModelDrawConf){
-        .userData = &scenery[1].tile_offset,
+        .userData = &scenery[0].tile_offset,
         .tileCb = tile_scroll,
     });
     rdpq_mode_zbuf(true, true);
