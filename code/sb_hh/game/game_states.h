@@ -747,7 +747,7 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 //// CAMERA /////
 
 		// Sound: reverb
-		for(int i = 0; i < NUM_WAV; i++)
+		for(int i = 0; i < SFX_WINNER; i++)
     	{
 			if(i<SFX_COUNTDOWN)
 			{
