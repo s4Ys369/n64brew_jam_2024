@@ -73,7 +73,7 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 	screen_clearT3dViewport(&game->screen);
 	screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
 
-	ui_spriteDrawPanel(TILE2, sprite_earth, N_GREEN, 0,80,SCREEN_WIDTH,SCREEN_HEIGHT,0,0,64,64);
+	ui_spriteDrawPanel(TILE2, sprite_clouds, WHITE, 0,100,SCREEN_WIDTH,SCREEN_HEIGHT,0,0,32,32);
 	t3d_frame_start();
 
 	light_set(&game->scene.light);
@@ -113,7 +113,7 @@ void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* sc
 	screen_clearT3dViewport(&game->screen);
 	screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
 
-	ui_spriteDrawPanel(TILE2, sprite_earth, N_GREEN, 0,80,SCREEN_WIDTH,SCREEN_HEIGHT,0,0,64,64);
+	ui_spriteDrawPanel(TILE2, sprite_clouds, WHITE, 0,100,SCREEN_WIDTH,SCREEN_HEIGHT,0,0,32,32);
 	t3d_frame_start();
 
 	light_set(&game->scene.light);
@@ -265,7 +265,7 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 	screen_clearT3dViewport(&game->screen);
 	screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
 
-	ui_spriteDrawPanel(TILE2, sprite_earth, N_GREEN, 0,80,SCREEN_WIDTH,SCREEN_HEIGHT,0,0,64,64);
+	ui_spriteDrawPanel(TILE2, sprite_clouds, WHITE, 0,100,SCREEN_WIDTH,SCREEN_HEIGHT,0,0,32,32);
 	t3d_frame_start();
 
 	light_set(&game->scene.light);
@@ -343,7 +343,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		screen_clearT3dViewport(&game->screen);
 		screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
 
-		ui_spriteDrawPanel(TILE2, sprite_earth, N_GREEN, 0,80,SCREEN_WIDTH,SCREEN_HEIGHT,0,0,64,64);
+		ui_spriteDrawPanel(TILE2, sprite_clouds, WHITE, 0,100,SCREEN_WIDTH,SCREEN_HEIGHT,0,0,32,32);
 		t3d_frame_start();
 
 		light_set(&game->scene.light);
@@ -557,7 +557,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	screen_clearT3dViewport(&game->screen);
 	screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
 
-	ui_spriteDrawPanel(TILE2, sprite_earth, N_GREEN, 0,80,SCREEN_WIDTH,SCREEN_HEIGHT,0,0,64,64);
+	ui_spriteDrawPanel(TILE2, sprite_clouds, WHITE, 0,100,SCREEN_WIDTH,SCREEN_HEIGHT,0,0,32,32);
 	t3d_frame_start();
 
 	light_set(&game->scene.light);
@@ -660,7 +660,7 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 	screen_clearT3dViewport(&game->screen);
 	screen_applyColor_Depth(&game->screen, ui_color(VIOLET), false);
 
-	ui_spriteDrawPanel(TILE2, sprite_earth, DARK_GREEN, 0,80,SCREEN_WIDTH,SCREEN_HEIGHT,0,0,64,64);
+	ui_spriteDrawPanel(TILE2, sprite_clouds, DARK_GREEN, 0,100,SCREEN_WIDTH,SCREEN_HEIGHT,0,0,32,32);
 	t3d_frame_start();
 
 	light_set(&game->scene.light);

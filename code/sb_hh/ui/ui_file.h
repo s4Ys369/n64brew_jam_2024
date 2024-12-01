@@ -36,7 +36,7 @@ const char* uiSpritePanelFileName[3];
 const char* uiSpritePanelPath[3] = {
     "panels/gloss.ia4.sprite",
     "panels/pattern_tessalate.ia4.sprite",
-    "panels/earth.ia4.sprite",
+    "panels/clouds.ia8.sprite",
 };
 
 // Arrays for logo sprite file names and paths. See LICENSE.txt for attribution.
