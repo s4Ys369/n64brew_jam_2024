@@ -119,26 +119,28 @@ void actorCollision_setResponse(Actor* actor, ActorContactData* contact, ActorCo
     actorCollider_setVertical(collider, &actor->body.position);
 }
 
-void actorCollision_collidePlatforms(Actor* actor, ActorContactData* actor_contact, ActorCollider* actor_collider, Platform* platforms)
+void actorCollision_updateFalling(Actor* actor, ActorContactData* actor_contact, ActorCollider* actor_collider)
 {
-
-//////////
-    // @TODO: this whole block should be its own function
     actorContactData_clear(actor_contact);
 	actorCollider_setVertical(actor_collider, &actor->body.position);
 
 	// Check if the actor is neither jumping nor falling
-	if (actor->body.position.z != -200.0f // magic number
+	if (actor->body.position.z != LOWER_LIMIT_HEIGHT
 		&& actor->state != JUMP
 		&& actor->state != FALLING
         && actor->hasCollided == false) {
 			
 		actor->state = FALLING;
 		actor->grounded = false;
-		actor->grounding_height = -200.0f; // magic number
+		actor->grounding_height = LOWER_LIMIT_HEIGHT;
         
 	}
-//////////
+}
+
+void actorCollision_collidePlatforms(Actor* actor, ActorContactData* actor_contact, ActorCollider* actor_collider, Platform* platforms)
+{
+
+    actorCollision_updateFalling(actor, actor_contact, actor_collider);
 
     // Calculate the grid cell the actor is in
     int xCell = (int)floorf((actor->body.position.x + 775) / 350);
@@ -148,8 +150,8 @@ void actorCollision_collidePlatforms(Actor* actor, ActorContactData* actor_conta
         // Actor is out of bounds; fall and skip collision
         actor->state = FALLING;
 		actor->grounded = false;
-		actor->grounding_height = -200.0f; // magic number
-        if(actor->body.position.z <= -50.0f) actorState_setDeath(actor);
+		actor->grounding_height = LOWER_LIMIT_HEIGHT;
+        if(actor->body.position.z <= DEATH_PLANE_HEIGHT) actorState_setDeath(actor);
         return;
     }
 
@@ -171,8 +173,8 @@ void actorCollision_collidePlatforms(Actor* actor, ActorContactData* actor_conta
                 // Actor is out of bounds; fall and skip collision
                 actor->state = FALLING;
 		        actor->grounded = false;
-		        actor->grounding_height = -200.0f; // magic number
-                if(actor->body.position.z <= -50.0f) actorState_setDeath(actor);
+		        actor->grounding_height = LOWER_LIMIT_HEIGHT;
+                if(actor->body.position.z <= DEATH_PLANE_HEIGHT) actorState_setDeath(actor);
                 continue;
             }
 
@@ -217,7 +219,7 @@ void actorCollision_collidePlatforms(Actor* actor, ActorContactData* actor_conta
     // Call setState after processing collision responses
 	actor_setState(actor, actor->state);
 
-	if(actor->body.position.z <= -50.0f) actorState_setDeath(actor); // @TODO: Make this death plane Z
+	if(actor->body.position.z <= DEATH_PLANE_HEIGHT) actorState_setDeath(actor);
 }
 
 

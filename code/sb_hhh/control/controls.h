@@ -29,7 +29,7 @@ void controllerData_getInputs(ControllerData* data, uint8_t port)
     data->released = joypad_get_buttons_released(port);
     data->input = joypad_get_inputs(port);
 
-    // @TODO: Not sure if this is expensive to do every tick, but it may allow hotloading a pak
+    // Check if the rumble pak has been unplugged
     if (!joypad_get_rumble_supported(port)) controllerData_rumbleStop(data, port);
 
 }

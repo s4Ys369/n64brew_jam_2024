@@ -95,7 +95,7 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 
 	if(player[0].control.held.r)
 	{
-		ui_fps(game->timing.frame_rate);
+		ui_fps(game->timing.frame_rate, 20.0f, 20.0f);
 		if(core_get_playercount() == 1) ui_input_display(&player[0].control);
 	}
 
@@ -148,7 +148,7 @@ void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* sc
 	ui_main_menu(&player[0].control, game->diff);
 	if(player[0].control.held.r)
 	{
-		ui_fps(game->timing.frame_rate);
+		ui_fps(game->timing.frame_rate, 20.0f, 20.0f);
 		if(core_get_playercount() == 1) ui_input_display(&player[0].control);
 	}
 
@@ -299,7 +299,7 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 
 	if(player[0].control.held.r)
 	{
-		ui_fps(game->timing.frame_rate);
+		ui_fps(game->timing.frame_rate, 20.0f, 20.0f);
 		if(core_get_playercount() == 1) ui_input_display(&player[0].control);
 	}
 
@@ -529,7 +529,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 	if(player[0].control.held.r)
 	{
-		ui_fps(game->timing.frame_rate);
+		ui_fps(game->timing.frame_rate, 20.0f, 20.0f);
 		if(core_get_playercount() == 1) ui_input_display(&player[0].control);
 	}
 
@@ -582,7 +582,7 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 	ui_pause(&player[0].control);
 	if(player[0].control.held.r)
 	{
-		ui_fps(game->timing.frame_rate);
+		ui_fps(game->timing.frame_rate, 20.0f, 20.0f);
 		if(core_get_playercount() == 1) ui_input_display(&player[0].control);
 	}
 

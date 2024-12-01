@@ -107,7 +107,8 @@ void minigame_init()
     rspq_profile_start();
 #endif
 
-    display_set_fps_limit((display_get_refresh_rate() / 3) * 2); // @TODO
+    // As per Rasky's suggestion, limit the frame rate to 2 frames every 3 vblanks
+    display_set_fps_limit((display_get_refresh_rate() / 3) * 2);
 
     // actors
     actors[S4YS] = actor_create(0, "rom:/strawberry_byte/s4ys.t3dm");

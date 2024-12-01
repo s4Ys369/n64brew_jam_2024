@@ -36,7 +36,7 @@ void ai_init(AI *ai, uint8_t difficulty)
             ai->error_margin = 10;
             ai->max_reaction_delay = 4;
             break;
-        case DIFF_HARD: // @TODO: THEY ARE DUMB NOW :.[
+        case DIFF_HARD:
             ai->jump_threshold = 375.0f;
             ai->safe_height = 235.0f;
             ai->difficulty = DIFF_MEDIUM;

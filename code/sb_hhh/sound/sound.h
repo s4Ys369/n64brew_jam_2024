@@ -8,11 +8,14 @@
 #define SFX_CHANNEL 31
 
 // XM sequences
-#define NUM_XM  1 // @TODO: enumerate
+enum BG_XM {
+    XM_FF,
+    NUM_XM
+};
 
 xm64player_t xmPlayer;
 
-const char* xmFileNames[1] = {
+const char* xmFileNames[NUM_XM] = {
     "rom:/strawberry_byte/sound/tribeof.xm64",
 };
 

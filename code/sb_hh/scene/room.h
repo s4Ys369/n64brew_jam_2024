@@ -2,6 +2,9 @@
 #define ROOM_H
 
 
+#define DEATH_PLANE_HEIGHT -50.0f
+#define LOWER_LIMIT_HEIGHT -200.0f
+
 // Hook/callback to modify tile settings set by t3d_model_draw
 void tile_scroll(void* userData, rdpq_texparms_t *tileParams, rdpq_tile_t tile) 
 {
