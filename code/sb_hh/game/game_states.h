@@ -65,7 +65,7 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 		platform_loop(&hexagons[j], NULL, 0);
 	}
 
-	//move_lava(scenery);
+	move_cloud(scenery);
 
 	// ======== Draw ======== //
 	
@@ -102,7 +102,7 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 
 void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* scenery)
 {
-	//move_lava(scenery);
+	move_cloud(scenery);
 
 	// ======== Draw ======== //
 	
@@ -251,7 +251,7 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 		t3d_skeleton_update(&actor[i].armature.main);
 	}
 
-	//move_lava(scenery);
+	move_cloud(scenery);
 
 	// ======== Draw ======== //
 	
@@ -327,6 +327,8 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 
 		if(game->countdownTimer == 3) sound_wavPlay(SFX_START, false);
 
+		move_cloud(scenery);
+
         // ======== Draw ======== //
 		screen_clearDisplay(&game->screen);
 		screen_clearT3dViewport(&game->screen);
@@ -368,6 +370,8 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 // ======== Gameplay ======== //
 
 	float endTimerFactor = 22.0f;
+
+	move_cloud(scenery);
 
 	// AI
 #ifndef AI_BATTLE
@@ -633,7 +637,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scenery)
 {
 
-	//move_lava(scenery);
+	move_cloud(scenery);
 
 	// ======== Draw ======== //
 	
