@@ -61,6 +61,10 @@ const char* uiCharacterSelectStrings[ACTOR_COUNT] = {
     "Olli"
 };
 
+// Positions
+Vector2 textPositions;
+Quaternion panelPositions;
+
 /* Declarations */
 
 void ui_init(void);
@@ -78,6 +82,8 @@ void ui_init(void)
 {
     ui_fontRegister();
     ui_spriteLoad();
+    textPositions = (Vector2){SCREEN_WIDTH/2, SCREEN_HEIGHT/2}; // x,y
+    panelPositions = (Quaternion){SCREEN_WIDTH/2, SCREEN_HEIGHT/2, SCREEN_WIDTH, SCREEN_HEIGHT}; // x0,y0,x1,y1
 }
 
 // Optional RDPQ sync and set for text, to prevent bleeding if the autosync engine misses something.
@@ -109,15 +115,15 @@ void ui_printf(float x, float y, const char *txt, ...)
 
 void ui_print_winner(int winner)
 {
-    ui_spriteDrawPanel(TILE1, sprite_gloss, T_BLACK, 96, 102, 210, 130, 0, 0, 64, 64);
+    ui_spriteDrawPanel(TILE1, sprite_gloss, T_BLACK, panelPositions.x-64, panelPositions.y-18, panelPositions.w-30, panelPositions.y+10, 0, 0, 64, 64);
     ui_syncText();
     if(winner !=5) // 5 signifies a Draw
     {
         rdpq_textparms_t winnerTextParms = txt_gameParms;
         winnerTextParms.style_id = STYLE_PLAYER + winner-1;
-        rdpq_text_printf(&winnerTextParms, ID_DEFAULT, 110, 120, "Player %d Wins", winner);
+        rdpq_text_printf(&winnerTextParms, ID_DEFAULT, textPositions.x-50, textPositions.y, "Player %d Wins", winner);
     } else {
-        rdpq_text_print(&txt_gameParms, ID_DEFAULT, 140, 120, "TIE!");
+        rdpq_text_print(&txt_gameParms, ID_DEFAULT, textPositions.x-20, textPositions.y, "TIE!");
     }
 }
 
@@ -147,12 +153,12 @@ void ui_countdown(int secondsLeft)
     snprintf(countdownText, sizeof(countdownText), "%d", secondsLeft);
 
     ui_syncText();
-    rdpq_text_printf(&txt_titleParms, ID_TITLE, 150, 110, "%s", countdownText);
+    rdpq_text_printf(&txt_titleParms, ID_TITLE, textPositions.x-10, textPositions.y-10, "%s", countdownText);
 
     // One of the four tips at random during countdown
     //static int randomTip = -1;
     //if(randomTip == -1) randomTip = rand() % 4;
-    rdpq_text_printf(&txt_gameParms, ID_DEFAULT, 60, 130, "%s", uiTipStrings[0]);
+    rdpq_text_printf(&txt_gameParms, ID_DEFAULT, textPositions.x-100, textPositions.y+10, "%s", uiTipStrings[0]);
 }
 
 
@@ -160,25 +166,25 @@ void ui_countdown(int secondsLeft)
 void ui_main_menu(ControllerData* control, int diff)
 {
     // Panels
-    ui_spriteDrawPanel(TILE2, sprite_gloss, T_BLUE, 90, 40, 230, 124, 0, 0, 64, 64);
-    ui_spriteDrawPanel(TILE3, sprite_tessalate, T_BLACK, 100, 45, 220, 114, 0, 0, 64, 64);
+    ui_spriteDrawPanel(TILE2, sprite_gloss, T_BLUE, panelPositions.x-70, panelPositions.y-80, panelPositions.z-90, panelPositions.w-116, 0, 0, 64, 64);
+    ui_spriteDrawPanel(TILE3, sprite_tessalate, T_BLACK, panelPositions.x-60, panelPositions.y-75, panelPositions.z-100, panelPositions.w-126, 0, 0, 64, 64);
 
     // Buttons
     if(control->pressed.start || control->held.start)
     {
-        ui_spriteDraw(TILE4, sprite_faceButtons0, 1, 170, 90);
+        ui_spriteDraw(TILE4, sprite_faceButtons0, 1, textPositions.x+10, textPositions.y-30);
     } else {
-        ui_spriteDraw(TILE4, sprite_faceButtons0, 0, 170, 90);
+        ui_spriteDraw(TILE4, sprite_faceButtons0, 0, textPositions.x+10, textPositions.y-30);
     }
-    ui_spriteDraw(TILE5, sprite_controlStick, 0, 92, 170);
+    ui_spriteDraw(TILE5, sprite_controlStick, 0, textPositions.x-68, textPositions.y+50);
     int stickX = 92+(control->input.stick_x/15);
     int stickY = 138+(spriteHeight*2)-(control->input.stick_y/15);
     ui_spriteDraw(TILE5, sprite_controlStick, 1, stickX, stickY);
     if(control->pressed.a || control->held.a)
     {
-        ui_spriteDraw(TILE6, sprite_faceButtons1, aHeld, 92, 186);
+        ui_spriteDraw(TILE6, sprite_faceButtons1, aHeld, textPositions.x-68, textPositions.y+66);
     } else {
-        ui_spriteDraw(TILE6, sprite_faceButtons0, aIdle, 92, 186);
+        ui_spriteDraw(TILE6, sprite_faceButtons0, aIdle, textPositions.x-68, textPositions.y+66);
     }
 
     int count = core_get_playercount();
@@ -188,9 +194,9 @@ void ui_main_menu(ControllerData* control, int diff)
 
         if(control->pressed.b || control->held.b)
         {
-            ui_spriteDraw(TILE4, sprite_faceButtons1, bHeld, 74, 128);
+            ui_spriteDraw(TILE4, sprite_faceButtons1, bHeld, textPositions.x-86, textPositions.y+8);
         } else {
-            ui_spriteDraw(TILE4, sprite_faceButtons1, bIdle, 74, 128);
+            ui_spriteDraw(TILE4, sprite_faceButtons1, bIdle, textPositions.x-86, textPositions.y+8);
         }
 
         set = diff;
@@ -200,9 +206,9 @@ void ui_main_menu(ControllerData* control, int diff)
 
     // Text
     ui_syncText();
-    rdpq_text_print(&txt_titleParms, ID_TITLE, 106, 64, " Halcyon\nHexagons");
-    rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 102, "Press");
-    rdpq_text_printf(&txt_gameParms, ID_DEFAULT, 92, 140, 
+    rdpq_text_print(&txt_titleParms, ID_TITLE, textPositions.x-54, textPositions.y-56, " Halcyon\nHexagons");
+    rdpq_text_print(&txt_gameParms, ID_DEFAULT, textPositions.x-32, textPositions.y-18, "Press");
+    rdpq_text_printf(&txt_gameParms, ID_DEFAULT, textPositions.x-68, textPositions.y+20, 
         "%s %s\n"
         "%s %d\n"
         "%s %d\n"
