@@ -282,16 +282,16 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 	platform_drawBatch();
 	light_resetAmbient(&game->scene.light);
 
-	// TPX
-	lavaBubbles.count = 512;
-	ptx_draw(&game->screen.gameplay_viewport, &lavaBubbles, 1,1);
-
 	t3d_frame_start();
 	actor_draw(actor);
 
 	t3d_matrix_pop(1);
 
 	game->syncPoint = rspq_syncpoint_new();
+
+	// TPX
+	lavaBubbles.count = 512;
+	ptx_draw(&game->screen.gameplay_viewport, &lavaBubbles, 1,1);
 
 	if(activePlayer < MAXPLAYERS)
 	{
@@ -400,7 +400,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	// Platforms
 	for (size_t j = 0; j < PLATFORM_COUNT; j++)
 	{
-		platform_loop(&hexagons[j], actor, game->diff);
+		if(!game->winnerSet) platform_loop(&hexagons[j], actor, game->diff);
 	}
 
 	move_lava(scenery);
@@ -482,9 +482,6 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	platform_drawBatch();
 	light_resetAmbient(&game->scene.light);
 
-	// TPX
-	ptx_draw(&game->screen.gameplay_viewport, &lavaBubbles, 1,1);
-
 	// Don't bother drawing shadows for the AI
 	for (size_t s = 0; s < PLAYER_COUNT; s++)
 	{
@@ -499,6 +496,9 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	t3d_matrix_pop(1);
 
 	game->syncPoint = rspq_syncpoint_new();
+
+	// TPX
+	if(!game->winnerSet) ptx_draw(&game->screen.gameplay_viewport, &lavaBubbles, 1,1);
 
 	for (size_t i = 0; i < ACTOR_COUNT; i++)
 	{
