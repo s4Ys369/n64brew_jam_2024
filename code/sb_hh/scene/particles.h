@@ -26,7 +26,7 @@ typedef struct
 
 } Particles;
 
-Particles lavaBubbles;
+Particles cloudMist;
 
 void ptx_init(Particles *ptx)
 {

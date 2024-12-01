@@ -45,7 +45,7 @@ void game_init(Game *game)
 	t3d_init((T3DInitParams){});
 
 	// TPX
-	ptx_init(&lavaBubbles);
+	ptx_init(&cloudMist);
 
 	time_init(&game->timing);
 

@@ -151,7 +151,7 @@ void minigame_init()
     // platforms
     platform_hexagonGrid(hexagons, t3d_model_load("rom:/strawberry_byte/platform2.t3dm"), 250.0f, ui_color(WHITE));
 
-    // Sound: Play lava SFX
+    // Sound: Play wind SFX
     sound_wavPlay(SFX_WIND, true);
 
 }
@@ -189,7 +189,7 @@ void minigame_cleanup()
     ui_cleanup();
 
     // TPX
-    ptx_cleanup(&lavaBubbles);
+    ptx_cleanup(&cloudMist);
 
     // Step 3: Destroy Tiny3D models, matrices, animations and RSPQ blocks
 	for (uint8_t i = 0; i < ACTOR_COUNT; i++) {
