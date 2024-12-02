@@ -23,25 +23,25 @@ void ai_init(AI *ai, uint8_t difficulty)
     switch(difficulty)
     {
         case DIFF_EASY:
-            ai->jump_threshold = 130.0f;
+            ai->jump_threshold = 600.0f;
             ai->safe_height = 240.0f;
             ai->difficulty = DIFF_EASY;
             ai->error_margin = 4;
-            ai->max_reaction_delay = 2;
+            ai->max_reaction_delay = 6;
             break;
         case DIFF_MEDIUM:
-            ai->jump_threshold = 125.0f;
+            ai->jump_threshold = 550.0f;
             ai->safe_height = 240.0f;
             ai->difficulty = DIFF_MEDIUM;
-            ai->error_margin = 2;
-            ai->max_reaction_delay = 2;
+            ai->error_margin = 4;
+            ai->max_reaction_delay = 4;
             break;
         case DIFF_HARD:
-            ai->jump_threshold = 120.0f;
+            ai->jump_threshold = 500.0f;
             ai->safe_height = 240.0f;
             ai->difficulty = DIFF_HARD;
-            ai->error_margin = 1;
-            ai->max_reaction_delay = 0;
+            ai->error_margin = 4;
+            ai->max_reaction_delay = 2;
             break;
     }
 
@@ -85,10 +85,19 @@ Platform* find_nearest_safe_platform(AI *ai, Actor *actor, Platform* platforms) 
 
                     // Skip platforms not at a safe height
                     if (platform->position.z < ai->safe_height) continue;
-                    if (platform->contact) continue;
 
                     // Calculate squared distance using vector3_squaredDistance
                     float distance_sq = vector3_squaredDistance(&platform->position, &actor->body.position);
+
+                    if (platform->contact)
+                    {
+                        if(platform->colorID == actor->colorID)
+                        {
+                           continue;
+                        } else {
+                           distance_sq *= 2.5f; 
+                        }
+                    }
 
                     // Ignore the current platform the AI is standing on
                     if (distance_sq < current_platform_threshold_sq) continue;
@@ -139,13 +148,13 @@ void ai_generateControlData(AI *ai, ControllerData *control, Actor *actor, Platf
     control->input.stick_y += (rand() % ai->error_margin) - (ai->error_margin / 2);
 
     // Check if the actor should jump when horizontal speed is greater than 10
-    if (actor->horizontal_speed > ai->jump_threshold - (rand() % (ai->error_margin*2)) && actor->state != FALLING)
+    if (actor->horizontal_speed + (rand() % ai->error_margin) > ai->jump_threshold && actor->state != FALLING)
     {
         control->pressed.a = 1; // Press jump button
         control->held.a = 1;    // Hold jump button
     }
 
-    if(actor->state == JUMP) control->held.a = 1; 
+    if(actor->state == JUMP || actor->state == FALLING) control->held.a = 1; 
 
     // Adjust for camera angle if needed
     ai_updateCam(control, camera_angle);

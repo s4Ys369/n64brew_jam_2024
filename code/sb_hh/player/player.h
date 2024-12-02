@@ -69,7 +69,7 @@ void player_drawShadow(Vector3 position, T3DViewport* viewport)
     Vector3 shadowPos = (Vector3){
       position.x,
       position.y,
-      300 // @TODO: in a bigger game, I'd probably just raycasst for the floor Z
+      325 // @TODO: in a bigger game, I'd probably just raycasst for the floor Z
     };
 
     T3DVec3 playerPosConvert = Vector3_to_T3DVec3(position);
@@ -80,7 +80,7 @@ void player_drawShadow(Vector3 position, T3DViewport* viewport)
     t3d_viewport_calc_viewspace_pos(viewport, &playerScreenPos, &playerPosConvert);
     t3d_viewport_calc_viewspace_pos(viewport, &shadowScreenPos, &shadowPosConvert);
 
-    int offset = 2;
+    int offset = 3;
     float v1[] = { playerScreenPos.x, playerScreenPos.y-offset };
     float v2[] = { shadowScreenPos.x-offset, shadowScreenPos.y };
     float v3[] = { shadowScreenPos.x+offset, shadowScreenPos.y };
