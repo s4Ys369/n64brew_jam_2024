@@ -93,9 +93,9 @@ void ptx_randomPos(Particles *ptx, AABB aabb, T3DViewport* vp)
         screenPos.v[2] += amplitude * fm_cosf(t * frequency * 2 * T3D_PI);
 
         // Clamp final values to fit within int8_t range
-        ptxPos[0] = (int8_t)screenPos.v[0];
-        ptxPos[1] = (int8_t)screenPos.v[1];
-        ptxPos[2] = (int8_t)screenPos.v[2];
+        ptxPos[0] = floorf(screenPos.v[0]);
+        ptxPos[1] = floorf(screenPos.v[1]);
+        ptxPos[2] = floorf(screenPos.v[2]);
 
         gradient_fire(ptx->buf[p].colorA, (ptxPos[0] + 127) / 250.0f);
         gradient_fire(ptx->buf[p].colorB, (ptxPos[0] + 127) / 250.0f);
@@ -127,6 +127,8 @@ void ptx_draw(T3DViewport* vp, Particles *ptx, float x, float y)
         ptx_randomPos(ptx, aabb, vp);
     }
     frameCounter++;
+
+    if(frameCounter >= 255) frameCounter = 0; // clamp the int so it doesn't overflow
 
     t3d_mat4fp_from_srt_euler(
         ptx->mat,
