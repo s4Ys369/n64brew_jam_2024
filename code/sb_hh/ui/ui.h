@@ -320,7 +320,6 @@ void ui_intro(ControllerData* control)
 {
     // Basic frame counter for timing
     static uint32_t introTimer = 0;
-    const float refreshRate = display_get_fps();
     introTimer++;
 
     // Animated text positions
@@ -331,15 +330,15 @@ void ui_intro(ControllerData* control)
     // Dynamic alpha from prim colors
     uint32_t dynamicColorsPacked[3] ={0,0,0};
     color_t dynamicColors[3];
-    dynamicColorsPacked[0] = ui_colorSetAlpha(COLORS[N_RED],    introTimer * refreshRate * display_get_delta_time());
-    dynamicColorsPacked[1] = ui_colorSetAlpha(COLORS[N_GREEN],  introTimer * refreshRate * display_get_delta_time());
-    dynamicColorsPacked[2] = ui_colorSetAlpha(COLORS[N_YELLOW], introTimer * refreshRate * display_get_delta_time());
+    dynamicColorsPacked[0] = ui_colorSetAlpha(COLORS[N_RED],    introTimer * 45.0f * display_get_delta_time());
+    dynamicColorsPacked[1] = ui_colorSetAlpha(COLORS[N_GREEN],  introTimer * 45.0f * display_get_delta_time());
+    dynamicColorsPacked[2] = ui_colorSetAlpha(COLORS[N_YELLOW], introTimer * 45.0f * display_get_delta_time());
     dynamicColors[0] = color_from_packed32(dynamicColorsPacked[0]);
     dynamicColors[1] = color_from_packed32(dynamicColorsPacked[1]);
     dynamicColors[2] = color_from_packed32(dynamicColorsPacked[2]);
 
 
-    if(introTimer < refreshRate * 6.0f)
+    if(introTimer < 200)
     {
 
 /* MADE WITH SCREEN */
@@ -362,13 +361,13 @@ void ui_intro(ControllerData* control)
         rdpq_text_print(&txt_titleParms, ID_TITLE, topTextPosition.x, topTextPosition.y, "Made with");
         rdpq_text_print(&txt_gameParms, ID_DEFAULT, 90, 226, "Press        to Skip Intro");
 
-    } else if (introTimer < refreshRate * 10.0f) {
+    } else if (introTimer < 300) {
 
 /* STRAWBERRY SCREEN */
 
         // Panels
         ui_spriteDrawPanel(TILE1, sprite_strawberryTop, WHITE, 128, 80,196,112,0,0,32,16);
-        if(introTimer >= refreshRate * 8.0f)
+        if(introTimer >= 240)
         {
             ui_spriteDrawPanel(TILE2, sprite_strawberry1, WHITE,   128,112,196,144,0,0,32,16);
         } else {
@@ -386,7 +385,7 @@ void ui_intro(ControllerData* control)
         // Text
         ui_syncText();
         rdpq_text_print(&txt_titleParms, ID_TITLE, 68, 56, "Strawberry Byte");
-        if(introTimer >= refreshRate * 8.0f) rdpq_text_print(&txt_titleParms, ID_TITLE, 110, 190, "Presents");
+        if(introTimer >= 240) rdpq_text_print(&txt_titleParms, ID_TITLE, 110, 190, "Presents");
         rdpq_text_print(&txt_gameParms, ID_DEFAULT, 90, 226, "Press        to Skip Intro");
 
     } else {
