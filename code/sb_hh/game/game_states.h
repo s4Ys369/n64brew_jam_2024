@@ -40,7 +40,9 @@ void gameState_background(Game* game, int color)
 	if(s1 > textureWidth) s1 = 0;
 
 	// Stretch/Squash vertically
-	float stretchFactor = fm_sinf(game->timing.frame_counter * game->timing.fixed_time_s) * 0.25f + 1.0f;
+	float counter = 0;
+	counter++;
+	float stretchFactor = fm_sinf(counter * game->timing.fixed_time_s) * 0.25f + 1.0f;
 	float originalHeight = SCREEN_HEIGHT - 100; // @TODO: make height a argument
 	float scaledHeight = originalHeight * stretchFactor;
 
@@ -48,6 +50,8 @@ void gameState_background(Game* game, int color)
 	y1 = SCREEN_HEIGHT;
 
 	ui_spriteDrawPanel(TILE2, sprite_clouds, color, x0, y0, x1, y1, s0, t0, s1, t1); // @TODO: make sprite a argument
+
+	if(counter > 255.0f) counter = 0;
 
 }
 
