@@ -455,12 +455,15 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 			// Bugfix: Center dead actor's position to not break camera 
 			currentActor->body.position = (Vector3){0,0,250};
 			static int8_t timer[MAXPLAYERS] = {0};
-			if (!player[i].control.has_rumbled)
+			if(player[i].isHuman)
 			{
-				controllerData_rumbleFrames(&player[i].control, i, 5);
-				if (++timer[i] > 25) player[i].control.has_rumbled = true;
-			} else {
-				controllerData_rumbleStop(&player[i].control, i);
+				if (!player[i].control.has_rumbled)
+				{
+					controllerData_rumbleFrames(&player[i].control, i, 5);
+					if (++timer[i] > 25) player[i].control.has_rumbled = true;
+				} else {
+					controllerData_rumbleStop(&player[i].control, i);
+				}
 			}
 			player[i].died = true;
 			loserCount++;
