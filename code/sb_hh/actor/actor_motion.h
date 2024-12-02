@@ -67,8 +67,7 @@ void actorMotion_integrate (Actor *actor, float frame_time)
         if (actor->body.velocity.z > actor->settings.jump_max_speed) actor->body.velocity.z = actor->settings.jump_max_speed;
         if (actor->body.position.z > actor->settings.jump_max_height)
         {
-            actor->body.position.z--;
-            actor->body.velocity.z--;
+            actor->body.velocity.z -= 10.0f;
         }
     }
 

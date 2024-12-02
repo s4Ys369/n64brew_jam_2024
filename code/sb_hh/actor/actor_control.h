@@ -68,7 +68,7 @@ void actorControl_setJump(Actor* actor, ControllerData *control, float frame_tim
 
 void actorControl_moveWithStick(Actor *actor, ControllerData *control, float camera_angle_around, float camera_offset)
 {
-    int deadzone = 2;
+    int deadzone = 3;
     float stick_magnitude = 0; 
 
     // Store previous camera angle and offset
@@ -101,7 +101,7 @@ void actorControl_moveWithStick(Actor *actor, ControllerData *control, float cam
     {
         Vector2 stick = {control->input.stick_x, control->input.stick_y};
         stick_magnitude = vector2_magnitude(&stick);
-        actor->horizontal_target_speed = stick_magnitude * 6;
+        actor->horizontal_target_speed = stick_magnitude * 7;
     }
 
     
