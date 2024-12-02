@@ -22,9 +22,34 @@ void gameState_setGameOver();
 
 void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scenery, ActorCollider* actor_collider, ActorContactData* actor_contact);
 
-int tileBase = 0;
-float tileScroll = 8.0f;
-int cloudHeight = 80;
+void gameState_background(Game* game, int color)
+{
+	static float s0 = 0.0f, s1 = 16.0f;
+	float t0 = 0.0f, t1 = 16.0f;
+	float x0 = 0, y0 = 0;
+	float x1 = SCREEN_WIDTH, y1 = SCREEN_HEIGHT;
+
+	// Scroll horizontally
+	float scrollSpeed = display_get_refresh_rate() * 0.1f;
+	float textureWidth = 32.0f; 
+
+	s0 += (game->timing.fixed_time_s * scrollSpeed);
+	s1 += (game->timing.fixed_time_s * scrollSpeed);
+
+	if(s0 > textureWidth) s0 = 0;
+	if(s1 > textureWidth) s1 = 0;
+
+	// Stretch/Squash vertically
+	float stretchFactor = fm_sinf(game->timing.frame_counter * game->timing.fixed_time_s) * 0.25f + 1.0f;
+	float originalHeight = SCREEN_HEIGHT - 100; // @TODO: make height a argument
+	float scaledHeight = originalHeight * stretchFactor;
+
+	y0 = SCREEN_HEIGHT - scaledHeight;
+	y1 = SCREEN_HEIGHT;
+
+	ui_spriteDrawPanel(TILE2, sprite_clouds, color, x0, y0, x1, y1, s0, t0, s1, t1); // @TODO: make sprite a argument
+
+}
 
 // new camera code ////
 
@@ -76,7 +101,9 @@ void gameState_setIntro(Game* game, Player* player, Scenery* scenery)
 	screen_clearT3dViewport(&game->screen);
 	screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
 
-	ui_spriteDrawPanel(TILE2, sprite_clouds, WHITE, 0,cloudHeight-tileBase,SCREEN_WIDTH,SCREEN_HEIGHT,tileBase,tileBase,32-tileBase,tileScroll);
+	// BACKGROUND
+	gameState_background(game, WHITE);
+
 	t3d_frame_start();
 
 	light_set(&game->scene.light);
@@ -116,7 +143,8 @@ void gameState_setMainMenu(Game* game, Player* player, Actor* actor, Scenery* sc
 	screen_clearT3dViewport(&game->screen);
 	screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
 
-	ui_spriteDrawPanel(TILE2, sprite_clouds, WHITE, 0,cloudHeight-tileBase,SCREEN_WIDTH,SCREEN_HEIGHT,tileBase,tileBase,32-tileBase,tileScroll);
+	gameState_background(game, WHITE);
+
 	t3d_frame_start();
 
 	light_set(&game->scene.light);
@@ -268,7 +296,8 @@ void gameState_setCS(Game* game, Player* player, Actor* actor, Scenery* scenery)
 	screen_clearT3dViewport(&game->screen);
 	screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
 
-	ui_spriteDrawPanel(TILE2, sprite_clouds, WHITE, 0,cloudHeight-tileBase,SCREEN_WIDTH,SCREEN_HEIGHT,tileBase,tileBase,32-tileBase,tileScroll);
+	gameState_background(game, WHITE);
+
 	t3d_frame_start();
 
 	light_set(&game->scene.light);
@@ -346,7 +375,8 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		screen_clearT3dViewport(&game->screen);
 		screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
 
-		ui_spriteDrawPanel(TILE2, sprite_clouds, WHITE, 0,cloudHeight-tileBase,SCREEN_WIDTH,SCREEN_HEIGHT,tileBase,tileBase,32-tileBase,tileScroll);
+		gameState_background(game, WHITE);
+
 		t3d_frame_start();
 
 		light_set(&game->scene.light);
@@ -563,7 +593,8 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 	screen_clearT3dViewport(&game->screen);
 	screen_applyColor_Depth(&game->screen, RGBA32(154, 181, 198, 0xFF), false);
 
-	ui_spriteDrawPanel(TILE2, sprite_clouds, WHITE, 0,cloudHeight-tileBase,SCREEN_WIDTH,SCREEN_HEIGHT,tileBase,tileBase,32-tileBase,tileScroll);
+	gameState_background(game, WHITE);
+
 	t3d_frame_start();
 
 	light_set(&game->scene.light);
@@ -666,7 +697,8 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 	screen_clearT3dViewport(&game->screen);
 	screen_applyColor_Depth(&game->screen, ui_color(VIOLET), false);
 
-	ui_spriteDrawPanel(TILE2, sprite_clouds, DARK_GREEN, 0,cloudHeight-tileBase,SCREEN_WIDTH,SCREEN_HEIGHT,tileBase,tileBase,32-tileBase,tileScroll);
+	gameState_background(game, DARK_GREEN);
+
 	t3d_frame_start();
 
 	light_set(&game->scene.light);
@@ -784,28 +816,6 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 				mixer_ch_set_vol_pan(SFX_CHANNEL-i, sound_reverb(0.5f, 0.8f), 0.5f);
 			}
     	}
-
-		// Psuedo animation for cloud sprite
-		static float direction = 1.0f;
-		const float minScroll = 14.0f;
-		const float maxScroll = 18.0f;
-
-		if (game->timing.frame_counter % 15 == 0)
-		{
-			tileScroll += direction;
-			tileBase = rand() % 4;
-		}
-
-		if (tileScroll > maxScroll) 
-		{
-			tileScroll = maxScroll;
-			direction = -1.0f;
-		} else if (tileScroll < minScroll) {
-			tileScroll = minScroll;
-			direction = 1.0f;
-		}
-
-		tileScroll = floorf(tileScroll);
 
 		switch(game->state)
 		{
