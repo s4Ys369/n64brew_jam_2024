@@ -1,3 +1,18 @@
+/*
+* This file includes code from Tiny3D.
+* Tiny3D is licensed under the MIT License.
+*
+* Original code by Max Bebök 
+* Adapted by s4ys
+* November 2024
+*
+* Description of changes or adaptations made:
+* - Modify water like wobble to use a sum of sines instead a single sine wave
+*
+*
+* Original source: https://github.com/HailToDodongo/tiny3d/tree/main/examples/04_dynamic
+*/
+
 #ifndef ROOM_H
 #define ROOM_H
 
@@ -14,7 +29,7 @@ typedef struct {
 
 // Precomputed harmonic data for the wobble effect
 static const HarmonicData wobbleData = {
-    .amplitude = {30.0f, 15.0f, 10.0f, 5.0f},
+    .amplitude = {10.0f, 5.0f, 3.0f, 1.0f},
     .frequency = {4.5f, 9.0f, 13.5f, 18.0f},
     .phase = {0.0f, 0.5f, 1.0f, 1.5f}
 };
@@ -71,8 +86,8 @@ void move_lava(Scenery *scenery)
 
 
         // Adjust color more subtly based on height
-        float colorVariation = height * 0.01f; // Reduced scaling factor
-        float baseIntensity = 0.85f;          // Higher base intensity for consistent lighting
+        float colorVariation = height * 0.02f; // Reduced scaling factor
+        float baseIntensity = 0.75f;          // Higher base intensity for consistent lighting
         float color = baseIntensity + colorVariation;
 
         uint8_t* rgba = t3d_vertbuffer_get_rgba(verts, i);

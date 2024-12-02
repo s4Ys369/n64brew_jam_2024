@@ -1,3 +1,18 @@
+/*
+* This file includes code from Tiny3D.
+* Tiny3D is licensed under the MIT License.
+*
+* Original code by Max Bebök 
+* Adapted by s4ys
+* November 2024
+*
+* Description of changes or adaptations made:
+* - water like wobble
+*
+*
+* Original source: https://github.com/HailToDodongo/tiny3d/tree/main/examples/04_dynamic
+*/
+
 #ifndef ROOM_H
 #define ROOM_H
 
