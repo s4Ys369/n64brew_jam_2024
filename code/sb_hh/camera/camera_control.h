@@ -69,6 +69,28 @@ void camera_orbit_withCButtons(Camera *camera, ControllerData *data)
 
 }
 
+void cameraControl_freeCam(Camera *camera, ControllerData *data, float time)
+{
+
+    const float speed = 500.0f;
+
+    float input_x = 0;
+    float input_y = 0;
+    float input_z = 0;
+
+    if ((data->held.c_right) || (data->held.c_left) || (data->held.c_up) || (data->held.c_down) || (data->held.a) || (data->held.b)){
+        
+        input_x = input(data->held.c_right) - input(data->held.c_left);
+        input_y = input(data->held.c_up) - input(data->held.c_down);
+        input_z = input(data->held.a) - input(data->held.b);
+    }
+
+    camera->position.x += input_x * time * speed;
+    camera->position.y += input_y * time * speed;
+    camera->position.z += input_z * time * speed;
+
+}
+
 
 void camera_aim(Camera *camera, ControllerData *data)
 {

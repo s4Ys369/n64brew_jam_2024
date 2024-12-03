@@ -724,11 +724,12 @@ void gameState_setPause(Game* game, Player* player, Actor* actor, Scenery* scene
 
 	game->syncPoint = rspq_syncpoint_new();
 
-	ui_pause(&player[0].control);
 	if(player[0].control.held.r)
 	{
 		ui_fps(game->timing.frame_rate, 20.0f, 20.0f);
 		if(core_get_playercount() == 1) ui_input_display(&player[0].control);
+	} else {
+		ui_pause(&player[0].control);
 	}
 
 	rdpq_detach_show();
@@ -809,7 +810,12 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 				float t = game->scene.camera.camTime / game->scene.camera.lerpTime;
 				t = clamp(t, 0.0f, 1.0f);
 				Vector3 camPos = vector3_lerp(&csPos, &gamePlayPos, t);
-				camera_getMinigamePosition(&game->scene.camera, actor, player, camPos);
+				
+				if(game->state == PAUSE){ 
+					cameraControl_freeCam(&game->scene.camera, &player[0].control, game->timing.fixed_time_s);
+				}else{
+					camera_getMinigamePosition(&game->scene.camera, actor, player, camPos);
+				}
 			}
 		}
 		camera_set(&game->scene.camera, &game->screen);
