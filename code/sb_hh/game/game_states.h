@@ -757,8 +757,13 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 	for(;;)
 	{
 
-		// Tme
-		time_setData(&game->timing);
+		// Time
+		if(game->state == PAUSE)
+		{
+			time_setData(&game->timing, true);
+		} else {
+			time_setData(&game->timing, false);
+		}
 
 		// Controls
 		game_setControlData(game, player);
