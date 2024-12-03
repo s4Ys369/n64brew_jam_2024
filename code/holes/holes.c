@@ -11,7 +11,7 @@
 const MinigameDef minigame_def = {
     .gamename = "holes",
     .developername = "s4ys",
-    .description = "Port of Hole.io",
+    .description = "Clone of Hole.io",
     .instructions = "Try to devour as much as possible!"
 };
 
@@ -36,8 +36,8 @@ const MinigameDef minigame_def = {
 #define BILLBOARD_YOFFSET   15.0f
 
 /**
- * Example project showcasing the usage of the animation system.
- * This includes instancing animations, blending animations, and controlling playback.
+ * Simple clone of Hole.io
+ * Basically just pushing myself to make something in a shorter time.
  */
 
 surface_t *depthBuffer;
@@ -73,6 +73,7 @@ typedef struct
   T3DVec3 position;
   T3DVec3 scale;
   float yaw;
+  bool visible;
 } object_data;
 
 #define NUM_OBJECTS 12
@@ -81,6 +82,7 @@ typedef struct
 {
   uint8_t type;
   T3DModel *model;
+  float collisionRadius;
   object_data objects[NUM_OBJECTS];
   rspq_block_t *modelBlock;
 } object_type;
@@ -92,7 +94,7 @@ typedef struct
 {
   PlyNum plynum;
   T3DMat4FP* modelMatFP;
-  rspq_block_t *dplSnake;
+  rspq_block_t *dplHole;
   T3DVec3 moveDir;
   T3DVec3 playerPos;
   T3DVec3 scale;
@@ -103,6 +105,7 @@ typedef struct
   float attackTimer;
   PlyNum ai_target;
   int ai_reactionspeed;
+  uint8_t score;
 } player_data;
 
 player_data players[MAXPLAYERS];
@@ -119,6 +122,32 @@ wav64_t sfx_winner;
 
 rspq_syncpoint_t syncPoint;
 
+////////// COLLISION
+
+bool check_collision(T3DVec3* pos0, float radii0, T3DVec3* pos1, float radii1)
+{
+
+  // Calculate squared distance between two positions' X and Z coordinates
+  float dx = pos1->v[0] - pos0->v[0];
+  float dy = pos1->v[2] - pos0->v[2];
+  float distSq = dx*dx + dy*dy;
+
+  if(radii0 != 0)
+  {
+    // Assume checking if radii overlap
+    float radiiSum = radii0 + radii1;
+    float radiiSumSq = radiiSum*radiiSum;
+
+    return distSq <= radiiSumSq;
+  } else {
+
+    // Assume checking if pos0 is within pos1's radius
+    return distSq <= radii1 * radii1;
+  }
+
+
+}
+//////////
 
 ////////// OBJECTS
 
@@ -141,6 +170,7 @@ void object_init(object_data *object, uint8_t objectType, uint8_t ID, T3DVec3 po
 
   }
   object->yaw = 0;
+  object->visible = true;
 
 }
 
@@ -154,12 +184,15 @@ void object_initBatch(object_type* batch, uint8_t objectType)
   {
     case OBJ_CAR:
       batch->model = modelCar;
+      batch->collisionRadius = 5.0f;
       break;
     case OBJ_BUILDING:
       batch->model = modelBuilding;
+      batch->collisionRadius = 10.0f;
       break;
     case OBJ_HYDRANT:
       batch->model = modelHydrant;
+      batch->collisionRadius = 2.0f;
       break;
   }
 
@@ -167,7 +200,6 @@ void object_initBatch(object_type* batch, uint8_t objectType)
   for (size_t i = 0; i < NUM_OBJECTS; i++)
   {
     object_init(&batch->objects[i], batch->type, i, (T3DVec3){{rand()%100,0,rand()%100}});
-    batch->objects[i].model = t3d_model_get_object_by_index(batch->model, 0);
   }
 
   // Create model block
@@ -175,33 +207,42 @@ void object_initBatch(object_type* batch, uint8_t objectType)
     for (size_t i = 0; i < NUM_OBJECTS; i++)
     {
       t3d_matrix_set(batch->objects[i].mtxFP, true);
-      if(batch->objects[i].model->isVisible) t3d_model_draw(batch->model);
+      if(batch->objects[i].visible) t3d_model_draw(batch->model);
     }
   batch->modelBlock = rspq_block_end();
 
 }
 
-void object_updateBatch(object_type* batch, T3DViewport* vp)
+void object_updateBatch(object_type* batch, T3DViewport* vp, player_data* player)
 {
   for (size_t i = 0; i < NUM_OBJECTS; i++)
   {
-    /* @TODO:
-    * - AABB check with player
-    * - Fall logic
-    */
+    for (size_t p = 0; p< MAXPLAYERS; p++)
+    {
 
-    if(t3d_frustum_vs_aabb_s16(&vp->viewFrustum, batch->objects[i].model->aabbMin, batch->objects[i].model->aabbMax)) {
-      batch->objects[i].model->isVisible = true;
-    } else {
-      batch->objects[i].model->isVisible = false;
+      // @TODO: Add scale check
+      if(check_collision(&batch->objects[i].position, batch->collisionRadius, &player[p].playerPos, (HITBOX_RADIUS + ATTACK_RADIUS)))
+      {
+        batch->objects[i].position.v[1] -= 1.0f;
+        if(batch->objects[i].position.v[1] <= -100.0f) 
+        {
+          batch->objects[i].visible = false;
+          player[p].score++; // @TODO: Add different score values per object type
+          break;
+        }
+      }
     }
 
-    t3d_mat4fp_from_srt_euler(
-      batch->objects[i].mtxFP,
-      batch->objects[i].scale.v,
-      (float[3]){0,batch->objects[i].yaw,0},
-      batch->objects[i].position.v
-    );
+    // Don't update the matrix if not visible
+    if(batch->objects[i].visible)
+    {
+      t3d_mat4fp_from_srt_euler(
+        batch->objects[i].mtxFP,
+        batch->objects[i].scale.v,
+        (float[3]){0,batch->objects[i].yaw,0},
+        batch->objects[i].position.v
+      );
+    }
   }
 }
 
@@ -236,7 +277,7 @@ void player_init(player_data *player, color_t color, T3DVec3 position, float rot
     t3d_matrix_set(player->modelMatFP, true);
     rdpq_set_prim_color(color);
     t3d_model_draw(model);
-  player->dplSnake = rspq_block_end();
+  player->dplHole = rspq_block_end();
 
   player->rotY = rotation;
   player->currSpeed = 0.0f;
@@ -286,8 +327,6 @@ void minigame_init(void)
   modelCar = t3d_model_load("rom:/holes/car.t3dm");
   modelBuilding = t3d_model_load("rom:/holes/building.t3dm");
   modelHydrant = t3d_model_load("rom:/holes/hydrant.t3dm");
-
-  // Model Credits: Quaternius (CC0) https://quaternius.com/packs/easyenemy.html
   model = t3d_model_load("rom:/holes/hole.t3dm");
 
   rspq_block_begin();
@@ -333,6 +372,8 @@ void minigame_init(void)
   mixer_ch_set_vol(31, 0.5f, 0.5f);
 }
 
+
+// @TODO: Add scale check somewhere
 void player_do_damage(player_data *player)
 {
   if (!player->isAlive) {
@@ -383,6 +424,7 @@ void player_fixedloop(player_data *player, float deltaTime, joypad_port_t port, 
     if (is_human) {
       joypad_inputs_t joypad = joypad_get_inputs(port);
 
+      // @TODO: add D Pad support
       newDir.v[0] = (float)joypad.stick_x * 0.05f;
       newDir.v[2] = -(float)joypad.stick_y * 0.05f;
       speed = sqrtf(t3d_vec3_len2(&newDir));
@@ -475,7 +517,7 @@ void player_loop(player_data *player, float deltaTime, joypad_port_t port, bool 
 void player_draw(player_data *player)
 {
   if (player->isAlive) {
-    rspq_block_run(player->dplSnake);
+    rspq_block_run(player->dplHole);
   }
 }
 
@@ -566,10 +608,12 @@ void minigame_loop(float deltaTime)
 
   for (int i = 0; i < NUM_OBJ_TYPES; i++)
   {
-    object_updateBatch(&objects[i], &viewport);
+    object_updateBatch(&objects[i], &viewport, players);
   }
 
   // ======== Draw (3D) ======== //
+
+  // @TODO: Splitscreen?
   rdpq_attach(display_get(), depthBuffer);
   t3d_frame_start();
   t3d_viewport_attach(&viewport);
@@ -605,6 +649,7 @@ void minigame_loop(float deltaTime)
   rdpq_sync_tile();
   rdpq_sync_pipe(); // Hardware crashes otherwise
 
+  // @TODO: Print Score
   if (countDownTimer > 0.0f) {
     rdpq_text_printf(NULL, FONT_TEXT, 155, 100, "%d", (int)ceilf(countDownTimer));
   } else if (countDownTimer > -GO_DELAY) {
@@ -620,7 +665,7 @@ void minigame_loop(float deltaTime)
 
 void player_cleanup(player_data *player)
 {
-  rspq_block_free(player->dplSnake);
+  rspq_block_free(player->dplHole);
   free_uncached(player->modelMatFP);
 }
 
