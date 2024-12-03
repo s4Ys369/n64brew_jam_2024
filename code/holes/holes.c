@@ -11,7 +11,7 @@
 const MinigameDef minigame_def = {
     .gamename = "holes",
     .developername = "s4ys",
-    .description = "Port of Holes IO",
+    .description = "Port of Hole.io",
     .instructions = "Try to devour as much as possible!"
 };
 
@@ -45,13 +45,7 @@ T3DViewport viewport;
 rdpq_font_t *font;
 rdpq_font_t *fontBillboard;
 T3DMat4FP* mapMatFP;
-T3DMat4FP* carMatFP;
-T3DMat4FP* buildingMatFP;
-T3DMat4FP* hydrantMatFP;
 rspq_block_t *dplMap;
-rspq_block_t *dplCar;
-rspq_block_t *dplBuilding;
-rspq_block_t *dplHydrant;
 T3DModel *model;
 T3DModel *modelCar;
 T3DModel *modelBuilding;
@@ -61,6 +55,39 @@ T3DVec3 camPos;
 T3DVec3 camTarget;
 T3DVec3 lightDirVec;
 xm64player_t music;
+
+////////// OBJECTS
+enum OBJ_TYPES
+{
+  OBJ_CAR,
+  OBJ_BUILDING,
+  OBJ_HYDRANT,
+  NUM_OBJ_TYPES
+};
+
+typedef struct
+{
+  uint8_t ID;
+  T3DObject *model;
+  T3DMat4FP* mtxFP;
+  T3DVec3 position;
+  T3DVec3 scale;
+  float yaw;
+} object_data;
+
+#define NUM_OBJECTS 12
+
+typedef struct
+{
+  uint8_t type;
+  T3DModel *model;
+  object_data objects[NUM_OBJECTS];
+  rspq_block_t *materialBlock;
+  rspq_block_t *modelBlock;
+} object_type;
+
+object_type objects[NUM_OBJ_TYPES];
+//////////
 
 typedef struct
 {
@@ -92,6 +119,102 @@ wav64_t sfx_stop;
 wav64_t sfx_winner;
 
 rspq_syncpoint_t syncPoint;
+
+
+////////// OBJECTS
+
+void object_init(object_data *object, uint8_t objectType, T3DModel *model, uint8_t ID, T3DVec3 position)
+{
+  object->ID = ID;
+  object->model = t3d_model_get_object_by_index(model, 0);
+  object->mtxFP = malloc_uncached(sizeof(T3DMat4FP));
+  object->position = position;
+  object->scale = (T3DVec3){{0.125f,0.125f,0.125f}};
+  object->yaw = 0;
+
+}
+
+void object_initBatch(object_type* batch, uint8_t objectType)
+{
+
+  batch->type = objectType;
+
+  // Assign model to objects
+  switch(batch->type)
+  {
+    case OBJ_CAR:
+      batch->model = modelCar;
+      break;
+    case OBJ_BUILDING:
+      batch->model = modelBuilding;
+      break;
+    case OBJ_HYDRANT:
+      batch->model = modelHydrant;
+      break;
+  }
+
+  // Initialize batch objects
+  for (size_t i = 0; i < NUM_OBJECTS; i++)
+  {
+    object_init(&batch->objects[i], batch->type, batch->model, i, (T3DVec3){{rand()%100,0,rand()%100}});
+  }
+
+  // Create material block
+  rspq_block_begin();
+    t3d_model_draw_material(batch->objects[0].model->material, NULL);
+  batch->materialBlock = rspq_block_end();
+
+  // Create model block
+  rspq_block_begin();
+    t3d_matrix_push_pos(1);
+      for (size_t i = 0; i < NUM_OBJECTS; i++)
+      {
+        t3d_matrix_set(batch->objects[i].mtxFP, true);
+        t3d_model_draw_object(batch->objects[i].model, NULL);
+      }
+    t3d_matrix_pop(1);
+  batch->modelBlock = rspq_block_end();
+
+}
+
+void object_updateBatch(object_type* batch)
+{
+  for (size_t i = 0; i < NUM_OBJECTS; i++)
+  {
+    /* @TODO:
+    * - Frutsum Culling
+    * - AABB check with player
+    * - Fall logic
+    */
+
+    t3d_mat4fp_from_srt_euler(
+      batch->objects[i].mtxFP,
+      batch->objects[i].scale.v,
+      (float[3]){0,batch->objects[i].yaw,0},
+      batch->objects[i].position.v
+    );
+  }
+}
+
+void object_drawBatch(object_type* batch)
+{
+  rspq_block_run(batch->materialBlock);
+  rspq_block_run(batch->modelBlock);
+}
+
+void object_destroyBatch(object_type* batch)
+{
+  for (size_t i = 0; i < NUM_OBJECTS; i++)
+  {
+    free_uncached(batch->objects[i].mtxFP);
+  }
+  rspq_block_free(batch->materialBlock);
+  rspq_block_free(batch->modelBlock);
+  t3d_model_free(batch->model);
+
+}
+
+//////////
 
 void player_init(player_data *player, color_t color, T3DVec3 position, float rotation)
 {
@@ -145,12 +268,6 @@ void minigame_init(void)
 
   mapMatFP = malloc_uncached(sizeof(T3DMat4FP));
   t3d_mat4fp_from_srt_euler(mapMatFP, (float[3]){0.3f, 0.3f, 0.3f}, (float[3]){0, 0, 0}, (float[3]){0, 0, -10});
-  carMatFP = malloc_uncached(sizeof(T3DMat4FP));
-  t3d_mat4fp_from_srt_euler(carMatFP, (float[3]){0.2f, 0.2f, 0.2f}, (float[3]){0, 0, 0}, (float[3]){50, 0, -10});
-  buildingMatFP = malloc_uncached(sizeof(T3DMat4FP));
-  t3d_mat4fp_from_srt_euler(buildingMatFP, (float[3]){0.5f, 0.5f, 0.5f}, (float[3]){0, 0, 0}, (float[3]){-10, 0, -10});
-  hydrantMatFP = malloc_uncached(sizeof(T3DMat4FP));
-  t3d_mat4fp_from_srt_euler(hydrantMatFP, (float[3]){0.1f, 0.1f, 0.1f}, (float[3]){0, 0, 0}, (float[3]){-75, 0, -10});
 
   camPos = (T3DVec3){{0, 125.0f, 100.0f}};
   camTarget = (T3DVec3){{0, 0, 40}};
@@ -173,27 +290,6 @@ void minigame_init(void)
     t3d_matrix_pop(1);
   dplMap = rspq_block_end();
 
-  rspq_block_begin();
-    t3d_matrix_push(carMatFP);
-    rdpq_set_prim_color(RGBA32(255, 255, 255, 255));
-    t3d_model_draw(modelCar);
-    t3d_matrix_pop(1);
-  dplCar = rspq_block_end();
-
-  rspq_block_begin();
-    t3d_matrix_push(buildingMatFP);
-    rdpq_set_prim_color(RGBA32(255, 255, 255, 255));
-    t3d_model_draw(modelBuilding);
-    t3d_matrix_pop(1);
-  dplBuilding = rspq_block_end();
-
-  rspq_block_begin();
-    t3d_matrix_push(hydrantMatFP);
-    rdpq_set_prim_color(RGBA32(255, 255, 255, 255));
-    t3d_model_draw(modelHydrant);
-    t3d_matrix_pop(1);
-  dplHydrant = rspq_block_end();
-
   T3DVec3 start_positions[] = {
     (T3DVec3){{-100,5,0}},
     (T3DVec3){{0,5,-100}},
@@ -212,6 +308,11 @@ void minigame_init(void)
   {
     player_init(&players[i], colors[i], start_positions[i], start_rotations[i]);
     players[i].plynum = i;
+  }
+
+  for (int i = 0; i < NUM_OBJ_TYPES; i++)
+  {
+    object_initBatch(&objects[i], i);
   }
 
   countDownTimer = COUNTDOWN_DELAY;
@@ -457,6 +558,11 @@ void minigame_loop(float deltaTime)
     player_loop(&players[i], deltaTime, core_get_playercontroller(i), i < playercount);
   }
 
+  for (int i = 0; i < NUM_OBJ_TYPES; i++)
+  {
+    object_updateBatch(&objects[i]);
+  }
+
   // ======== Draw (3D) ======== //
   rdpq_attach(display_get(), depthBuffer);
   t3d_frame_start();
@@ -470,9 +576,10 @@ void minigame_loop(float deltaTime)
   t3d_light_set_count(1);
 
   rspq_block_run(dplMap);
-  rspq_block_run(dplCar);
-  rspq_block_run(dplBuilding);
-  rspq_block_run(dplHydrant);
+  for (int i = 0; i < NUM_OBJ_TYPES; i++)
+  {
+    object_drawBatch(&objects[i]);
+  }
   for (size_t i = 0; i < MAXPLAYERS; i++)
   {
     player_draw(&players[i]);
@@ -514,6 +621,11 @@ void minigame_cleanup(void)
     player_cleanup(&players[i]);
   }
 
+  for (int i = 0; i < NUM_OBJ_TYPES; i++)
+  {
+    object_destroyBatch(&objects[i]);
+  }
+
   wav64_close(&sfx_start);
   wav64_close(&sfx_countdown);
   wav64_close(&sfx_stop);
@@ -521,20 +633,11 @@ void minigame_cleanup(void)
   xm64player_stop(&music);
   xm64player_close(&music);
   rspq_block_free(dplMap);
-  rspq_block_free(dplCar);
-  rspq_block_free(dplBuilding);
-  rspq_block_free(dplHydrant);
 
   t3d_model_free(model);
   t3d_model_free(modelMap);
-  t3d_model_free(modelCar);
-  t3d_model_free(modelBuilding);
-  t3d_model_free(modelHydrant);
 
   free_uncached(mapMatFP);
-  free_uncached(carMatFP);
-  free_uncached(buildingMatFP);
-  free_uncached(hydrantMatFP);
 
   rdpq_text_unregister_font(FONT_BILLBOARD);
   rdpq_font_free(fontBillboard);
