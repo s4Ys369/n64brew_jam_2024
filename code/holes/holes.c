@@ -82,7 +82,6 @@ typedef struct
   uint8_t type;
   T3DModel *model;
   object_data objects[NUM_OBJECTS];
-  rspq_block_t *materialBlock;
   rspq_block_t *modelBlock;
 } object_type;
 
@@ -123,13 +122,24 @@ rspq_syncpoint_t syncPoint;
 
 ////////// OBJECTS
 
-void object_init(object_data *object, uint8_t objectType, T3DModel *model, uint8_t ID, T3DVec3 position)
+void object_init(object_data *object, uint8_t objectType, uint8_t ID, T3DVec3 position)
 {
   object->ID = ID;
-  object->model = t3d_model_get_object_by_index(model, 0);
   object->mtxFP = malloc_uncached(sizeof(T3DMat4FP));
   object->position = position;
-  object->scale = (T3DVec3){{0.125f,0.125f,0.125f}};
+  switch(objectType)
+  {
+    case OBJ_CAR:
+      object->scale = (T3DVec3){{0.2f,0.2f,0.2f}};
+      break;
+    case OBJ_BUILDING:
+      object->scale = (T3DVec3){{0.3f,0.3f,0.3f}};
+      break;
+    case OBJ_HYDRANT:
+      object->scale = (T3DVec3){{0.1f,0.1f,0.1f}};
+      break;
+
+  }
   object->yaw = 0;
 
 }
@@ -156,36 +166,35 @@ void object_initBatch(object_type* batch, uint8_t objectType)
   // Initialize batch objects
   for (size_t i = 0; i < NUM_OBJECTS; i++)
   {
-    object_init(&batch->objects[i], batch->type, batch->model, i, (T3DVec3){{rand()%100,0,rand()%100}});
+    object_init(&batch->objects[i], batch->type, i, (T3DVec3){{rand()%100,0,rand()%100}});
+    batch->objects[i].model = t3d_model_get_object_by_index(batch->model, 0);
   }
-
-  // Create material block
-  rspq_block_begin();
-    t3d_model_draw_material(batch->objects[0].model->material, NULL);
-  batch->materialBlock = rspq_block_end();
 
   // Create model block
   rspq_block_begin();
-    t3d_matrix_push_pos(1);
-      for (size_t i = 0; i < NUM_OBJECTS; i++)
-      {
-        t3d_matrix_set(batch->objects[i].mtxFP, true);
-        t3d_model_draw_object(batch->objects[i].model, NULL);
-      }
-    t3d_matrix_pop(1);
+    for (size_t i = 0; i < NUM_OBJECTS; i++)
+    {
+      t3d_matrix_set(batch->objects[i].mtxFP, true);
+      if(batch->objects[i].model->isVisible) t3d_model_draw(batch->model);
+    }
   batch->modelBlock = rspq_block_end();
 
 }
 
-void object_updateBatch(object_type* batch)
+void object_updateBatch(object_type* batch, T3DViewport* vp)
 {
   for (size_t i = 0; i < NUM_OBJECTS; i++)
   {
     /* @TODO:
-    * - Frutsum Culling
     * - AABB check with player
     * - Fall logic
     */
+
+    if(t3d_frustum_vs_aabb_s16(&vp->viewFrustum, batch->objects[i].model->aabbMin, batch->objects[i].model->aabbMax)) {
+      batch->objects[i].model->isVisible = true;
+    } else {
+      batch->objects[i].model->isVisible = false;
+    }
 
     t3d_mat4fp_from_srt_euler(
       batch->objects[i].mtxFP,
@@ -198,7 +207,6 @@ void object_updateBatch(object_type* batch)
 
 void object_drawBatch(object_type* batch)
 {
-  rspq_block_run(batch->materialBlock);
   rspq_block_run(batch->modelBlock);
 }
 
@@ -208,7 +216,7 @@ void object_destroyBatch(object_type* batch)
   {
     free_uncached(batch->objects[i].mtxFP);
   }
-  rspq_block_free(batch->materialBlock);
+
   rspq_block_free(batch->modelBlock);
   t3d_model_free(batch->model);
 
@@ -225,10 +233,9 @@ void player_init(player_data *player, color_t color, T3DVec3 position, float rot
   player->scale = (T3DVec3){{0.125f,0.125f,0.125f}};
 
   rspq_block_begin();
-    t3d_matrix_push(player->modelMatFP);
+    t3d_matrix_set(player->modelMatFP, true);
     rdpq_set_prim_color(color);
     t3d_model_draw(model);
-    t3d_matrix_pop(1);
   player->dplSnake = rspq_block_end();
 
   player->rotY = rotation;
@@ -284,10 +291,9 @@ void minigame_init(void)
   model = t3d_model_load("rom:/holes/hole.t3dm");
 
   rspq_block_begin();
-    t3d_matrix_push(mapMatFP);
+    t3d_matrix_set(mapMatFP, true);
     rdpq_set_prim_color(RGBA32(255, 255, 255, 255));
     t3d_model_draw(modelMap);
-    t3d_matrix_pop(1);
   dplMap = rspq_block_end();
 
   T3DVec3 start_positions[] = {
@@ -560,7 +566,7 @@ void minigame_loop(float deltaTime)
 
   for (int i = 0; i < NUM_OBJ_TYPES; i++)
   {
-    object_updateBatch(&objects[i]);
+    object_updateBatch(&objects[i], &viewport);
   }
 
   // ======== Draw (3D) ======== //
@@ -575,6 +581,8 @@ void minigame_loop(float deltaTime)
   t3d_light_set_directional(0, colorDir, &lightDirVec);
   t3d_light_set_count(1);
 
+  t3d_matrix_push_pos(1);
+
   rspq_block_run(dplMap);
   for (int i = 0; i < NUM_OBJ_TYPES; i++)
   {
@@ -584,6 +592,8 @@ void minigame_loop(float deltaTime)
   {
     player_draw(&players[i]);
   }
+
+  t3d_matrix_pop(1);
 
   syncPoint = rspq_syncpoint_new();
 
