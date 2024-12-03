@@ -143,8 +143,8 @@ void actorCollision_collidePlatforms(Actor* actor, ActorContactData* actor_conta
     actorCollision_updateFalling(actor, actor_contact, actor_collider);
 
     // Calculate the grid cell the actor is in
-    int xCell = (int)floorf((actor->body.position.x + 775) / 350);
-    int yCell = (int)floorf((actor->body.position.y + 775) / 350);
+    int xCell = (int)fm_floorf((actor->body.position.x + 775) / 350);
+    int yCell = (int)fm_floorf((actor->body.position.y + 775) / 350);
 
     if (xCell < 0 || xCell >= 7 || yCell < 0 || yCell >= 7) {
         // Actor is out of bounds; fall and skip collision
@@ -182,7 +182,9 @@ void actorCollision_collidePlatforms(Actor* actor, ActorContactData* actor_conta
             for (size_t i = 0; i < cell->count; i++) 
             {
                 Platform* platform = &platforms[cell->platformIndices[i]];
-                float distanceSq = vector3_squaredDistance(&actor->body.position, &platform->position);
+                fm_vec3_t actorPos = Vector3_to_fast(actor->body.position);
+                fm_vec3_t platformPos = Vector3_to_fast(platform->position);
+                float distanceSq = fm_vec3_distance2(&actorPos, &platformPos);
                 if (distanceSq <= collisionRangeSq)
                 {
 

@@ -67,8 +67,8 @@ Platform* find_nearest_safe_platform(AI *ai, Actor *actor, Platform* platforms) 
     const float current_platform_threshold_sq = 0.02f * 0.02f; // Squared threshold to ignore the current platform
 
     // Calculate grid cell for the actor's current position
-    int xCell = (int)floorf((actor->body.position.x + 700) / GRID_SIZE);
-    int yCell = (int)floorf((actor->body.position.y + 700) / GRID_SIZE);
+    int xCell = (int)fm_floorf((actor->body.position.x + 700) / GRID_SIZE);
+    int yCell = (int)fm_floorf((actor->body.position.y + 700) / GRID_SIZE);
 
     // Iterate through platforms in the same and adjacent grid cells
     for (int dx = -1; dx <= 1; dx++) {
@@ -86,8 +86,10 @@ Platform* find_nearest_safe_platform(AI *ai, Actor *actor, Platform* platforms) 
                     // Skip platforms not at a safe height
                     if (platform->position.z <= ai->safe_height) continue;
 
-                    // Calculate squared distance using vector3_squaredDistance
-                    float distance_sq = vector3_squaredDistance(&platform->position, &actor->body.position);
+                    // Calculate squared distance using fast math vector3
+                    fm_vec3_t actorPos = Vector3_to_fast(actor->body.position);
+                    fm_vec3_t platformPos = Vector3_to_fast(platform->position);
+                    float distance_sq = fm_vec3_distance2(&platformPos, &actorPos);
 
                     // Ignore the current platform the AI is standing on
                     if (distance_sq < current_platform_threshold_sq) continue;
@@ -122,12 +124,12 @@ void ai_generateControlData(AI *ai, ControllerData *control, Actor *actor, Platf
     if (target_platform == NULL) return; // No valid platform found, do nothing
 
     // Calculate direction towards the target platform
-    Vector3 direction_to_target = {
+    fm_vec3_t direction_to_target = {{
         target_platform->position.x - actor->body.position.x,
         target_platform->position.y - actor->body.position.y,
         target_platform->position.z - actor->body.position.z,
-    };
-    vector3_normalize(&direction_to_target);
+    }};
+    fm_vec3_norm(&direction_to_target, &direction_to_target);
 
     // Set movement based on target distance
     control->input.stick_x = (int8_t)(direction_to_target.x * 127); // Max joystick range

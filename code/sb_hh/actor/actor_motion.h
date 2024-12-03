@@ -73,7 +73,7 @@ void actorMotion_integrate (Actor *actor, float frame_time)
 
     if (actor->body.velocity.x != 0 || actor->body.velocity.y != 0) {
 
-		actor->body.rotation.z = deg(atan2f(-actor->body.velocity.x, -actor->body.velocity.y));
+		actor->body.rotation.z = deg(fm_atan2f(-actor->body.velocity.x, -actor->body.velocity.y));
 
         Vector2 horizontal_velocity = {actor->body.velocity.x, actor->body.velocity.y};
         actor->horizontal_speed = vector2_magnitude(&horizontal_velocity);       

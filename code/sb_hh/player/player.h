@@ -55,9 +55,9 @@ Vector3 player_getBillboard(Player* player, T3DViewport* viewport)
     T3DVec3 billboardScreenPos;
     t3d_viewport_calc_viewspace_pos(viewport, &billboardScreenPos, &billboardPosConvert);
 
-    int x = floorf(billboardScreenPos.v[0]);
-    int y = floorf(billboardScreenPos.v[2]);
-    int z = floorf(billboardScreenPos.v[1]);
+    int x = fm_floorf(billboardScreenPos.v[0]);
+    int y = fm_floorf(billboardScreenPos.v[2]);
+    int z = fm_floorf(billboardScreenPos.v[1]);
 
     result = (Vector3){x,y,z};
     return result;

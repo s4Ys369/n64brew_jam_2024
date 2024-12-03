@@ -93,9 +93,9 @@ void ptx_randomPos(Particles *ptx, AABB aabb, T3DViewport* vp)
         screenPos.v[2] += amplitude * fm_cosf(t * frequency * 2 * T3D_PI);
 
         // Clamp final values to fit within int8_t range
-        ptxPos[0] = floorf(screenPos.v[0]);
-        ptxPos[1] = floorf(screenPos.v[1]);
-        ptxPos[2] = floorf(screenPos.v[2]);
+        ptxPos[0] = fm_floorf(screenPos.v[0]);
+        ptxPos[1] = fm_floorf(screenPos.v[1]);
+        ptxPos[2] = fm_floorf(screenPos.v[2]);
 
         gradient_fire(ptx->buf[p].colorA, (ptxPos[0] + 127) / 250.0f);
         gradient_fire(ptx->buf[p].colorB, (ptxPos[0] + 127) / 250.0f);

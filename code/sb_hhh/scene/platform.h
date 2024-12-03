@@ -85,8 +85,8 @@ void platform_assignGrid(Platform* platforms) {
 
   for (size_t i = 0; i < PLATFORM_COUNT; i++)
   {
-    int xCell = (int)floorf((platforms[i].position.x + (OFFSET*2)) / GRID_SIZE);
-    int yCell = (int)floorf((platforms[i].position.y + (OFFSET*2)) / GRID_SIZE);
+    int xCell = (int)fm_floorf((platforms[i].position.x + (OFFSET*2)) / GRID_SIZE);
+    int yCell = (int)fm_floorf((platforms[i].position.y + (OFFSET*2)) / GRID_SIZE);
 
     if (xCell >= 0 && xCell < MAX_GRID_CELLS && yCell >= 0 && yCell < MAX_GRID_CELLS) 
     {
