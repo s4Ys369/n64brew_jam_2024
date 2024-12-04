@@ -190,20 +190,24 @@ void object_init(object_data *object, uint8_t objectType, uint8_t ID, T3DVec3 po
   {
     case OBJ_CAR:
       object->scale = (T3DVec3){{0.125f,0.125f,0.125f}};
-      object->position.v[0] = object->position.v[0] + 40.0f;
-      object->position.v[2] = object->position.v[2] + (rand()%72);
+      object->position.v[0] = object->position.v[0] + (rand()%16);
+      object->position.v[2] = object->position.v[2] + 50.0f;
+      object->yaw = T3D_DEG_TO_RAD(90);
       break;
     case OBJ_BUILDING:
       object->scale = (T3DVec3){{0.3f,0.3f,0.3f}};
+      object->position.v[0] = object->position.v[0] + 15.0f;
+      object->position.v[2] = object->position.v[2] + 5.0f;
+      object->yaw = 0;
       break;
     case OBJ_HYDRANT:
       object->scale = (T3DVec3){{0.05f,0.05f,0.05f}};
-      object->position.v[0] = object->position.v[0] + 25.0f;
-      object->position.v[2] = object->position.v[2] + 25.0f;
+      object->position.v[0] = object->position.v[0] + 40.0f;
+      object->position.v[2] = object->position.v[2] + 40.0f;
+      object->yaw = 0;
       break;
   }
   
-  object->yaw = 0;
   object->visible = true;
 
 }
@@ -708,7 +712,7 @@ void minigame_loop(float deltaTime)
   }
 
   rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, };
-  rdpq_text_printf(&textparms, FONT_TEXT, 0, 200, "Score %u Radius %.2f", players[0].score, players[0].scale.x);
+  rdpq_text_printf(&textparms, FONT_BILLBOARD, 0, 200, "FPS %.3f Score %u Radius %.3f", display_get_fps(), players[0].score, players[0].scale.x);
 
   rdpq_detach_show();
 }
