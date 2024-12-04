@@ -342,8 +342,10 @@ void object_updateBatch(object_type* batch, T3DViewport* vp, player_data* player
   {
     if(!batch->objects[i].visible) continue; // just skip the object update if not visible
 
+    
     if(check_collision(&batch->objects[i].position, batch->collisionRadius, &player->playerPos, HITBOX_RADIUS*player->scale.x))
     {
+      if(player->scale.x < batch->collisionRadius) continue;
       batch->objects[i].position.v[1] -= 0.4f/batch->collisionRadius;
       while(batch->objects[i].position.v[1] <= -80.0f * batch->collisionRadius)
       {
@@ -494,8 +496,6 @@ void minigame_init(void)
   if(core_get_playercount() > 1)
   {
     display_set_fps_limit(display_get_refresh_rate()*0.5f);
-  } else {
-    display_set_fps_limit(0);
   }
 }
 
@@ -514,8 +514,11 @@ void player_do_damage(player_data *player)
 
     if (check_collision(&other_player->playerPos, 0, &player->playerPos, HITBOX_RADIUS*player->scale.x))
     {
-      other_player->isAlive = false;
-      player->score += 5.0f;
+      if(other_player->score < player->score)
+      {
+        other_player->isAlive = false;
+        player->score += 5.0f;
+      }
     }
   }
 
@@ -531,15 +534,19 @@ void player_fixedloop(player_data *player, object_type* objects, float deltaTime
 {
   float speed = 0.0f;
   T3DVec3 newDir = {0};
+  int deadzone = 3;
 
   if (player_has_control(player)) {
     if (is_human) {
       joypad_inputs_t joypad = joypad_get_inputs(port);
 
       // @TODO: add D Pad support
-      newDir.v[0] = (float)joypad.stick_x * 0.05f;
-      newDir.v[2] = -(float)joypad.stick_y * 0.05f;
-      speed = sqrtf(t3d_vec3_len2(&newDir));
+      if (fabsf(joypad.stick_x) >= deadzone || fabsf(joypad.stick_y) >= deadzone)
+      {
+        newDir.v[0] = (float)joypad.stick_x * 0.05f;
+        newDir.v[2] = -(float)joypad.stick_y * 0.05f;
+        speed = sqrtf(t3d_vec3_len2(&newDir));
+      }
     } else {
       if(objects->collisionRadius <= player->scale.x) 
       {
@@ -552,8 +559,8 @@ void player_fixedloop(player_data *player, object_type* objects, float deltaTime
           dist = sqrtf(newDir.v[0]*newDir.v[0] + newDir.v[2]*newDir.v[2]);
           if(dist==0) dist = 1;
           norm = 1/dist;
-          newDir.v[0] *= norm + (0.05f * core_get_aidifficulty());
-          newDir.v[2] *= norm + (0.05f * core_get_aidifficulty());
+          newDir.v[0] *= norm + (0.1f * core_get_aidifficulty());
+          newDir.v[2] *= norm + (0.1f * core_get_aidifficulty());
           speed = 200;
 
         } else {
@@ -572,6 +579,8 @@ void player_fixedloop(player_data *player, object_type* objects, float deltaTime
     float newAngle = atan2f(player->moveDir.v[0], player->moveDir.v[2]);
     player->rotY = t3d_lerp_angle(player->rotY, newAngle, 0.5f);
     player->currSpeed = t3d_lerp(player->currSpeed, speed * 0.09f, 0.15f);
+  } else {
+    player->currSpeed *= 0.8f;
   }
 
   // move player...
@@ -598,6 +607,18 @@ void player_fixedloop(player_data *player, object_type* objects, float deltaTime
     player->scale.v[0] = 1.0f;
     player->scale.v[2] = 1.0f;
   }
+
+  // Update player matrix
+  if (player->isAlive) {
+    t3d_mat4fp_from_srt_euler(player->modelMatFP,
+      player->scale.v,
+      (float[3]){0.0f, -player->rotY, 0},
+      player->playerPos.v
+    );
+  } else {
+    player->currSpeed = 0;
+    player->moveDir = (T3DVec3){{0}};
+  }
   
 }
 
@@ -613,12 +634,6 @@ void player_loop(player_data *player, float deltaTime, joypad_port_t port, bool 
 
   if(syncPoint)rspq_syncpoint_wait(syncPoint); // wait for the RSP to process the previous frame
 
-  // Update player matrix
-  t3d_mat4fp_from_srt_euler(player->modelMatFP,
-    player->scale.v,
-    (float[3]){0.0f, -player->rotY, 0},
-    player->playerPos.v
-  );
 }
 
 void player_draw(player_data *player)
@@ -739,7 +754,7 @@ void minigame_loop(float deltaTime)
       }
     }
 
-    camPos[i] = (T3DVec3){{players[i].playerPos.x, players[i].playerPos.y+150.0f, players[i].playerPos.z+100.0f}};
+    camPos[i] = (T3DVec3){{players[i].playerPos.x, players[i].playerPos.y+250.0f, players[i].playerPos.z+100.0f}};
     camTarget[i] = players[i].playerPos;
   }
 
@@ -751,8 +766,8 @@ void minigame_loop(float deltaTime)
 
   // ======== Draw (3D) ======== //
 
-  // @TODO: Splitscreen?
   rdpq_attach(display_get(), depthBuffer);
+  rdpq_clear(RGBA32(0,0,0,255));
 
   for (size_t i = 0; i < playercount; i++)
   {
@@ -768,7 +783,6 @@ void minigame_loop(float deltaTime)
     rdpq_mode_zbuf(false, true);
     rspq_block_run(dplMap);
 
-    rdpq_mode_zbuf(false, false);
     for (size_t p = 0; p < MAXPLAYERS; p++)
     {
       player_draw(&players[p]);
@@ -794,7 +808,6 @@ void minigame_loop(float deltaTime)
 
     t3d_matrix_pop(1);
 
-    player_draw_billboard(&players[i], i);
   }
 
   syncPoint = rspq_syncpoint_new();
@@ -804,7 +817,7 @@ void minigame_loop(float deltaTime)
 
   viewport_drawScissor();
 
-  // @TODO: Print Score
+  // @TODO: Print Score?
   if (countDownTimer > 0.0f) {
     rdpq_text_printf(NULL, FONT_TEXT, 155, 100, "%d", (int)ceilf(countDownTimer));
   } else if (countDownTimer > -GO_DELAY) {
