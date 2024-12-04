@@ -74,6 +74,7 @@ typedef struct
   T3DVec3 scale;
   float yaw;
   bool visible;
+  rspq_block_t *modelBlock;
 } object_data;
 
 #define NUM_OBJECTS 9
@@ -85,7 +86,6 @@ typedef struct
   T3DModel *model;
   float collisionRadius;
   object_data objects[NUM_OBJECTS];
-  rspq_block_t *modelBlock;
 } object_type;
 
 object_type objects[NUM_OBJ_TYPES];
@@ -175,7 +175,7 @@ void generate_grid()
       int z = -GRID_SIZE + (i * CELL_SIZE);
 
       // Store the grid cell center position
-      gridPos[gridPointCount++] = (T3DVec3){{x+40, 10, z+40}};
+      gridPos[gridPointCount++] = (T3DVec3){{x+36, 10, z+36}};
     }
   }
 }
@@ -245,13 +245,17 @@ void object_initBatch(object_type* batch, uint8_t objectType)
   }
 
   // Create model block
-  rspq_block_begin();
+  
     for (size_t i = 0; i < NUM_OBJECTS; i++)
     {
-      t3d_matrix_set(batch->objects[i].mtxFP, true);
-      if(batch->objects[i].visible) t3d_model_draw(batch->model);
+      rspq_block_begin();
+
+        t3d_matrix_set(batch->objects[i].mtxFP, true);
+        t3d_model_draw(batch->model);
+
+      batch->objects[i].modelBlock = rspq_block_end();
     }
-  batch->modelBlock = rspq_block_end();
+  
 
 }
 
@@ -268,11 +272,14 @@ void object_updateBatch(object_type* batch, T3DViewport* vp, player_data* player
       if(check_collision(&batch->objects[i].position, batch->collisionRadius, &player[p].playerPos, HITBOX_RADIUS*player[p].scale.x))
       {
         batch->objects[i].position.v[1] -= 0.4f/batch->collisionRadius;
-        if(batch->objects[i].position.v[1] <= -80.0f * batch->collisionRadius) player[p].score += batch->scoreValue;
+        while(batch->objects[i].position.v[1] <= -80.0f * batch->collisionRadius)
+        {
+          player[p].score += batch->scoreValue;
+          batch->objects[i].visible = false;
+          break;
+        }
       }
     }
-
-    if(batch->objects[i].position.v[1] <= -80.0f * batch->collisionRadius) batch->objects[i].visible = false;
 
     t3d_mat4fp_from_srt_euler(
       batch->objects[i].mtxFP,
@@ -286,7 +293,10 @@ void object_updateBatch(object_type* batch, T3DViewport* vp, player_data* player
 
 void object_drawBatch(object_type* batch)
 {
-  rspq_block_run(batch->modelBlock);
+  for (size_t i = 0; i < NUM_OBJECTS; i++)
+  {
+    if(batch->objects[i].visible) rspq_block_run(batch->objects[i].modelBlock);
+  }
 }
 
 void object_destroyBatch(object_type* batch)
@@ -294,9 +304,9 @@ void object_destroyBatch(object_type* batch)
   for (size_t i = 0; i < NUM_OBJECTS; i++)
   {
     free_uncached(batch->objects[i].mtxFP);
+    rspq_block_free(batch->objects[i].modelBlock);
   }
 
-  rspq_block_free(batch->modelBlock);
   t3d_model_free(batch->model);
 
 }
@@ -356,7 +366,7 @@ void minigame_init(void)
   mapMatFP = malloc_uncached(sizeof(T3DMat4FP));
   t3d_mat4fp_from_srt_euler(mapMatFP, (float[3]){0.3f, 0.3f, 0.3f}, (float[3]){0, 0, 0}, (float[3]){0, 0, -10});
 
-  camPos = (T3DVec3){{0, 125.0f, 100.0f}};
+  camPos = (T3DVec3){{0, 150.0f, 275.0f}};
   camTarget = (T3DVec3){{0, 0, 40}};
 
   lightDirVec = (T3DVec3){{1.0f, 1.0f, 1.0f}};
@@ -375,10 +385,10 @@ void minigame_init(void)
   dplMap = rspq_block_end();
 
   T3DVec3 start_positions[] = {
-    (T3DVec3){{-100,5,0}},
-    (T3DVec3){{0,5,-100}},
-    (T3DVec3){{100,5,0}},
-    (T3DVec3){{0,5,100}},
+    (T3DVec3){{-50,5,-50}},
+    (T3DVec3){{50,5,-50}},
+    (T3DVec3){{50,5,50}},
+    (T3DVec3){{-50,5,50}},
   };
 
   float start_rotations[] = {
@@ -619,7 +629,7 @@ void minigame_loop(float deltaTime)
   uint8_t colorAmbient[4] = {0xAA, 0xAA, 0xAA, 0xFF};
   uint8_t colorDir[4]     = {0xFF, 0xAA, 0xAA, 0xFF};
 
-  t3d_viewport_set_projection(&viewport, T3D_DEG_TO_RAD(90.0f), 20.0f, 160.0f);
+  t3d_viewport_set_projection(&viewport, T3D_DEG_TO_RAD(60.0f), 20.0f, 300.0f);
   t3d_viewport_look_at(&viewport, &camPos, &camTarget, &(T3DVec3){{0,1,0}});
 
   uint32_t playercount = core_get_playercount();
@@ -649,14 +659,17 @@ void minigame_loop(float deltaTime)
 
   t3d_matrix_push_pos(1);
 
+  rdpq_mode_zbuf(false, true);
   rspq_block_run(dplMap);
-  for (int i = 0; i < NUM_OBJ_TYPES; i++)
-  {
-    object_drawBatch(&objects[i]);
-  }
   for (size_t i = 0; i < MAXPLAYERS; i++)
   {
     player_draw(&players[i]);
+  }
+
+  rdpq_mode_zbuf(true, true);
+  for (int i = 0; i < NUM_OBJ_TYPES; i++)
+  {
+    object_drawBatch(&objects[i]);
   }
 
   t3d_matrix_pop(1);
@@ -683,7 +696,7 @@ void minigame_loop(float deltaTime)
   }
 
   rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, };
-  rdpq_text_printf(&textparms, FONT_BILLBOARD, 0, 200, "FPS %.3f Score %u Radius %.3f", display_get_fps(), players[0].score, players[0].scale.x);
+  rdpq_text_printf(&textparms, FONT_BILLBOARD, 0, 210, "FPS %.3f Score %u Radius %.3f", display_get_fps(), players[0].score, players[0].scale.x);
 
   rdpq_detach_show();
 }
