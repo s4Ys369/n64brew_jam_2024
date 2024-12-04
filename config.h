@@ -8,7 +8,7 @@
     ================================================================================================================== */
 
     // Skip asking the number of players and assume PLAYER_COUNT
-    #define SKIP_PLAYERSELECTION  1
+    #define SKIP_PLAYERSELECTION  0
 
     // The number of human players
     #define PLAYER_COUNT  1

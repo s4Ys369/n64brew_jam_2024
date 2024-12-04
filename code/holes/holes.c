@@ -41,7 +41,7 @@ const MinigameDef minigame_def = {
  */
 
 surface_t *depthBuffer;
-T3DViewport viewport;
+T3DViewport viewport[MAXPLAYERS];
 rdpq_font_t *font;
 rdpq_font_t *fontBillboard;
 T3DMat4FP* mapMatFP;
@@ -51,8 +51,8 @@ T3DModel *modelCar;
 T3DModel *modelBuilding;
 T3DModel *modelHydrant;
 T3DModel *modelMap;
-T3DVec3 camPos;
-T3DVec3 camTarget;
+T3DVec3 camPos[MAXPLAYERS];
+T3DVec3 camTarget[MAXPLAYERS];
 T3DVec3 lightDirVec;
 xm64player_t music;
 
@@ -74,6 +74,7 @@ typedef struct
   T3DVec3 scale;
   float yaw;
   bool visible;
+  bool hide;
   rspq_block_t *modelBlock;
 } object_data;
 
@@ -123,15 +124,92 @@ wav64_t sfx_winner;
 
 rspq_syncpoint_t syncPoint;
 
+
+////////// VIEWPORTS
+
+#define SCREEN_WIDTH display_get_width()
+#define SCREEN_HEIGHT display_get_height()
+
+void viewport_create(T3DViewport* vp)
+{
+  switch (core_get_playercount())
+	{
+		case 1:
+			vp[0] = t3d_viewport_create();
+			t3d_viewport_set_area(&vp[0],   0,               0,           SCREEN_WIDTH,      SCREEN_HEIGHT);
+			break;
+		case 2:
+			vp[0] = t3d_viewport_create();
+			vp[1] = t3d_viewport_create();
+			t3d_viewport_set_area(&vp[0], 0,             0,               SCREEN_WIDTH,   SCREEN_HEIGHT/2);
+			t3d_viewport_set_area(&vp[1], 0,             SCREEN_HEIGHT/2, SCREEN_WIDTH,   SCREEN_HEIGHT/2);
+			break;
+		case 3:
+			vp[0] = t3d_viewport_create();
+			vp[1] = t3d_viewport_create();
+			vp[2] = t3d_viewport_create();
+			t3d_viewport_set_area(&vp[0], 0,              0,               SCREEN_WIDTH,     SCREEN_HEIGHT/2);
+			t3d_viewport_set_area(&vp[1], 0,              SCREEN_HEIGHT/2, SCREEN_WIDTH/2,   SCREEN_HEIGHT/2-2);
+			t3d_viewport_set_area(&vp[2], SCREEN_WIDTH/2, SCREEN_HEIGHT/2, SCREEN_WIDTH/2-2, SCREEN_HEIGHT/2-2);
+			break;
+		case 4:
+			vp[0] = t3d_viewport_create();
+			vp[1] = t3d_viewport_create();
+			vp[2] = t3d_viewport_create();
+			vp[3] = t3d_viewport_create();
+			t3d_viewport_set_area(&vp[0], 0,              0,               SCREEN_WIDTH/2,   SCREEN_HEIGHT/2);
+			t3d_viewport_set_area(&vp[1], SCREEN_WIDTH/2, 0,               SCREEN_WIDTH/2-2, SCREEN_HEIGHT/2);
+			t3d_viewport_set_area(&vp[2], 0,              SCREEN_HEIGHT/2, SCREEN_WIDTH/2,   SCREEN_HEIGHT/2-2);
+			t3d_viewport_set_area(&vp[3], SCREEN_WIDTH/2, SCREEN_HEIGHT/2, SCREEN_WIDTH/2-2, SCREEN_HEIGHT/2-2);
+			break;
+	}
+}
+
+void viewport_drawScissor()
+{
+  int sizeX = SCREEN_WIDTH;
+	int sizeY = SCREEN_HEIGHT;
+	rdpq_set_scissor(0, 0, sizeX, sizeY);
+	rdpq_set_mode_standard();
+	rdpq_set_mode_fill(RGBA32(0,0,0,255));
+
+	// draw thick lines between the screens
+	switch (core_get_playercount())
+  {
+    case 1:
+      break;
+    case 2:
+      rdpq_fill_rectangle(0, sizeY/2-1, sizeX, sizeY/2+1);
+      break;
+    case 3:
+      rdpq_fill_rectangle(0, sizeY/2-1, sizeX, sizeY/2+1);
+      rdpq_fill_rectangle(sizeX/2-1, sizeY/2, sizeX/2+1, sizeY);
+      break;
+    case 4:
+      rdpq_fill_rectangle(0, sizeY/2-1, sizeX, sizeY/2+1);
+      rdpq_fill_rectangle(sizeX/2-1, 0, sizeX/2+1, sizeY);
+      break;
+  }
+}
+//////////
+
+
 ////////// COLLISION
+
+float vec2_dist_squared(T3DVec3* pos0, T3DVec3* pos1)
+{
+  // Calculate squared distance between two positions' X and Z coordinates
+  float dx = pos1->v[0] - pos0->v[0];
+  float dy = pos1->v[2] - pos0->v[2];
+  return  dx*dx + dy*dy;
+}
 
 bool check_collision(T3DVec3* pos0, float radii0, T3DVec3* pos1, float radii1)
 {
 
-  // Calculate squared distance between two positions' X and Z coordinates
-  float dx = pos1->v[0] - pos0->v[0];
-  float dy = pos1->v[2] - pos0->v[2];
-  float distSq = dx*dx + dy*dy;
+  float distSq = vec2_dist_squared(pos0,pos1);
+
+  assert(radii0 >= 0.0f && radii1 >= 0.0f);
 
   if(radii0 != 0)
   {
@@ -163,53 +241,52 @@ size_t gridPointCount = 0;
 
 void generate_grid()
 {
-
   gridPointCount = 0;
 
-  for (int i = 0; i < NUM_CELLS; i++)
-  {
+  // Calculate half the grid size
+  int halfGridSize = GRID_SIZE;
+
+  for (int i = 0; i < NUM_CELLS; i++) {
     for (int j = 0; j < NUM_CELLS; j++)
     {
-      // Calculate cell coordinates
-      int x = -GRID_SIZE + (j * CELL_SIZE);
-      int z = -GRID_SIZE + (i * CELL_SIZE);
+      // Calculate cell center coordinates
+      int x = -halfGridSize + j * CELL_SIZE + CELL_SIZE / 2;
+      int z = -halfGridSize + i * CELL_SIZE + CELL_SIZE / 2;
 
       // Store the grid cell center position
-      gridPos[gridPointCount++] = (T3DVec3){{x+36, 10, z+36}};
+      gridPos[gridPointCount++] = (T3DVec3){{(float)x, 10.0f, (float)z}};
     }
   }
 }
-
 
 void object_init(object_data *object, uint8_t objectType, uint8_t ID, T3DVec3 position)
 {
   object->ID = ID;
   object->mtxFP = malloc_uncached(sizeof(T3DMat4FP));
   object->position = position;
-  switch(objectType)
-  {
+
+  switch(objectType) {
     case OBJ_CAR:
-      object->scale = (T3DVec3){{0.125f,0.125f,0.125f}};
-      object->position.v[0] = object->position.v[0] + (rand()%16);
-      object->position.v[2] = object->position.v[2] + 50.0f;
-      object->yaw = T3D_DEG_TO_RAD(90);
+      object->scale = (T3DVec3){{0.125f, 0.125f, 0.125f}};
+      object->position.v[0] = fmaxf(-GRID_SIZE, fminf(GRID_SIZE, object->position.v[0] + (rand() % 20)));
+      object->position.v[2] = fmaxf(-GRID_SIZE, fminf(GRID_SIZE, object->position.v[2] + 40));
+      object->yaw = T3D_DEG_TO_RAD(90.0f);
       break;
     case OBJ_BUILDING:
-      object->scale = (T3DVec3){{0.3f,0.3f,0.3f}};
-      object->position.v[0] = object->position.v[0] + 15.0f;
-      object->position.v[2] = object->position.v[2] + 5.0f;
+      object->scale = (T3DVec3){{0.3f, 0.3f, 0.3f}};
       object->yaw = 0;
       break;
     case OBJ_HYDRANT:
-      object->scale = (T3DVec3){{0.05f,0.05f,0.05f}};
-      object->position.v[0] = object->position.v[0] + 40.0f;
-      object->position.v[2] = object->position.v[2] + 40.0f;
+      object->scale = (T3DVec3){{0.05f, 0.05f, 0.05f}};
+      object->position.v[0] = fmaxf(-GRID_SIZE, fminf(GRID_SIZE, object->position.v[0] + 25));
+      object->position.v[2] = fmaxf(-GRID_SIZE, fminf(GRID_SIZE, object->position.v[2] + 25));
       object->yaw = 0;
       break;
   }
   
-  object->visible = true;
 
+  object->visible = true;
+  object->hide = false;
 }
 
 void object_initBatch(object_type* batch, uint8_t objectType)
@@ -265,19 +342,14 @@ void object_updateBatch(object_type* batch, T3DViewport* vp, player_data* player
   {
     if(!batch->objects[i].visible) continue; // just skip the object update if not visible
 
-    for (size_t p = 0; p< MAXPLAYERS; p++)
+    if(check_collision(&batch->objects[i].position, batch->collisionRadius, &player->playerPos, HITBOX_RADIUS*player->scale.x))
     {
-
-      if(player[p].scale.x < batch->collisionRadius) continue;
-      if(check_collision(&batch->objects[i].position, batch->collisionRadius, &player[p].playerPos, HITBOX_RADIUS*player[p].scale.x))
+      batch->objects[i].position.v[1] -= 0.4f/batch->collisionRadius;
+      while(batch->objects[i].position.v[1] <= -80.0f * batch->collisionRadius)
       {
-        batch->objects[i].position.v[1] -= 0.4f/batch->collisionRadius;
-        while(batch->objects[i].position.v[1] <= -80.0f * batch->collisionRadius)
-        {
-          player[p].score += batch->scoreValue;
-          batch->objects[i].visible = false;
-          break;
-        }
+        player->score += batch->scoreValue;
+        batch->objects[i].visible = false;
+        break;
       }
     }
 
@@ -295,7 +367,7 @@ void object_drawBatch(object_type* batch)
 {
   for (size_t i = 0; i < NUM_OBJECTS; i++)
   {
-    if(batch->objects[i].visible) rspq_block_run(batch->objects[i].modelBlock);
+    if(batch->objects[i].visible && !batch->objects[i].hide) rspq_block_run(batch->objects[i].modelBlock);
   }
 }
 
@@ -361,13 +433,10 @@ void minigame_init(void)
     rdpq_font_style(fontBillboard, i, &(rdpq_fontstyle_t){ .color = colors[i] });
   }
 
-  viewport = t3d_viewport_create();
+  viewport_create(viewport);
 
   mapMatFP = malloc_uncached(sizeof(T3DMat4FP));
   t3d_mat4fp_from_srt_euler(mapMatFP, (float[3]){0.3f, 0.3f, 0.3f}, (float[3]){0, 0, 0}, (float[3]){0, 0, -10});
-
-  camPos = (T3DVec3){{0, 150.0f, 275.0f}};
-  camTarget = (T3DVec3){{0, 0, 40}};
 
   lightDirVec = (T3DVec3){{1.0f, 1.0f, 1.0f}};
   t3d_vec3_norm(&lightDirVec);
@@ -402,6 +471,8 @@ void minigame_init(void)
   {
     player_init(&players[i], colors[i], start_positions[i], start_rotations[i]);
     players[i].plynum = i;
+    camPos[i] = (T3DVec3){{players[i].playerPos.x, players[i].playerPos.y+150.0f, players[i].playerPos.z+100.0f}};
+    camTarget[i] = players[i].playerPos;
   }
 
   for (int i = 0; i < NUM_OBJ_TYPES; i++)
@@ -419,6 +490,13 @@ void minigame_init(void)
   xm64player_open(&music, "rom:/snake3d/bottled_bubbles.xm64");
   xm64player_play(&music, 0);
   mixer_ch_set_vol(31, 0.5f, 0.5f);
+
+  if(core_get_playercount() > 1)
+  {
+    display_set_fps_limit(display_get_refresh_rate()*0.5f);
+  } else {
+    display_set_fps_limit(0);
+  }
 }
 
 
@@ -561,7 +639,7 @@ void player_draw_billboard(player_data *player, PlyNum playerNum)
   }};
 
   T3DVec3 billboardScreenPos;
-  t3d_viewport_calc_viewspace_pos(&viewport, &billboardScreenPos, &billboardPos);
+  t3d_viewport_calc_viewspace_pos(&viewport[playerNum], &billboardScreenPos, &billboardPos);
 
   int x = floorf(billboardScreenPos.v[0]);
   int y = floorf(billboardScreenPos.v[1]);
@@ -629,60 +707,102 @@ void minigame_loop(float deltaTime)
   uint8_t colorAmbient[4] = {0xAA, 0xAA, 0xAA, 0xFF};
   uint8_t colorDir[4]     = {0xFF, 0xAA, 0xAA, 0xFF};
 
-  t3d_viewport_set_projection(&viewport, T3D_DEG_TO_RAD(60.0f), 20.0f, 300.0f);
-  t3d_viewport_look_at(&viewport, &camPos, &camTarget, &(T3DVec3){{0,1,0}});
-
   uint32_t playercount = core_get_playercount();
-  for (size_t i = 0; i < MAXPLAYERS; i++)
+  for (size_t i = 0; i < playercount; i++)
   {
-    player_loop(&players[i], deltaTime, core_get_playercontroller(i), i < playercount);
+    switch (playercount)
+    {
+      case 1:
+      case 4:
+        t3d_viewport_set_projection(&viewport[i], T3D_DEG_TO_RAD(30.0f), 5.0f, 300.0f);
+        break;
+      case 2:
+        t3d_viewport_set_projection(&viewport[i], T3D_DEG_TO_RAD(20.0f), 5.0f, 300.0f);
+        break;
+      case 3:
+        if(i > 0)
+        {
+          t3d_viewport_set_projection(&viewport[i], T3D_DEG_TO_RAD(30.0f), 5.0f, 300.0f);
+        } else {
+          t3d_viewport_set_projection(&viewport[i], T3D_DEG_TO_RAD(20.0f), 5.0f, 300.0f);
+        }
+        break;
+    }
+    
+    t3d_viewport_look_at(&viewport[i], &camPos[i], &camTarget[i], &(T3DVec3){{0,1,0}});
+
+    for (int j = 0; j < NUM_OBJ_TYPES; j++)
+    {
+      for (size_t p = 0; p < MAXPLAYERS; p++)
+      {
+        object_updateBatch(&objects[j], &viewport[i], &players[p]);
+      }
+    }
+
+    camPos[i] = (T3DVec3){{players[i].playerPos.x, players[i].playerPos.y+150.0f, players[i].playerPos.z+100.0f}};
+    camTarget[i] = players[i].playerPos;
   }
 
-  for (int i = 0; i < NUM_OBJ_TYPES; i++)
+  for (size_t p = 0; p < MAXPLAYERS; p++)
   {
-    object_updateBatch(&objects[i], &viewport, players);
+    player_loop(&players[p], deltaTime, core_get_playercontroller(p), p < playercount);
   }
+  
 
   // ======== Draw (3D) ======== //
 
   // @TODO: Splitscreen?
   rdpq_attach(display_get(), depthBuffer);
-  t3d_frame_start();
-  t3d_viewport_attach(&viewport);
 
-  t3d_screen_clear_color(RGBA32(224, 180, 96, 0xFF));
-  t3d_screen_clear_depth();
-
-  t3d_light_set_ambient(colorAmbient);
-  t3d_light_set_directional(0, colorDir, &lightDirVec);
-  t3d_light_set_count(1);
-
-  t3d_matrix_push_pos(1);
-
-  rdpq_mode_zbuf(false, true);
-  rspq_block_run(dplMap);
-  for (size_t i = 0; i < MAXPLAYERS; i++)
+  for (size_t i = 0; i < playercount; i++)
   {
-    player_draw(&players[i]);
-  }
+    t3d_frame_start();
+    t3d_viewport_attach(&viewport[i]);
 
-  rdpq_mode_zbuf(true, true);
-  for (int i = 0; i < NUM_OBJ_TYPES; i++)
-  {
-    object_drawBatch(&objects[i]);
-  }
+    t3d_light_set_ambient(colorAmbient);
+    t3d_light_set_directional(0, colorDir, &lightDirVec);
+    t3d_light_set_count(1);
 
-  t3d_matrix_pop(1);
+    t3d_matrix_push_pos(1);
 
-  syncPoint = rspq_syncpoint_new();
+    rdpq_mode_zbuf(false, true);
+    rspq_block_run(dplMap);
 
-  for (size_t i = 0; i < MAXPLAYERS; i++)
-  {
+    rdpq_mode_zbuf(false, false);
+    for (size_t p = 0; p < MAXPLAYERS; p++)
+    {
+      player_draw(&players[p]);
+    }
+
+
+    rdpq_mode_zbuf(true, false);
+    for (int j = 0; j < NUM_OBJ_TYPES; j++)
+    {
+      
+      for (int o = 0; o < NUM_OBJECTS; o++)
+      {
+        if(t3d_frustum_vs_sphere(&viewport[i].viewFrustum, &gridPos[o], 50.0f * objects[j].collisionRadius))
+        {
+          objects[j].objects[o].hide = false;
+        } else {
+          objects[j].objects[o].hide = true;
+        }
+      }
+
+      object_drawBatch(&objects[j]);
+    }
+
+    t3d_matrix_pop(1);
+
     player_draw_billboard(&players[i], i);
   }
 
+  syncPoint = rspq_syncpoint_new();
+
   rdpq_sync_tile();
   rdpq_sync_pipe(); // Hardware crashes otherwise
+
+  viewport_drawScissor();
 
   // @TODO: Print Score
   if (countDownTimer > 0.0f) {
@@ -696,7 +816,7 @@ void minigame_loop(float deltaTime)
   }
 
   rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, };
-  rdpq_text_printf(&textparms, FONT_BILLBOARD, 0, 210, "FPS %.3f Score %u Radius %.3f", display_get_fps(), players[0].score, players[0].scale.x);
+  rdpq_text_printf(&textparms, FONT_BILLBOARD, 0, 210, "FPS %.3f", display_get_fps());
 
   rdpq_detach_show();
 }
@@ -709,6 +829,9 @@ void player_cleanup(player_data *player)
 
 void minigame_cleanup(void)
 {
+
+  display_set_fps_limit(0);
+
   for (size_t i = 0; i < MAXPLAYERS; i++)
   {
     player_cleanup(&players[i]);
