@@ -20,7 +20,7 @@ const MinigameDef minigame_def = {
 #define TEXT_COLOR          0x6CBB3CFF
 #define TEXT_OUTLINE        0x30521AFF
 
-#define HITBOX_RADIUS       10.f
+#define HITBOX_RADIUS       40.f
 
 #define ATTACK_OFFSET       10.f
 #define ATTACK_RADIUS       5.f
@@ -76,11 +76,12 @@ typedef struct
   bool visible;
 } object_data;
 
-#define NUM_OBJECTS 12
+#define NUM_OBJECTS 9
 
 typedef struct
 {
   uint8_t type;
+  uint8_t scoreValue;
   T3DModel *model;
   float collisionRadius;
   object_data objects[NUM_OBJECTS];
@@ -151,6 +152,35 @@ bool check_collision(T3DVec3* pos0, float radii0, T3DVec3* pos1, float radii1)
 
 ////////// OBJECTS
 
+
+#define GRID_SIZE 144 // BOX_SIZE plus 4 to be neatly divide by 12
+#define CELL_SIZE 96
+#define NUM_CELLS (GRID_SIZE * 2 / CELL_SIZE)
+#define MAX_GRID_POINTS (NUM_CELLS * NUM_CELLS)
+
+T3DVec3 gridPos[MAX_GRID_POINTS];
+size_t gridPointCount = 0;
+
+void generate_grid()
+{
+
+  gridPointCount = 0;
+
+  for (int i = 0; i < NUM_CELLS; i++)
+  {
+    for (int j = 0; j < NUM_CELLS; j++)
+    {
+      // Calculate cell coordinates
+      int x = -GRID_SIZE + (j * CELL_SIZE);
+      int z = -GRID_SIZE + (i * CELL_SIZE);
+
+      // Store the grid cell center position
+      gridPos[gridPointCount++] = (T3DVec3){{x+40, 10, z+40}};
+    }
+  }
+}
+
+
 void object_init(object_data *object, uint8_t objectType, uint8_t ID, T3DVec3 position)
 {
   object->ID = ID;
@@ -159,16 +189,20 @@ void object_init(object_data *object, uint8_t objectType, uint8_t ID, T3DVec3 po
   switch(objectType)
   {
     case OBJ_CAR:
-      object->scale = (T3DVec3){{0.2f,0.2f,0.2f}};
+      object->scale = (T3DVec3){{0.125f,0.125f,0.125f}};
+      object->position.v[0] = object->position.v[0] + 40.0f;
+      object->position.v[2] = object->position.v[2] + (rand()%72);
       break;
     case OBJ_BUILDING:
       object->scale = (T3DVec3){{0.3f,0.3f,0.3f}};
       break;
     case OBJ_HYDRANT:
-      object->scale = (T3DVec3){{0.1f,0.1f,0.1f}};
+      object->scale = (T3DVec3){{0.05f,0.05f,0.05f}};
+      object->position.v[0] = object->position.v[0] + 25.0f;
+      object->position.v[2] = object->position.v[2] + 25.0f;
       break;
-
   }
+  
   object->yaw = 0;
   object->visible = true;
 
@@ -183,23 +217,27 @@ void object_initBatch(object_type* batch, uint8_t objectType)
   switch(batch->type)
   {
     case OBJ_CAR:
+      batch->scoreValue = 2;
       batch->model = modelCar;
-      batch->collisionRadius = 5.0f;
+      batch->collisionRadius = 0.25f;
       break;
     case OBJ_BUILDING:
+      batch->scoreValue = 4;
       batch->model = modelBuilding;
-      batch->collisionRadius = 10.0f;
+      batch->collisionRadius = 0.5f;
       break;
     case OBJ_HYDRANT:
+      batch->scoreValue = 1;
       batch->model = modelHydrant;
-      batch->collisionRadius = 2.0f;
+      batch->collisionRadius = 0.125f;
       break;
   }
 
   // Initialize batch objects
+  generate_grid();
   for (size_t i = 0; i < NUM_OBJECTS; i++)
   {
-    object_init(&batch->objects[i], batch->type, i, (T3DVec3){{rand()%100,0,rand()%100}});
+    object_init(&batch->objects[i], batch->type, i, gridPos[i]);
   }
 
   // Create model block
@@ -217,32 +255,28 @@ void object_updateBatch(object_type* batch, T3DViewport* vp, player_data* player
 {
   for (size_t i = 0; i < NUM_OBJECTS; i++)
   {
+    if(!batch->objects[i].visible) continue; // just skip the object update if not visible
+
     for (size_t p = 0; p< MAXPLAYERS; p++)
     {
 
-      // @TODO: Add scale check
-      if(check_collision(&batch->objects[i].position, batch->collisionRadius, &player[p].playerPos, (HITBOX_RADIUS + ATTACK_RADIUS)))
+      if(player[p].scale.x < batch->collisionRadius) continue;
+      if(check_collision(&batch->objects[i].position, batch->collisionRadius, &player[p].playerPos, HITBOX_RADIUS*player[p].scale.x))
       {
-        batch->objects[i].position.v[1] -= 1.0f;
-        if(batch->objects[i].position.v[1] <= -100.0f) 
-        {
-          batch->objects[i].visible = false;
-          player[p].score++; // @TODO: Add different score values per object type
-          break;
-        }
+        batch->objects[i].position.v[1] -= 0.4f/batch->collisionRadius;
+        if(batch->objects[i].position.v[1] <= -80.0f * batch->collisionRadius) player[p].score += batch->scoreValue;
       }
     }
 
-    // Don't update the matrix if not visible
-    if(batch->objects[i].visible)
-    {
-      t3d_mat4fp_from_srt_euler(
-        batch->objects[i].mtxFP,
-        batch->objects[i].scale.v,
-        (float[3]){0,batch->objects[i].yaw,0},
-        batch->objects[i].position.v
-      );
-    }
+    if(batch->objects[i].position.v[1] <= -80.0f * batch->collisionRadius) batch->objects[i].visible = false;
+
+    t3d_mat4fp_from_srt_euler(
+      batch->objects[i].mtxFP,
+      batch->objects[i].scale.v,
+      (float[3]){0,batch->objects[i].yaw,0},
+      batch->objects[i].position.v
+    );
+
   }
 }
 
@@ -272,6 +306,7 @@ void player_init(player_data *player, color_t color, T3DVec3 position, float rot
   player->moveDir = (T3DVec3){{0,0,0}};
   player->playerPos = position;
   player->scale = (T3DVec3){{0.125f,0.125f,0.125f}};
+  player->score = 0;
 
   rspq_block_begin();
     t3d_matrix_set(player->modelMatFP, true);
@@ -373,7 +408,6 @@ void minigame_init(void)
 }
 
 
-// @TODO: Add scale check somewhere
 void player_do_damage(player_data *player)
 {
   if (!player->isAlive) {
@@ -391,7 +425,7 @@ void player_do_damage(player_data *player)
   for (size_t i = 0; i < MAXPLAYERS; i++)
   {
     player_data *other_player = &players[i];
-    if (other_player == player || !other_player->isAlive) continue;
+    if (other_player == player || !other_player->isAlive || other_player->scale.x >= player->scale.x) continue;
 
     float pos_diff[] = {
       other_player->playerPos.v[0] - attack_pos[0],
@@ -402,8 +436,7 @@ void player_do_damage(player_data *player)
 
     if (distance < (ATTACK_RADIUS + HITBOX_RADIUS)) {
       other_player->isAlive = false;
-      player->scale.v[0] *= 2;
-      player->scale.v[2] *= 2;
+      player->score += 5.0f;
     }
   }
 
@@ -487,6 +520,20 @@ void player_fixedloop(player_data *player, float deltaTime, joypad_port_t port, 
       player_do_damage(player);
     }
   }
+
+  // Scaling based on score
+  if(player->score >= 2 && player->score < 6)
+  {
+    player->scale.v[0] = 0.25f;
+    player->scale.v[2] = 0.25f;
+  } else if (player->score >= 6 && player->score < 10) {
+    player->scale.v[0] = 0.5f;
+    player->scale.v[2] = 0.5f;
+  } else if (player->score >= 10) {
+    player->scale.v[0] = 1.0f;
+    player->scale.v[2] = 1.0f;
+  }
+  
 }
 
 void player_loop(player_data *player, float deltaTime, joypad_port_t port, bool is_human)
@@ -659,6 +706,9 @@ void minigame_loop(float deltaTime)
     rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, };
     rdpq_text_printf(&textparms, FONT_TEXT, 0, 100, "Player %d wins!", winner+1);
   }
+
+  rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, };
+  rdpq_text_printf(&textparms, FONT_TEXT, 0, 200, "Score %u Radius %.2f", players[0].score, players[0].scale.x);
 
   rdpq_detach_show();
 }
