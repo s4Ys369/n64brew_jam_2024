@@ -419,26 +419,13 @@ void player_do_damage(player_data *player)
     return;
   }
 
-  float s, c;
-  fm_sincosf(player->rotY, &s, &c);
-  float attack_pos[] = {
-    player->playerPos.v[0] + s * ATTACK_OFFSET,
-    player->playerPos.v[2] + c * ATTACK_OFFSET,
-  };
-
   for (size_t i = 0; i < MAXPLAYERS; i++)
   {
     player_data *other_player = &players[i];
     if (other_player == player || !other_player->isAlive || other_player->scale.x > player->scale.x) continue;
 
-    float pos_diff[] = {
-      other_player->playerPos.v[0] - attack_pos[0],
-      other_player->playerPos.v[2] - attack_pos[1],
-    };
-
-    float distance = sqrtf(pos_diff[0]*pos_diff[0] + pos_diff[1]*pos_diff[1]);
-
-    if (distance < (ATTACK_RADIUS + HITBOX_RADIUS*player->scale.x)) {
+    if (check_collision(&other_player->playerPos, 0, &player->playerPos, HITBOX_RADIUS*player->scale.x))
+    {
       other_player->isAlive = false;
       player->score += 5.0f;
     }
@@ -477,8 +464,8 @@ void player_fixedloop(player_data *player, object_type* objects, float deltaTime
           dist = sqrtf(newDir.v[0]*newDir.v[0] + newDir.v[2]*newDir.v[2]);
           if(dist==0) dist = 1;
           norm = 1/dist;
-          newDir.v[0] *= norm + (0.02f * core_get_aidifficulty());
-          newDir.v[2] *= norm + (0.02f * core_get_aidifficulty());
+          newDir.v[0] *= norm + (0.05f * core_get_aidifficulty());
+          newDir.v[2] *= norm + (0.05f * core_get_aidifficulty());
           speed = 200;
 
         } else {
