@@ -320,9 +320,9 @@ void player_init(player_data *player, color_t color, T3DVec3 position, float rot
 
   player->rotY = rotation;
   player->currSpeed = 0.0f;
-  player->isAttack = false;
+  player->isAttack = true;
   player->isAlive = true;
-  player->ai_target = rand()%MAXPLAYERS;
+  player->ai_target = rand()%NUM_OBJECTS;
   player->ai_reactionspeed = (2-core_get_aidifficulty())*5 + rand()%((3-core_get_aidifficulty())*3);
 }
 
@@ -429,7 +429,7 @@ void player_do_damage(player_data *player)
   for (size_t i = 0; i < MAXPLAYERS; i++)
   {
     player_data *other_player = &players[i];
-    if (other_player == player || !other_player->isAlive || other_player->scale.x >= player->scale.x) continue;
+    if (other_player == player || !other_player->isAlive || other_player->scale.x > player->scale.x) continue;
 
     float pos_diff[] = {
       other_player->playerPos.v[0] - attack_pos[0],
@@ -438,7 +438,7 @@ void player_do_damage(player_data *player)
 
     float distance = sqrtf(pos_diff[0]*pos_diff[0] + pos_diff[1]*pos_diff[1]);
 
-    if (distance < (ATTACK_RADIUS + HITBOX_RADIUS)) {
+    if (distance < (ATTACK_RADIUS + HITBOX_RADIUS*player->scale.x)) {
       other_player->isAlive = false;
       player->score += 5.0f;
     }
@@ -452,7 +452,7 @@ bool player_has_control(player_data *player)
   return player->isAlive && countDownTimer < 0.0f;
 }
 
-void player_fixedloop(player_data *player, float deltaTime, joypad_port_t port, bool is_human)
+void player_fixedloop(player_data *player, object_type* objects, float deltaTime, joypad_port_t port, bool is_human)
 {
   float speed = 0.0f;
   T3DVec3 newDir = {0};
@@ -466,46 +466,37 @@ void player_fixedloop(player_data *player, float deltaTime, joypad_port_t port, 
       newDir.v[2] = -(float)joypad.stick_y * 0.05f;
       speed = sqrtf(t3d_vec3_len2(&newDir));
     } else {
-      player_data* target = &players[player->ai_target];
-      if (player->plynum != target->plynum && target->isAlive) { // Check for a valid target
-        // Move towards the direction of the target
-        float dist, norm;
-        newDir.v[0] = (target->playerPos.v[0] - player->playerPos.v[0]);
-        newDir.v[2] = (target->playerPos.v[2] - player->playerPos.v[2]);
-        dist = sqrtf(newDir.v[0]*newDir.v[0] + newDir.v[2]*newDir.v[2]);
-        if(dist==0) dist = 1;
-        norm = 1/dist;
-        newDir.v[0] *= norm;
-        newDir.v[2] *= norm;
-        speed = 20;
-    
-        // Attack if close, and the reaction time has elapsed
-        if (dist < 25 && !player->isAttack) {
-          if (player->ai_reactionspeed <= 0) {
-            player->isAttack = true;
-            player->attackTimer = 0;
-            player->ai_reactionspeed = (2-core_get_aidifficulty())*5 + rand()%((3-core_get_aidifficulty())*3);
-          } else {
-            player->ai_reactionspeed--;
-          }
+      if(objects->collisionRadius <= player->scale.x) 
+      {
+        object_data* target = &objects->objects[player->ai_target];
+        if (target->visible) { // Check for a valid target
+          // Move towards the direction of the target
+          float dist, norm;
+          newDir.v[0] = (target->position.v[0] - player->playerPos.v[0]);
+          newDir.v[2] = (target->position.v[2] - player->playerPos.v[2]);
+          dist = sqrtf(newDir.v[0]*newDir.v[0] + newDir.v[2]*newDir.v[2]);
+          if(dist==0) dist = 1;
+          norm = 1/dist;
+          newDir.v[0] *= norm + (0.02f * core_get_aidifficulty());
+          newDir.v[2] *= norm + (0.02f * core_get_aidifficulty());
+          speed = 200;
+
+        } else {
+          player->ai_target = rand()%NUM_OBJECTS; // (Attempt) to aquire a new target this frame
         }
-      } else {
-        player->ai_target = rand()%MAXPLAYERS; // (Attempt) to aquire a new target this frame
       }
     }
   }
 
   // Player movement
-  if(speed > 0.15f && !player->isAttack) {
+  if(speed > 0.15f) {
     newDir.v[0] /= speed;
     newDir.v[2] /= speed;
     player->moveDir = newDir;
 
     float newAngle = atan2f(player->moveDir.v[0], player->moveDir.v[2]);
     player->rotY = t3d_lerp_angle(player->rotY, newAngle, 0.5f);
-    player->currSpeed = t3d_lerp(player->currSpeed, speed * 0.3f, 0.15f);
-  } else {
-    player->currSpeed *= 0.64f;
+    player->currSpeed = t3d_lerp(player->currSpeed, speed * 0.09f, 0.15f);
   }
 
   // move player...
@@ -518,12 +509,7 @@ void player_fixedloop(player_data *player, float deltaTime, joypad_port_t port, 
   if(player->playerPos.v[2] < -BOX_SIZE)player->playerPos.v[2] = -BOX_SIZE;
   if(player->playerPos.v[2] >  BOX_SIZE)player->playerPos.v[2] =  BOX_SIZE;
 
-  if (player->isAttack) {
-    player->attackTimer += deltaTime;
-    if (player->attackTimer > ATTACK_TIME_START && player->attackTimer < ATTACK_TIME_END) {
-      player_do_damage(player);
-    }
-  }
+  player_do_damage(player);
 
   // Scaling based on score
   if(player->score >= 2 && player->score < 6)
@@ -548,11 +534,6 @@ void player_loop(player_data *player, float deltaTime, joypad_port_t port, bool 
 
     if (btn.start) minigame_end();
 
-    // Player Attack
-    if((btn.a || btn.b)) {
-      player->isAttack = true;
-      player->attackTimer = 0;
-    }
   }
 
   if(syncPoint)rspq_syncpoint_wait(syncPoint); // wait for the RSP to process the previous frame
@@ -600,7 +581,10 @@ void minigame_fixedloop(float deltaTime)
   uint32_t playercount = core_get_playercount();
   for (size_t i = 0; i < MAXPLAYERS; i++)
   {
-    player_fixedloop(&players[i], deltaTime, core_get_playercontroller(i), i < playercount);
+    for (int j = 0; j < NUM_OBJ_TYPES; j++)
+    {
+      player_fixedloop(&players[i], &objects[j], deltaTime, core_get_playercontroller(i), i < playercount);
+    }
   }
 
   if (countDownTimer > -GO_DELAY)
