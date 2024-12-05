@@ -371,6 +371,7 @@ void object_drawBatch(object_type* batch)
   {
     if(batch->objects[i].visible && !batch->objects[i].hide) rspq_block_run(batch->objects[i].modelBlock);
   }
+  rspq_wait(); // RSPQ crashes if we don't wait for the objects to finish
 }
 
 void object_destroyBatch(object_type* batch)
