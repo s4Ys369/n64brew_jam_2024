@@ -821,14 +821,14 @@ void minigame_loop(float deltaTime)
   if (countDownTimer > 0.0f) {
     rdpq_text_printf(NULL, FONT_TEXT, 155, 100, "%d", (int)ceilf(countDownTimer));
   } else if (countDownTimer > -GO_DELAY) {
-    rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, };
+    rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, .disable_aa_fix=true};
     rdpq_text_print(&textparms, FONT_TEXT, 0, 100, "GO!");
   } else if (isEnding && endTimer >= WIN_SHOW_DELAY) {
-    rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, };
+    rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, .disable_aa_fix=true};
     rdpq_text_printf(&textparms, FONT_TEXT, 0, 100, "Player %d wins!", winner+1);
   }
 
-  rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, };
+  rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, .disable_aa_fix=true};
   rdpq_text_printf(&textparms, FONT_BILLBOARD, 0, 210, "FPS %.3f", display_get_fps());
 
   rdpq_detach_show();
