@@ -9,4 +9,6 @@ ASSETS_LIST += \
 	filesystem/holes/hydrant.ci8.sprite \
 	filesystem/holes/street.ci4.sprite \
 	filesystem/holes/window.ci4.sprite \
+	filesystem/holes/window.rgba16.sprite \
+	filesystem/holes/window1.rgba16.sprite \
 	filesystem/holes/car.ci4.sprite \

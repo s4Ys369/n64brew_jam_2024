@@ -68,6 +68,7 @@ enum OBJ_TYPES
 typedef struct
 {
   uint8_t ID;
+  uint8_t texID;
   T3DObject *model;
   T3DMat4FP* mtxFP;
   T3DVec3 position;
@@ -231,7 +232,7 @@ bool check_collision(T3DVec3* pos0, float radii0, T3DVec3* pos1, float radii1)
 ////////// OBJECTS
 
 
-#define GRID_SIZE 144 // BOX_SIZE plus 4 to be neatly divide by 12
+#define GRID_SIZE 144 // BOX_SIZE plus 4 to be neatly divide by 9
 #define CELL_SIZE 96
 #define NUM_CELLS (GRID_SIZE * 2 / CELL_SIZE)
 #define MAX_GRID_POINTS (NUM_CELLS * NUM_CELLS)
@@ -264,12 +265,13 @@ void object_init(object_data *object, uint8_t objectType, uint8_t ID, T3DVec3 po
   object->ID = ID;
   object->mtxFP = malloc_uncached(sizeof(T3DMat4FP));
   object->position = position;
+  object->texID = 0;
 
   switch(objectType) {
     case OBJ_CAR:
-      object->scale = (T3DVec3){{0.125f, 0.125f, 0.125f}};
+      object->scale = (T3DVec3){{0.1f, 0.1f, 0.1f}};
       object->position.v[0] = fmaxf(-GRID_SIZE, fminf(GRID_SIZE, object->position.v[0] + (rand() % 20)));
-      object->position.v[2] = fmaxf(-GRID_SIZE, fminf(GRID_SIZE, object->position.v[2] + 40));
+      object->position.v[2] = fmaxf(-GRID_SIZE, fminf(GRID_SIZE, object->position.v[2] + 45));
       object->yaw = T3D_DEG_TO_RAD(90.0f);
       break;
     case OBJ_BUILDING:
@@ -277,7 +279,7 @@ void object_init(object_data *object, uint8_t objectType, uint8_t ID, T3DVec3 po
       object->yaw = 0;
       break;
     case OBJ_HYDRANT:
-      object->scale = (T3DVec3){{0.05f, 0.05f, 0.05f}};
+      object->scale = (T3DVec3){{0.06f, 0.06f, 0.06f}};
       object->position.v[0] = fmaxf(-GRID_SIZE, fminf(GRID_SIZE, object->position.v[0] + 25));
       object->position.v[2] = fmaxf(-GRID_SIZE, fminf(GRID_SIZE, object->position.v[2] + 25));
       object->yaw = 0;
@@ -288,6 +290,8 @@ void object_init(object_data *object, uint8_t objectType, uint8_t ID, T3DVec3 po
   object->visible = true;
   object->hide = false;
 }
+
+T3DObject* buildings[2];
 
 void object_initBatch(object_type* batch, uint8_t objectType)
 {
@@ -300,12 +304,14 @@ void object_initBatch(object_type* batch, uint8_t objectType)
     case OBJ_CAR:
       batch->scoreValue = 2;
       batch->model = modelCar;
-      batch->collisionRadius = 0.25f;
+      batch->collisionRadius = 0.2f;
       break;
     case OBJ_BUILDING:
       batch->scoreValue = 4;
       batch->model = modelBuilding;
-      batch->collisionRadius = 0.5f;
+      batch->collisionRadius = 0.4f;
+      buildings[0] = t3d_model_get_object_by_index(modelBuilding, 1);
+      buildings[1] = t3d_model_get_object_by_index(modelBuilding, 0);
       break;
     case OBJ_HYDRANT:
       batch->scoreValue = 1;
@@ -322,7 +328,17 @@ void object_initBatch(object_type* batch, uint8_t objectType)
   }
 
   // Create model block
-  
+  if(objectType == OBJ_BUILDING)
+  {
+    for (size_t i = 0; i < NUM_OBJECTS; i++)
+    {
+      rspq_block_begin();
+        t3d_matrix_set(batch->objects[i].mtxFP, true);
+        t3d_model_draw_object(buildings[0], NULL);
+
+      batch->objects[i].modelBlock = rspq_block_end();
+    }
+  } else {
     for (size_t i = 0; i < NUM_OBJECTS; i++)
     {
       rspq_block_begin();
@@ -332,6 +348,7 @@ void object_initBatch(object_type* batch, uint8_t objectType)
 
       batch->objects[i].modelBlock = rspq_block_end();
     }
+  }
   
 
 }
@@ -342,16 +359,31 @@ void object_updateBatch(object_type* batch, T3DViewport* vp, player_data* player
   {
     if(!batch->objects[i].visible) continue; // just skip the object update if not visible
 
-    
     if(check_collision(&batch->objects[i].position, batch->collisionRadius, &player->playerPos, HITBOX_RADIUS*player->scale.x))
     {
       if(player->scale.x < batch->collisionRadius) continue;
       batch->objects[i].position.v[1] -= 0.4f/batch->collisionRadius;
+
+      // Stop the car when collidied
+      if(batch->type == OBJ_CAR) batch->objects[i].position.x = t3d_lerp(batch->objects[i].position.x, player->playerPos.x, 0.7f);
+
+      // Switch building material according to height to create power flickering illusion
+      if(batch->type == OBJ_BUILDING) batch->objects[i].texID = (int)fm_floorf(batch->objects[i].position.v[1]) % 8 == 0 ? 0 : 1;
+
       while(batch->objects[i].position.v[1] <= -80.0f * batch->collisionRadius)
       {
         player->score += batch->scoreValue;
         batch->objects[i].visible = false;
         break;
+      }
+    } else if(batch->type == OBJ_CAR) {
+
+      // Car go vroom vroom
+      if(batch->objects[i].position.x <= GRID_SIZE)
+      {
+        batch->objects[i].position.x += 0.2f;
+      } else {
+        batch->objects[i].position.x = -GRID_SIZE;
       }
     }
 
@@ -367,9 +399,21 @@ void object_updateBatch(object_type* batch, T3DViewport* vp, player_data* player
 
 void object_drawBatch(object_type* batch)
 {
-  for (size_t i = 0; i < NUM_OBJECTS; i++)
+  if(batch->type == OBJ_BUILDING)
   {
-    if(batch->objects[i].visible && !batch->objects[i].hide) rspq_block_run(batch->objects[i].modelBlock);
+    for (size_t i = 0; i < NUM_OBJECTS; i++)
+    {
+      t3d_model_draw_material(buildings[batch->objects[i].texID]->material, NULL);
+      if(batch->objects[i].visible && !batch->objects[i].hide)
+      {
+        rspq_block_run(batch->objects[i].modelBlock);
+      }
+    }
+  } else {
+    for (size_t i = 0; i < NUM_OBJECTS; i++)
+    {
+      if(batch->objects[i].visible && !batch->objects[i].hide) rspq_block_run(batch->objects[i].modelBlock);
+    }
   }
   rspq_wait(); // RSPQ crashes if we don't wait for the objects to finish
 }
@@ -572,6 +616,8 @@ void player_fixedloop(player_data *player, object_type* objects, float deltaTime
   }
 
   // Player movement
+  float fps = display_get_fps();
+  bool boost = fps < 45.0f ? true : false;
   if(speed > 0.15f) {
     newDir.v[0] /= speed;
     newDir.v[2] /= speed;
@@ -579,14 +625,17 @@ void player_fixedloop(player_data *player, object_type* objects, float deltaTime
 
     float newAngle = atan2f(player->moveDir.v[0], player->moveDir.v[2]);
     player->rotY = t3d_lerp_angle(player->rotY, newAngle, 0.5f);
-    player->currSpeed = t3d_lerp(player->currSpeed, speed * 0.09f, 0.15f);
+    if (boost)
+    {
+      player->currSpeed = t3d_lerp(player->currSpeed, speed*0.2f, 0.2f);
+    } else {
+      player->currSpeed = t3d_lerp(player->currSpeed, speed*0.1f, 0.2f);
+    }
   } else {
-    player->currSpeed *= 0.8f;
+    player->currSpeed *= 0.6f;
   }
 
-  // move player...
-  player->playerPos.v[0] += player->moveDir.v[0] * player->currSpeed;
-  player->playerPos.v[2] += player->moveDir.v[2] * player->currSpeed;
+  
   // ...and limit position inside the box
   const float BOX_SIZE = 140.0f;
   if(player->playerPos.v[0] < -BOX_SIZE)player->playerPos.v[0] = -BOX_SIZE;
@@ -599,26 +648,14 @@ void player_fixedloop(player_data *player, object_type* objects, float deltaTime
   // Scaling based on score
   if(player->score >= 2 && player->score < 6)
   {
-    player->scale.v[0] = 0.25f;
-    player->scale.v[2] = 0.25f;
+    if(player->scale.v[0] < 0.3f) player->scale.v[0] = t3d_lerp(player->scale.v[0], 0.25f, deltaTime);
+    if(player->scale.v[2] < 0.3f) player->scale.v[2] = t3d_lerp(player->scale.v[2], 0.25f, deltaTime);
   } else if (player->score >= 6 && player->score < 10) {
-    player->scale.v[0] = 0.5f;
-    player->scale.v[2] = 0.5f;
+    if(player->scale.v[0] < 0.6f) player->scale.v[0] = t3d_lerp(player->scale.v[0], 0.5f, deltaTime);
+    if(player->scale.v[2] < 0.6f) player->scale.v[2] = t3d_lerp(player->scale.v[2], 0.5f, deltaTime);
   } else if (player->score >= 10) {
-    player->scale.v[0] = 1.0f;
-    player->scale.v[2] = 1.0f;
-  }
-
-  // Update player matrix
-  if (player->isAlive) {
-    t3d_mat4fp_from_srt_euler(player->modelMatFP,
-      player->scale.v,
-      (float[3]){0.0f, -player->rotY, 0},
-      player->playerPos.v
-    );
-  } else {
-    player->currSpeed = 0;
-    player->moveDir = (T3DVec3){{0}};
+    if(player->scale.v[0] < 0.9f) player->scale.v[0] = t3d_lerp(player->scale.v[0], 0.8f, deltaTime);
+    if(player->scale.v[2] < 0.9f) player->scale.v[2] = t3d_lerp(player->scale.v[2], 0.8f, deltaTime);
   }
   
 }
@@ -631,6 +668,22 @@ void player_loop(player_data *player, float deltaTime, joypad_port_t port, bool 
 
     if (btn.start) minigame_end();
 
+  }
+
+  // move player...
+  player->playerPos.v[0] += player->moveDir.v[0] * player->currSpeed;
+  player->playerPos.v[2] += player->moveDir.v[2] * player->currSpeed;
+
+  // Update player matrix
+  if (player->isAlive) {
+    t3d_mat4fp_from_srt_euler(player->modelMatFP,
+      player->scale.v,
+      (float[3]){0.0f, -player->rotY, 0},
+      player->playerPos.v
+    );
+  } else {
+    player->currSpeed = 0;
+    player->moveDir = (T3DVec3){{0}};
   }
 
   if(syncPoint)rspq_syncpoint_wait(syncPoint); // wait for the RSP to process the previous frame
@@ -804,8 +857,11 @@ void minigame_loop(float deltaTime)
         }
       }
 
-      object_drawBatch(&objects[j]);
     }
+
+    object_drawBatch(&objects[OBJ_HYDRANT]);
+    object_drawBatch(&objects[OBJ_BUILDING]);
+    object_drawBatch(&objects[OBJ_CAR]);
 
     t3d_matrix_pop(1);
 
