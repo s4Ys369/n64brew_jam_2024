@@ -365,7 +365,14 @@ void object_updateBatch(object_type* batch, T3DViewport* vp, player_data* player
       batch->objects[i].position.v[1] -= 0.4f/batch->collisionRadius;
 
       // Stop the car when collidied
-      if(batch->type == OBJ_CAR) batch->objects[i].position.x = t3d_lerp(batch->objects[i].position.x, player->playerPos.x, 0.7f);
+      if(batch->type == OBJ_CAR)
+      {
+        batch->objects[i].position.x = t3d_lerp(batch->objects[i].position.x, player->playerPos.x, 0.4f);
+        batch->objects[i].position.z = t3d_lerp(batch->objects[i].position.z, player->playerPos.z, 0.4f);
+        batch->objects[i].yaw -= .1f;
+      }
+
+      // @TODO: Add TPX for hydrants to spray water
 
       // Switch building material according to height to create power flickering illusion
       if(batch->type == OBJ_BUILDING) batch->objects[i].texID = (int)fm_floorf(batch->objects[i].position.v[1]) % 8 == 0 ? 0 : 1;
@@ -469,6 +476,7 @@ void minigame_init(void)
 
   t3d_init((T3DInitParams){});
 
+  // @TODO: Change fonts?
   font = rdpq_font_load("rom:/snake3d/m6x11plus.font64");
   rdpq_text_register_font(FONT_TEXT, font);
   rdpq_font_style(font, 0, &(rdpq_fontstyle_t){.color = color_from_packed32(TEXT_COLOR) });
@@ -485,7 +493,7 @@ void minigame_init(void)
   mapMatFP = malloc_uncached(sizeof(T3DMat4FP));
   t3d_mat4fp_from_srt_euler(mapMatFP, (float[3]){0.3f, 0.3f, 0.3f}, (float[3]){0, 0, 0}, (float[3]){0, 0, -10});
 
-  lightDirVec = (T3DVec3){{1.0f, 1.0f, 1.0f}};
+  lightDirVec = (T3DVec3){{0.0f, 1.0f, 1.0f}};
   t3d_vec3_norm(&lightDirVec);
 
   modelMap = t3d_model_load("rom:/holes/map.t3dm");
@@ -530,6 +538,8 @@ void minigame_init(void)
   countDownTimer = COUNTDOWN_DELAY;
 
   syncPoint = 0;
+
+  // @TODO: Change music and add SFX
   wav64_open(&sfx_start, "rom:/core/Start.wav64");
   wav64_open(&sfx_countdown, "rom:/core/Countdown.wav64");
   wav64_open(&sfx_stop, "rom:/core/Stop.wav64");
@@ -584,14 +594,30 @@ void player_fixedloop(player_data *player, object_type* objects, float deltaTime
   if (player_has_control(player)) {
     if (is_human) {
       joypad_inputs_t joypad = joypad_get_inputs(port);
+      float moveX = 0;
+      float moveY = 0;
 
-      // @TODO: add D Pad support
+      /** D Pad inputs
+      * Why 4.0f? Since the control range is ~[-79,79],
+      * the max absolute input value being used, `fabsf(joypad.stick_ * 0.05f)`,
+      * would return ~4.0f
+      */
+      if(joypad.btn.d_up)    moveY -= 4.0f;
+      if(joypad.btn.d_down)  moveY += 4.0f;
+      if(joypad.btn.d_left)  moveX -= 4.0f; 
+      if(joypad.btn.d_right) moveX += 4.0f;
+
+      // Control Stick inputs
       if (fabsf(joypad.stick_x) >= deadzone || fabsf(joypad.stick_y) >= deadzone)
       {
-        newDir.v[0] = (float)joypad.stick_x * 0.05f;
-        newDir.v[2] = -(float)joypad.stick_y * 0.05f;
-        speed = sqrtf(t3d_vec3_len2(&newDir));
+        moveX += (float)joypad.stick_x * 0.05f;
+        moveY -= (float)joypad.stick_y * 0.05f;
       }
+        
+      newDir.v[0] = moveX;
+      newDir.v[2] = moveY;
+      speed = sqrtf(t3d_vec3_len2(&newDir));
+
     } else {
       if(objects->collisionRadius <= player->scale.x) 
       {
@@ -773,7 +799,7 @@ void minigame_fixedloop(float deltaTime)
 
 void minigame_loop(float deltaTime)
 {
-  uint8_t colorAmbient[4] = {0xAA, 0xAA, 0xAA, 0xFF};
+  uint8_t colorAmbient[4] = {54, 40, 47, 0xFF};
   uint8_t colorDir[4]     = {0xFF, 0xAA, 0xAA, 0xFF};
 
   uint32_t playercount = core_get_playercount();
