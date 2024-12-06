@@ -45,7 +45,7 @@ const char* wavFileNames[NUM_WAV] = {
 };
 
 /* Function Declarations */
-void sound_load(void);
+void sound_load(bool playXM);
 void sound_xmSwitch(int songID, float volume, bool loop);
 void sound_xmStop(void);
 void sound_xmUpdate(float volume, bool loop);
@@ -57,7 +57,7 @@ void sound_update(void);
 
 /* Function Definitions */
 
-void sound_load(void)
+void sound_load(bool playXM)
 {
 	// Open all WAVs at boot
 	for(int w = 0; w < NUM_WAV; ++w) wav64_open(&soundEffects[w], wavFileNames[w]);
@@ -65,7 +65,7 @@ void sound_load(void)
 	// Open and play first XM in the list
     xm64player_open(&xmPlayer, xmFileNames[0]);
     xm64player_set_vol(&xmPlayer, 0.5f);
-    xm64player_play(&xmPlayer, MUSIC_CHANNEL);
+    if(playXM)xm64player_play(&xmPlayer, MUSIC_CHANNEL);
 }
 
 // Stops current XM, opens and plays requested module with set volume and whether to loop

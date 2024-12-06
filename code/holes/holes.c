@@ -18,7 +18,7 @@ const MinigameDef minigame_def = {
 };
 
 #define FONT_TEXT           1
-#define TEXT_COLOR          0x6CBB3CFF
+#define TEXT_COLOR          0xF5B201FF
 #define TEXT_OUTLINE        0x30521AFF
 
 #define HITBOX_RADIUS       40.f
@@ -67,6 +67,7 @@ typedef struct
   float yaw;
   bool visible;
   bool hide;
+  color_t color;
   rspq_block_t *modelBlock;
 } object_data;
 
@@ -257,16 +258,19 @@ void object_init(object_data *object, uint8_t objectType, uint8_t ID, T3DVec3 po
       object->position.v[0] = fmaxf(-GRID_SIZE, fminf(GRID_SIZE, object->position.v[0] + (rand() % 20)));
       object->position.v[2] = fmaxf(-GRID_SIZE, fminf(GRID_SIZE, object->position.v[2] + 45));
       object->yaw = T3D_DEG_TO_RAD(90.0f);
+      object->color = rand() % 2 == 0 ? color_from_packed32(0xE10916FF) : color_from_packed32(0x319900FF);
       break;
     case OBJ_BUILDING:
       object->scale = (T3DVec3){{0.3f, 0.3f, 0.3f}};
       object->yaw = 0;
+      object->color = RGBA32(0xFF,0xFF,0xFF,0xFF);
       break;
     case OBJ_HYDRANT:
       object->scale = (T3DVec3){{0.06f, 0.06f, 0.06f}};
       object->position.v[0] = fmaxf(-GRID_SIZE, fminf(GRID_SIZE, object->position.v[0] + 25));
       object->position.v[2] = fmaxf(-GRID_SIZE, fminf(GRID_SIZE, object->position.v[2] + 25));
       object->yaw = 0;
+      object->color = RGBA32(0xFF,0xFF,0xFF,0xFF);
       break;
   }
   
@@ -330,6 +334,7 @@ void object_initBatch(object_type* batch, uint8_t objectType)
       rspq_block_begin();
 
         t3d_matrix_set(batch->objects[i].mtxFP, true);
+        rdpq_set_prim_color(batch->objects[i].color);
         t3d_model_draw(batch->model);
 
       batch->objects[i].modelBlock = rspq_block_end();
@@ -425,7 +430,7 @@ void object_updateBatch(object_type* batch, T3DViewport* vp, player_data* player
       // Car go vroom vroom
       if(batch->objects[i].position.x <= GRID_SIZE)
       {
-        if(!stop[i])batch->objects[i].position.x += 0.2f;
+        if(!stop[i])batch->objects[i].position.x += 0.2f + 0.1f * (rand() % 5);
       } else {
         batch->objects[i].position.x = -GRID_SIZE;
       }
@@ -567,13 +572,22 @@ void minigame_init(void)
 
   syncPoint = 0;
 
-  // @TODO: Change music and add SFX
-  sound_load();
-
-  if(core_get_playercount() > 1)
+  switch(core_get_playercount())
   {
-    display_set_fps_limit(display_get_refresh_rate()*0.5f);
+    case 1:
+      sound_load(true);
+      break;
+    case 2:
+    case 3:
+      sound_load(true);
+      display_set_fps_limit(display_get_refresh_rate()*0.5f);
+      break;
+    case 4:
+      sound_load(false);
+      display_set_fps_limit(display_get_refresh_rate()*0.5f);
+      break;
   }
+
 }
 
 
@@ -883,7 +897,7 @@ void minigame_loop(float deltaTime)
       
       for (int o = 0; o < NUM_OBJECTS; o++)
       {
-        if(t3d_frustum_vs_sphere(&viewport[i].viewFrustum, &gridPos[o], 60.0f * objects[j].collisionRadius))
+        if(t3d_frustum_vs_sphere(&viewport[i].viewFrustum, &gridPos[o], (60.0f * objects[j].collisionRadius)-(playercount*objects[j].collisionRadius)))
         {
           objects[j].objects[o].hide = false;
         } else {
@@ -917,16 +931,16 @@ void minigame_loop(float deltaTime)
   // @TODO: Print Score?
   if (countDownTimer > 0.0f) {
     rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, .disable_aa_fix=true};
-    rdpq_text_printf(&textparms, FONT_TEXT, 0, 40, "Strawberry Byte\nPresents\n\nholes\n\n%d", (int)ceilf(countDownTimer));
+    rdpq_text_printf(&textparms, FONT_TEXT, 0, 36, "Strawberry Byte\nPresents\n\nholes: Clone of Hole.io\n\n%d", (int)ceilf(countDownTimer));
   } else if (countDownTimer > -GO_DELAY) {
     rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, .disable_aa_fix=true};
-    rdpq_text_print(&textparms, FONT_TEXT, 0, 100, "GO!");
+    rdpq_text_print(&textparms, FONT_TEXT, 0, 126, "GO!");
   } else if (isEnding && endTimer >= WIN_SHOW_DELAY) {
     rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, .disable_aa_fix=true};
-    rdpq_text_printf(&textparms, FONT_TEXT, 0, 100, "Player %d wins!\nScore: %u", winner+1, players[winner].score);
+    rdpq_text_printf(&textparms, FONT_TEXT, 0, 116, "Player %d wins!\nScore: %u", winner+1, players[winner].score);
   } else {
     rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, .disable_aa_fix=true};
-    rdpq_text_printf(&textparms, FONT_TEXT, 0, 40, "P1: %u    P2: %u    P3: %u    P4: %u", players[0].score, players[1].score, players[2].score, players[3].score);
+    rdpq_text_printf(&textparms, FONT_TEXT, 0, 38, "P1: %u    P2: %u    P3: %u    P4: %u", players[0].score, players[1].score, players[2].score, players[3].score);
   }
 
   rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, .disable_aa_fix=true};
