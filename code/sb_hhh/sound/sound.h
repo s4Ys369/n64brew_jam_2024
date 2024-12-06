@@ -85,7 +85,6 @@ void sound_xmSwitch(int songID, float volume, bool loop)
 void sound_xmStop(void)
 {
 	xm64player_stop(&xmPlayer);
-	xm64player_close(&xmPlayer);
 }
 
 // Adjusts volume and looping of current XM module
@@ -120,7 +119,6 @@ void sound_wavCleanup(void)
 
 void sound_cleanup(void)
 {
-	//sound_xmStop();
 	sound_wavCleanup();
 }
 

@@ -193,8 +193,7 @@ void minigame_fixedloop(float deltaTime)
     if (alivePlayers == 1) {
       isEnding = true;
       winner = lastPlayer;
-      sound_xmStop();
-      sound_wavClose(SFX_BUILDING);
+      if(playercount != 4) sound_xmStop();
       sound_wavPlay(SFX_STOP, false);
     }
   } else {

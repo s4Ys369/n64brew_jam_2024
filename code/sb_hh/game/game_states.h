@@ -648,7 +648,7 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		if(game->winnerSet)
 		{
 			game->winTimer++;
-			xm64player_stop(&xmPlayer);
+			sound_xmStop();
 			sound_wavClose(SFX_WIND);
 			sound_wavClose(SFX_JUMP);
 			sound_wavClose(SFX_STONES);

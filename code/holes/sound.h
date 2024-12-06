@@ -65,9 +65,12 @@ void sound_load(bool playXM)
 	for(int w = 0; w < NUM_WAV; ++w) wav64_open(&soundEffects[w], wavFileNames[w]);
 
 	// Open and play first XM in the list
-    xm64player_open(&xmPlayer, xmFileNames[0]);
-    xm64player_set_vol(&xmPlayer, 0.5f);
-    if(playXM)xm64player_play(&xmPlayer, MUSIC_CHANNEL);
+    if(playXM)
+    {
+        xm64player_open(&xmPlayer, xmFileNames[0]);
+        xm64player_set_vol(&xmPlayer, 0.5f);
+        xm64player_play(&xmPlayer, MUSIC_CHANNEL);
+    }
 }
 
 // Stops current XM, opens and plays requested module with set volume and whether to loop
@@ -85,7 +88,6 @@ void sound_xmSwitch(int songID, float volume, bool loop)
 void sound_xmStop(void)
 {
 	xm64player_stop(&xmPlayer);
-	xm64player_close(&xmPlayer);
 }
 
 // Adjusts volume and looping of current XM module
@@ -114,7 +116,7 @@ void sound_wavCleanup(void)
 
 void sound_cleanup(void)
 {
-	//sound_xmStop();
+	if(core_get_playercount() != 4)xm64player_close(&xmPlayer);
 	sound_wavCleanup();
 }
 

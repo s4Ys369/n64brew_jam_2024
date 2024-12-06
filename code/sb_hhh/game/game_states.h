@@ -530,8 +530,6 @@ void gameState_setGameplay(Game* game, Player* player, AI* ai, Actor* actor, Sce
 		game->winTimer++;
 		if(game->winTimer == 3) 
 		{
-			xm64player_stop(&xmPlayer);
-			sound_wavClose(SFX_LAVA);
 			sound_wavClose(SFX_JUMP);
 			sound_wavClose(SFX_STONES);
 			wait_ticks(4);
