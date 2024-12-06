@@ -54,6 +54,8 @@ void sound_wavClose(int sfxID);
 void sound_wavCleanup(void);
 void sound_cleanup(void);
 void sound_update(void);
+float sound_reverb(float volume, float mix);
+void sound_setChannels(void);
 
 /* Function Definitions */
 
@@ -203,5 +205,32 @@ float sound_reverb(float volume, float mix) {
     return volume * (1.0f - mix) + reverb_volume * mix;
 
 }
+
+// Sets predefined values for each SFX mixer channel
+void sound_setChannels(void)
+{
+    for(int i = 0; i < NUM_WAV; i++)
+    {
+        switch (i)
+        {
+            case SFX_WINNER:
+                mixer_ch_set_vol_pan(SFX_CHANNEL-i, 0.4f, 0.5f);
+                break;
+            case SFX_CAR:
+                mixer_ch_set_vol_pan(SFX_CHANNEL-i, sound_reverb(0.9f, 0.6f), 0.5f);
+                break;
+            case SFX_HYDRANT:
+                mixer_ch_set_vol_pan(SFX_CHANNEL-i, sound_reverb(0.9f, 0.2f), 0.5f);
+                break;
+            case SFX_START:
+            case SFX_COUNTDOWN:
+            case SFX_STOP:
+            case SFX_BUILDING:
+                mixer_ch_set_vol_pan(SFX_CHANNEL-i, sound_reverb(0.4f, 0.9f), 0.5f);
+                break;
+        }
+    }
+}
+
 
 #endif // SOUND_H
