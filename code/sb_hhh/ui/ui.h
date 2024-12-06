@@ -397,7 +397,7 @@ void ui_intro(ControllerData* control)
             "- Original 'Olli' by FazanaJ\n"
             "Strawberry Sprite by Sonika Rud\n"
             "UI Sprites by Kenney\n"
-            "Music: 'The Tribe of Fiery Foxes' by John Marwin\n"
+            "Music: kaelin\n"
             "SFX obtained from Freesound");
     }
     

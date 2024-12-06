@@ -15,9 +15,9 @@ enum BG_XM {
 
 xm64player_t xmPlayer;
 
-const char* xmFileNames[NUM_XM] = {
-    "rom:/strawberry_byte/sound/tribeof.xm64",
-};
+//const char* xmFileNames[NUM_XM] = {
+//    "rom:/strawberry_byte/sound/tribeof.xm64",
+//};
 
 // WAV files
 enum SFX_WAV {
@@ -37,7 +37,7 @@ wav64_t soundEffects[NUM_WAV];
 const char* wavFileNames[NUM_WAV] = {
     "rom:/strawberry_byte/sound/grunt-01.wav64",
 	"rom:/strawberry_byte/sound/stones-falling.wav64",
-	"rom:/strawberry_byte/sound/lava-loop-2.wav64",
+	"rom:/strawberry_byte/sound/hexagone.wav64",
     "rom:/core/Start.wav64",
     "rom:/core/Countdown.wav64",
     "rom:/core/Stop.wav64",
@@ -50,6 +50,7 @@ void sound_xmSwitch(int songID, float volume, bool loop);
 void sound_xmStop(void);
 void sound_xmUpdate(float volume, bool loop);
 void sound_wavPlay(int sfxID, bool loop);
+void sound_wavPlayBG(int sfxID);
 void sound_wavClose(int sfxID);
 void sound_wavCleanup(void);
 void sound_cleanup(void);
@@ -62,10 +63,11 @@ void sound_load(void)
 	// Open all WAVs at boot
 	for(int w = 0; w < NUM_WAV; ++w) wav64_open(&soundEffects[w], wavFileNames[w]);
 
+    mixer_ch_set_vol_pan(MUSIC_CHANNEL, 0.5f, 0.5f);
 	// Open and play first XM in the list
-    xm64player_open(&xmPlayer, xmFileNames[0]);
-    xm64player_set_vol(&xmPlayer, 0.5f);
-    xm64player_play(&xmPlayer, MUSIC_CHANNEL);
+    //xm64player_open(&xmPlayer, xmFileNames[0]);
+    //xm64player_set_vol(&xmPlayer, 0.5f);
+    //xm64player_play(&xmPlayer, MUSIC_CHANNEL);
 }
 
 // Stops current XM, opens and plays requested module with set volume and whether to loop
@@ -73,7 +75,7 @@ void sound_xmSwitch(int songID, float volume, bool loop)
 {
     xm64player_stop(&xmPlayer);
 	xm64player_close(&xmPlayer);
-	xm64player_open(&xmPlayer, xmFileNames[songID]);
+	//xm64player_open(&xmPlayer, xmFileNames[songID]);
 	xm64player_set_loop(&xmPlayer, loop);
 	xm64player_set_vol(&xmPlayer, volume);
 	xm64player_play(&xmPlayer, MUSIC_CHANNEL);
@@ -97,7 +99,13 @@ void sound_xmUpdate(float volume, bool loop)
 void sound_wavPlay(int sfxID, bool loop)
 {
 	wav64_set_loop(&soundEffects[sfxID], loop);
-	wav64_play(&soundEffects[sfxID], SFX_CHANNEL-sfxID);
+    wav64_play(&soundEffects[sfxID], SFX_CHANNEL-sfxID);
+}
+
+void sound_wavPlayBG(int sfxID)
+{
+	wav64_set_loop(&soundEffects[sfxID], true);
+    wav64_play(&soundEffects[sfxID], MUSIC_CHANNEL);
 }
 
 void sound_wavClose(int sfxID)
@@ -112,7 +120,7 @@ void sound_wavCleanup(void)
 
 void sound_cleanup(void)
 {
-	sound_xmStop();
+	//sound_xmStop();
 	sound_wavCleanup();
 }
 

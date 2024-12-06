@@ -689,12 +689,13 @@ void game_play(Game* game, Player* player, AI* ai, Actor* actor, Scenery* scener
 //// CAMERA /////
 
 		// Sound: reverb
+		mixer_ch_set_vol_pan(MUSIC_CHANNEL, sound_reverb(0.3f, 0.7f), 0.5f);
 		for(int i = 0; i < SFX_WINNER; i++)
     	{
 			if(i<SFX_COUNTDOWN)
 			{
 				mixer_ch_set_vol_pan(SFX_CHANNEL-i, sound_reverb(0.9f, 0.6f), 0.5f);
-			} else {
+			} else if (i != SFX_LAVA) {
 				mixer_ch_set_vol_pan(SFX_CHANNEL-i, sound_reverb(0.5f, 0.8f), 0.5f);
 			}
     	}

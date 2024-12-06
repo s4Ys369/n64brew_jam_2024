@@ -77,7 +77,7 @@
 
 const MinigameDef minigame_def = {
     .gamename = "Hot Hot Hexagons",
-    .developername = "Strawberry Byte: .zoncabe, s4ys, mewde",
+    .developername = "Strawberry Byte: .zoncabe, s4ys, mewde, kaelin",
     .description = "The floor is lava!",
     .instructions = "Jump from platform to platform\nto avoid a terrible fate."
 };
@@ -152,7 +152,7 @@ void minigame_init()
     platform_hexagonGrid(hexagons, t3d_model_load("rom:/strawberry_byte/platform.t3dm"), 250.0f, ui_color(N_YELLOW));
 
     // Sound: Play lava SFX
-    sound_wavPlay(SFX_LAVA, true);
+    sound_wavPlayBG(SFX_LAVA);
 
 }
 
