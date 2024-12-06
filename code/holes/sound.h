@@ -9,14 +9,14 @@
 
 // XM sequences
 enum BG_XM {
-    XM_BB,
+    XM_TMA,
     NUM_XM
 };
 
 xm64player_t xmPlayer;
 
 const char* xmFileNames[NUM_XM] = {
-    "rom:/snake3d/bottled_bubbles.xm64", // Yoink
+    "rom:/holes/TheMorningAfter.xm64", // Yoink
 };
 
 // WAV files

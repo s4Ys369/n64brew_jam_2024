@@ -12,30 +12,21 @@
 
 const MinigameDef minigame_def = {
     .gamename = "holes",
-    .developername = "s4ys",
+    .developername = "Strawberry Byte: s4ys",
     .description = "Clone of Hole.io",
     .instructions = "Try to devour as much as possible!"
 };
 
 #define FONT_TEXT           1
-#define FONT_BILLBOARD      2
 #define TEXT_COLOR          0x6CBB3CFF
 #define TEXT_OUTLINE        0x30521AFF
 
 #define HITBOX_RADIUS       40.f
 
-#define ATTACK_OFFSET       10.f
-#define ATTACK_RADIUS       5.f
-
-#define ATTACK_TIME_START   0.333f
-#define ATTACK_TIME_END     0.4f
-
 #define COUNTDOWN_DELAY     3.0f
 #define GO_DELAY            1.0f
 #define WIN_DELAY           5.0f
 #define WIN_SHOW_DELAY      2.0f
-
-#define BILLBOARD_YOFFSET   15.0f
 
 /**
  * Simple clone of Hole.io
@@ -45,7 +36,6 @@ const MinigameDef minigame_def = {
 surface_t *depthBuffer;
 T3DViewport viewport[MAXPLAYERS];
 rdpq_font_t *font;
-rdpq_font_t *fontBillboard;
 T3DMat4FP* mapMatFP;
 rspq_block_t *dplMap;
 T3DModel *model;
@@ -104,9 +94,7 @@ typedef struct
   T3DVec3 scale;
   float rotY;
   float currSpeed;
-  bool isAttack;
   bool isAlive;
-  float attackTimer;
   PlyNum ai_target;
   int ai_reactionspeed;
   uint8_t score;
@@ -289,6 +277,7 @@ void object_init(object_data *object, uint8_t objectType, uint8_t ID, T3DVec3 po
 
 T3DObject* buildings[2];
 bool spray[NUM_OBJECTS] = {false};
+bool stop[NUM_OBJECTS] = {false};
 
 void object_initBatch(object_type* batch, uint8_t objectType)
 {
@@ -408,6 +397,7 @@ void object_updateBatch(object_type* batch, T3DViewport* vp, player_data* player
         batch->objects[i].yaw -= .1f;
         batch->objects[i].position.x = t3d_lerp(batch->objects[i].position.x, player->playerPos.x, 0.04f);
         batch->objects[i].position.z = t3d_lerp(batch->objects[i].position.z, player->playerPos.z, 0.04f);
+        stop[i] = true;
       }
 
       // Hydrants start spraying water after being collided with
@@ -435,7 +425,7 @@ void object_updateBatch(object_type* batch, T3DViewport* vp, player_data* player
       // Car go vroom vroom
       if(batch->objects[i].position.x <= GRID_SIZE)
       {
-        batch->objects[i].position.x += 0.2f;
+        if(!stop[i])batch->objects[i].position.x += 0.2f;
       } else {
         batch->objects[i].position.x = -GRID_SIZE;
       }
@@ -503,7 +493,6 @@ void player_init(player_data *player, color_t color, T3DVec3 position, float rot
 
   player->rotY = rotation;
   player->currSpeed = 0.0f;
-  player->isAttack = true;
   player->isAlive = true;
   player->ai_target = rand()%NUM_OBJECTS;
   player->ai_reactionspeed = (2-core_get_aidifficulty())*5 + rand()%((3-core_get_aidifficulty())*3);
@@ -523,17 +512,9 @@ void minigame_init(void)
 
   t3d_init((T3DInitParams){});
 
-  // @TODO: Change fonts?
-  font = rdpq_font_load("rom:/snake3d/m6x11plus.font64");
+  font = rdpq_font_load("rom:/holes/TitanOne-Regular.font64");
   rdpq_text_register_font(FONT_TEXT, font);
   rdpq_font_style(font, 0, &(rdpq_fontstyle_t){.color = color_from_packed32(TEXT_COLOR) });
-
-  fontBillboard = rdpq_font_load("rom:/squarewave.font64");
-  rdpq_text_register_font(FONT_BILLBOARD, fontBillboard);
-  for (size_t i = 0; i < MAXPLAYERS; i++)
-  {
-    rdpq_font_style(fontBillboard, i, &(rdpq_fontstyle_t){ .color = colors[i] });
-  }
 
   viewport_create(viewport);
 
@@ -556,10 +537,10 @@ void minigame_init(void)
   dplMap = rspq_block_end();
 
   T3DVec3 start_positions[] = {
-    (T3DVec3){{-50,5,-50}},
-    (T3DVec3){{50,5,-50}},
-    (T3DVec3){{50,5,50}},
-    (T3DVec3){{-50,5,50}},
+    (T3DVec3){{-50,5,-52}},
+    (T3DVec3){{52,5,-52}},
+    (T3DVec3){{-50,5,40}},
+    (T3DVec3){{52,5,40}},
   };
 
   float start_rotations[] = {
@@ -617,8 +598,6 @@ void player_do_damage(player_data *player)
       }
     }
   }
-
-  player->isAttack = false;
 }
 
 bool player_has_control(player_data *player)
@@ -764,28 +743,6 @@ void player_draw(player_data *player)
   }
 }
 
-void player_draw_billboard(player_data *player, PlyNum playerNum)
-{
-  if (!player->isAlive) return;
-
-  T3DVec3 billboardPos = (T3DVec3){{
-    player->playerPos.v[0],
-    player->playerPos.v[1] + BILLBOARD_YOFFSET,
-    player->playerPos.v[2]
-  }};
-
-  T3DVec3 billboardScreenPos;
-  t3d_viewport_calc_viewspace_pos(&viewport[playerNum], &billboardScreenPos, &billboardPos);
-
-  int x = floorf(billboardScreenPos.v[0]);
-  int y = floorf(billboardScreenPos.v[1]);
-
-  rdpq_sync_pipe(); // Hardware crashes otherwise
-  rdpq_sync_tile(); // Hardware crashes otherwise
-
-  rdpq_text_printf(&(rdpq_textparms_t){ .style_id = playerNum }, FONT_BILLBOARD, x-5, y-16, "P%d", playerNum+1);
-}
-
 void minigame_fixedloop(float deltaTime)
 {
   bool controlbefore = player_has_control(&players[0]);
@@ -845,11 +802,11 @@ void minigame_loop(float deltaTime)
 
   for(int i = 0; i < SFX_WINNER; i++)
   {
-    if(i<SFX_COUNTDOWN)
+    if(i>SFX_BUILDING && i<SFX_COUNTDOWN)
     {
       mixer_ch_set_vol_pan(SFX_CHANNEL-i, sound_reverb(0.9f, 0.6f), 0.5f);
     } else {
-      mixer_ch_set_vol_pan(SFX_CHANNEL-i, sound_reverb(0.5f, 0.8f), 0.5f);
+      mixer_ch_set_vol_pan(SFX_CHANNEL-i, sound_reverb(0.4f, 0.9f), 0.5f);
     }
   }
 
@@ -926,7 +883,7 @@ void minigame_loop(float deltaTime)
       
       for (int o = 0; o < NUM_OBJECTS; o++)
       {
-        if(t3d_frustum_vs_sphere(&viewport[i].viewFrustum, &gridPos[o], 50.0f * objects[j].collisionRadius))
+        if(t3d_frustum_vs_sphere(&viewport[i].viewFrustum, &gridPos[o], 60.0f * objects[j].collisionRadius))
         {
           objects[j].objects[o].hide = false;
         } else {
@@ -959,17 +916,21 @@ void minigame_loop(float deltaTime)
 
   // @TODO: Print Score?
   if (countDownTimer > 0.0f) {
-    rdpq_text_printf(NULL, FONT_TEXT, 155, 100, "%d", (int)ceilf(countDownTimer));
+    rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, .disable_aa_fix=true};
+    rdpq_text_printf(&textparms, FONT_TEXT, 0, 40, "Strawberry Byte\nPresents\n\nholes\n\n%d", (int)ceilf(countDownTimer));
   } else if (countDownTimer > -GO_DELAY) {
     rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, .disable_aa_fix=true};
     rdpq_text_print(&textparms, FONT_TEXT, 0, 100, "GO!");
   } else if (isEnding && endTimer >= WIN_SHOW_DELAY) {
     rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, .disable_aa_fix=true};
-    rdpq_text_printf(&textparms, FONT_TEXT, 0, 100, "Player %d wins!", winner+1);
+    rdpq_text_printf(&textparms, FONT_TEXT, 0, 100, "Player %d wins!\nScore: %u", winner+1, players[winner].score);
+  } else {
+    rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, .disable_aa_fix=true};
+    rdpq_text_printf(&textparms, FONT_TEXT, 0, 40, "P1: %u    P2: %u    P3: %u    P4: %u", players[0].score, players[1].score, players[2].score, players[3].score);
   }
 
   rdpq_textparms_t textparms = { .align = ALIGN_CENTER, .width = 320, .disable_aa_fix=true};
-  rdpq_text_printf(&textparms, FONT_BILLBOARD, 0, 210, "FPS %.3f", display_get_fps());
+  rdpq_text_printf(&textparms, FONT_TEXT, 0, 220, "FPS %.2f", display_get_fps());
 
   rdpq_detach_show();
   sound_update();
@@ -1005,8 +966,6 @@ void minigame_cleanup(void)
 
   free_uncached(mapMatFP);
 
-  rdpq_text_unregister_font(FONT_BILLBOARD);
-  rdpq_font_free(fontBillboard);
   rdpq_text_unregister_font(FONT_TEXT);
   rdpq_font_free(font);
   t3d_destroy();
