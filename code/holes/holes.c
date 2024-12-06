@@ -8,6 +8,8 @@
 #include <t3d/t3danim.h>
 #include <t3d/t3ddebug.h>
 
+#include "sound.h"
+
 const MinigameDef minigame_def = {
     .gamename = "holes",
     .developername = "s4ys",
@@ -54,7 +56,6 @@ T3DModel *modelMap;
 T3DVec3 camPos[MAXPLAYERS];
 T3DVec3 camTarget[MAXPLAYERS];
 T3DVec3 lightDirVec;
-xm64player_t music;
 
 ////////// OBJECTS
 enum OBJ_TYPES
@@ -117,11 +118,6 @@ float countDownTimer;
 bool isEnding;
 float endTimer;
 PlyNum winner;
-
-wav64_t sfx_start;
-wav64_t sfx_countdown;
-wav64_t sfx_stop;
-wav64_t sfx_winner;
 
 rspq_syncpoint_t syncPoint;
 
@@ -292,6 +288,7 @@ void object_init(object_data *object, uint8_t objectType, uint8_t ID, T3DVec3 po
 }
 
 T3DObject* buildings[2];
+bool spray[NUM_OBJECTS] = {false};
 
 void object_initBatch(object_type* batch, uint8_t objectType)
 {
@@ -353,10 +350,34 @@ void object_initBatch(object_type* batch, uint8_t objectType)
 
 }
 
+void hydrant_water_spray(T3DVec3 position, T3DViewport* viewport)
+{
+
+  T3DVec3 screenPos;
+  t3d_viewport_calc_viewspace_pos(viewport, &screenPos, &position);
+
+  int offset = 5;
+  float upward = screenPos.y - rand() % 30;
+  
+  float v1[] = { screenPos.x, screenPos.y-offset};
+  float v2[] = { screenPos.x-offset, upward };
+  float v3[] = { screenPos.x+offset, upward };
+    
+
+  rdpq_sync_pipe();
+  rdpq_set_mode_standard();
+  rdpq_mode_combiner(RDPQ_COMBINER_FLAT);
+  rdpq_mode_blender(RDPQ_BLENDER_MULTIPLY);
+  rdpq_set_prim_color(RGBA32(40,40,240,127));
+
+  rdpq_triangle(&TRIFMT_FILL, v1, v2, v3);
+}
+
 void object_updateBatch(object_type* batch, T3DViewport* vp, player_data* player)
 {
   for (size_t i = 0; i < NUM_OBJECTS; i++)
   {
+
     if(!batch->objects[i].visible) continue; // just skip the object update if not visible
 
     if(check_collision(&batch->objects[i].position, batch->collisionRadius, &player->playerPos, HITBOX_RADIUS*player->scale.x))
@@ -364,18 +385,44 @@ void object_updateBatch(object_type* batch, T3DViewport* vp, player_data* player
       if(player->scale.x < batch->collisionRadius) continue;
       batch->objects[i].position.v[1] -= 0.4f/batch->collisionRadius;
 
-      // Stop the car when collidied
-      if(batch->type == OBJ_CAR)
+      // SFX
+      if(batch->objects[i].position.v[1] == 0.0f)
       {
-        batch->objects[i].position.x = t3d_lerp(batch->objects[i].position.x, player->playerPos.x, 0.4f);
-        batch->objects[i].position.z = t3d_lerp(batch->objects[i].position.z, player->playerPos.z, 0.4f);
-        batch->objects[i].yaw -= .1f;
+        switch(batch->type)
+        {
+          case OBJ_CAR:
+            sound_wavPlay(SFX_CAR, false);
+            break;
+          case OBJ_HYDRANT:
+            sound_wavPlay(SFX_HYDRANT, true); // @TODO: Why is this one not playing at all?
+            break;
+          case OBJ_BUILDING:
+            sound_wavPlay(SFX_BUILDING, false);
+            break;
+        }
       }
 
-      // @TODO: Add TPX for hydrants to spray water
+      // Cars spin out and get pulled towards the center
+      if(batch->type == OBJ_CAR)
+      {
+        batch->objects[i].yaw -= .1f;
+        batch->objects[i].position.x = t3d_lerp(batch->objects[i].position.x, player->playerPos.x, 0.04f);
+        batch->objects[i].position.z = t3d_lerp(batch->objects[i].position.z, player->playerPos.z, 0.04f);
+      }
 
-      // Switch building material according to height to create power flickering illusion
-      if(batch->type == OBJ_BUILDING) batch->objects[i].texID = (int)fm_floorf(batch->objects[i].position.v[1]) % 8 == 0 ? 0 : 1;
+      // Hydrants start spraying water after being collided with
+      if(batch->type == OBJ_HYDRANT)
+      {
+        if(!spray[i]) spray[i] = true;
+      }
+
+      // Buildings swap materials to create flickering illusion, shake and spin
+      if(batch->type == OBJ_BUILDING)
+      {
+        batch->objects[i].texID = (int)fm_floorf(batch->objects[i].position.v[1]) % 8 == 0 ? 0 : 1;
+        batch->objects[i].position.x = gridPos[i].x + 1.0f * fm_sinf(batch->objects[i].position.v[1]);
+        batch->objects[i].yaw -= 0.01f;
+      }
 
       while(batch->objects[i].position.v[1] <= -80.0f * batch->collisionRadius)
       {
@@ -540,13 +587,7 @@ void minigame_init(void)
   syncPoint = 0;
 
   // @TODO: Change music and add SFX
-  wav64_open(&sfx_start, "rom:/core/Start.wav64");
-  wav64_open(&sfx_countdown, "rom:/core/Countdown.wav64");
-  wav64_open(&sfx_stop, "rom:/core/Stop.wav64");
-  wav64_open(&sfx_winner, "rom:/core/Winner.wav64");
-  xm64player_open(&music, "rom:/snake3d/bottled_bubbles.xm64");
-  xm64player_play(&music, 0);
-  mixer_ch_set_vol(31, 0.5f, 0.5f);
+  sound_load();
 
   if(core_get_playercount() > 1)
   {
@@ -762,10 +803,10 @@ void minigame_fixedloop(float deltaTime)
     float prevCountDown = countDownTimer;
     countDownTimer -= deltaTime;
     if ((int)prevCountDown != (int)countDownTimer && countDownTimer >= 0)
-      wav64_play(&sfx_countdown, 31);
+      sound_wavPlay(SFX_COUNTDOWN, false);
   }
   if (!controlbefore && player_has_control(&players[0]))
-    wav64_play(&sfx_start, 31);
+    sound_wavPlay(SFX_START, false);
 
   if (!isEnding) {
     // Determine if a player has won
@@ -783,13 +824,13 @@ void minigame_fixedloop(float deltaTime)
     if (alivePlayers == 1) {
       isEnding = true;
       winner = lastPlayer;
-      wav64_play(&sfx_stop, 31);
+      sound_wavPlay(SFX_STOP, false);
     }
   } else {
     float prevEndTime = endTimer;
     endTimer += deltaTime;
     if ((int)prevEndTime != (int)endTimer && (int)endTimer == WIN_SHOW_DELAY)
-        wav64_play(&sfx_winner, 31);
+        sound_wavPlay(SFX_WINNER, false);
     if (endTimer > WIN_DELAY) {
       core_set_winner(winner);
       minigame_end();
@@ -801,6 +842,16 @@ void minigame_loop(float deltaTime)
 {
   uint8_t colorAmbient[4] = {54, 40, 47, 0xFF};
   uint8_t colorDir[4]     = {0xFF, 0xAA, 0xAA, 0xFF};
+
+  for(int i = 0; i < SFX_WINNER; i++)
+  {
+    if(i<SFX_COUNTDOWN)
+    {
+      mixer_ch_set_vol_pan(SFX_CHANNEL-i, sound_reverb(0.9f, 0.6f), 0.5f);
+    } else {
+      mixer_ch_set_vol_pan(SFX_CHANNEL-i, sound_reverb(0.5f, 0.8f), 0.5f);
+    }
+  }
 
   uint32_t playercount = core_get_playercount();
   for (size_t i = 0; i < playercount; i++)
@@ -886,6 +937,12 @@ void minigame_loop(float deltaTime)
     }
 
     object_drawBatch(&objects[OBJ_HYDRANT]);
+    for (size_t o = 0; o < NUM_OBJECTS; o++)
+    {
+      if(spray[o] && !objects[OBJ_HYDRANT].objects[o].hide) hydrant_water_spray(objects[OBJ_HYDRANT].objects[o].position, &viewport[i]);
+    }
+
+    t3d_frame_start();
     object_drawBatch(&objects[OBJ_BUILDING]);
     object_drawBatch(&objects[OBJ_CAR]);
 
@@ -915,6 +972,7 @@ void minigame_loop(float deltaTime)
   rdpq_text_printf(&textparms, FONT_BILLBOARD, 0, 210, "FPS %.3f", display_get_fps());
 
   rdpq_detach_show();
+  sound_update();
 }
 
 void player_cleanup(player_data *player)
@@ -928,6 +986,8 @@ void minigame_cleanup(void)
 
   display_set_fps_limit(0);
 
+  sound_cleanup();
+
   for (size_t i = 0; i < MAXPLAYERS; i++)
   {
     player_cleanup(&players[i]);
@@ -938,12 +998,6 @@ void minigame_cleanup(void)
     object_destroyBatch(&objects[i]);
   }
 
-  wav64_close(&sfx_start);
-  wav64_close(&sfx_countdown);
-  wav64_close(&sfx_stop);
-  wav64_close(&sfx_winner);
-  xm64player_stop(&music);
-  xm64player_close(&music);
   rspq_block_free(dplMap);
 
   t3d_model_free(model);
