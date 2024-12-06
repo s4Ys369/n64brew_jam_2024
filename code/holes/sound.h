@@ -112,7 +112,7 @@ void sound_wavCleanup(void)
 
 void sound_cleanup(void)
 {
-	sound_xmStop();
+	//sound_xmStop();
 	sound_wavCleanup();
 }
 

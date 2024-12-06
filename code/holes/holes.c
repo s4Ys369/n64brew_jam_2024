@@ -795,6 +795,8 @@ void minigame_fixedloop(float deltaTime)
     if (alivePlayers == 1) {
       isEnding = true;
       winner = lastPlayer;
+      sound_xmStop();
+      sound_wavClose(SFX_BUILDING);
       sound_wavPlay(SFX_STOP, false);
     }
   } else {
@@ -947,7 +949,7 @@ void minigame_loop(float deltaTime)
   rdpq_text_printf(&textparms, FONT_TEXT, 0, 220, "FPS %.2f", display_get_fps());
 
   rdpq_detach_show();
-  sound_update();
+
 }
 
 void player_cleanup(player_data *player)
