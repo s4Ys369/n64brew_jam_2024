@@ -8,36 +8,26 @@
 #include <t3d/t3danim.h>
 #include <t3d/t3ddebug.h>
 
-
 /**
-* Simple clone of Hole.io
-* Basically just pushing myself to make something in a shorter time.
-*/
+ * Simple clone of Hole.io
+ * Basically just pushing myself to make something in a shorter time.
+ */
 
 const MinigameDef minigame_def = {
-  .gamename = "holes",
-  .developername = "Strawberry Byte: s4ys",
-  .description = "Clone of Hole.io",
-  .instructions = "Try to devour as much as possible!"
-};
+    .gamename = "holes",
+    .developername = "Strawberry Byte: s4ys",
+    .description = "Clone of Hole.io",
+    .instructions = "Try to devour as much as possible!"};
 
 // Global subsystems
 #include "util.h"
 #include "sound.h"
-
-// Global variables
-float countDownTimer;
-bool isEnding;
-float endTimer;
-PlyNum winner;
-rspq_syncpoint_t syncPoint;
 
 // Locals
 T3DModel *model;
 T3DModel *modelCar;
 T3DModel *modelBuilding;
 T3DModel *modelHydrant;
-T3DVec3 lightDirVec;
 
 ////////// MAP
 #include "map.h"
@@ -51,7 +41,7 @@ camera_data cam[MAXPLAYERS];
 object_type objects[NUM_OBJ_TYPES];
 T3DVec3 gridPos[MAX_GRID_POINTS];
 size_t gridPointCount = 0;
-T3DObject* buildings[2];
+T3DObject *buildings[2];
 bool spray[NUM_OBJECTS] = {false};
 bool stop[NUM_OBJECTS] = {false};
 
@@ -67,6 +57,12 @@ player_data players[MAXPLAYERS];
 surface_t *depthBuffer;
 T3DViewport viewport[MAXPLAYERS];
 
+////////// SCENE
+#include "render.h"
+#include "scene.h"
+scene_data scenes[NUM_SCENES];
+
+game_data game;
 
 void minigame_init(void)
 {
@@ -80,12 +76,9 @@ void minigame_init(void)
 
   viewport_create(viewport);
 
-  lightDirVec = (T3DVec3){{0.0f, 1.0f, 1.0f}};
-  t3d_vec3_norm(&lightDirVec);
-
   map_init(&map);
 
-////////// OBJECTS
+  ////////// OBJECTS
   modelCar = t3d_model_load("rom:/holes/car.t3dm");
   modelBuilding = t3d_model_load("rom:/holes/building.t3dm");
   modelHydrant = t3d_model_load("rom:/holes/hydrant.t3dm");
@@ -95,206 +88,73 @@ void minigame_init(void)
     object_initBatch(&objects[i], i);
   }
 
-////////// PLAYERS
+  ////////// PLAYERS
   model = t3d_model_load("rom:/holes/hole.t3dm");
 
   T3DVec3 start_positions[] = {
-    (T3DVec3){{-50,5,-52}},
-    (T3DVec3){{52,5,-52}},
-    (T3DVec3){{-50,5,40}},
-    (T3DVec3){{52,5,40}},
+      (T3DVec3){{-50, 5, -52}},
+      (T3DVec3){{52, 5, -52}},
+      (T3DVec3){{-50, 5, 40}},
+      (T3DVec3){{52, 5, 40}},
   };
 
   float start_rotations[] = {
-    M_PI/2,
-    0,
-    3*M_PI/2,
-    M_PI
-  };
+      M_PI / 2,
+      0,
+      3 * M_PI / 2,
+      M_PI};
 
   const color_t colors[] = {
-    PLAYERCOLOR_1,
-    PLAYERCOLOR_2,
-    PLAYERCOLOR_3,
-    PLAYERCOLOR_4,
+      PLAYERCOLOR_1,
+      PLAYERCOLOR_2,
+      PLAYERCOLOR_3,
+      PLAYERCOLOR_4,
   };
 
   for (size_t i = 0; i < MAXPLAYERS; i++)
   {
     player_init(&players[i], colors[i], start_positions[i], start_rotations[i]);
     players[i].plynum = i;
-    cam[i].position = (T3DVec3){{players[i].playerPos.x, players[i].playerPos.y+150.0f, players[i].playerPos.z+100.0f}};
+    cam[i].position = (T3DVec3){{players[i].playerPos.x, players[i].playerPos.y + 150.0f, players[i].playerPos.z + 100.0f}};
     cam[i].target = players[i].playerPos;
   }
-////////// 
+  //////////
 
-  countDownTimer = COUNTDOWN_DELAY;
+  game.playerCount = core_get_playercount();
+  game.countDownTimer = COUNTDOWN_DELAY;
+  game.isEnding = false;
+  game.endTimer = 0;
+  game.winner = 0;
+  game.syncPoint = 0;
 
-  syncPoint = 0;
+  scene_init(scenes);
 
   // Decide whether to limit FPS and/or disable background music
-  switch(core_get_playercount())
+  switch (game.playerCount)
   {
-    case 1:
-      sound_load(true);
-      break;
-    case 2:
-    case 3:
-      sound_load(true);
-      display_set_fps_limit(display_get_refresh_rate()*0.5f);
-      break;
-    case 4:
-      sound_load(false);
-      display_set_fps_limit(display_get_refresh_rate()*0.5f);
-      break;
+  case 1:
+    sound_load(true);
+    break;
+  case 2:
+  case 3:
+    sound_load(true);
+    display_set_fps_limit(display_get_refresh_rate() * 0.5f);
+    break;
+  case 4:
+    sound_load(false);
+    display_set_fps_limit(display_get_refresh_rate() * 0.5f);
+    break;
   }
-
 }
 
 void minigame_fixedloop(float deltaTime)
 {
-
-////////// PLAYERS
-  bool controlbefore = player_has_control(&players[0]);
-  uint32_t playercount = core_get_playercount();
-  for (size_t i = 0; i < MAXPLAYERS; i++)
-  {
-    for (int j = 0; j < NUM_OBJ_TYPES; j++)
-    {
-      player_fixedloop(&players[i], &objects[j], deltaTime, core_get_playercontroller(i), i < playercount);
-    }
-  }
-//////////
-
-  sound_setChannels();
-  if (countDownTimer > -GO_DELAY)
-  {
-    float prevCountDown = countDownTimer;
-    countDownTimer -= deltaTime;
-    if ((int)prevCountDown != (int)countDownTimer && countDownTimer >= 0)
-      sound_wavPlay(SFX_COUNTDOWN, false);
-  }
-  if (!controlbefore && player_has_control(&players[0]))
-    sound_wavPlay(SFX_START, false);
-
-  if (!isEnding) {
-    // Determine if a player has won
-    uint32_t alivePlayers = 0;
-    PlyNum lastPlayer = 0;
-    for (size_t i = 0; i < MAXPLAYERS; i++)
-    {
-      if (players[i].isAlive)
-      {
-        alivePlayers++;
-        lastPlayer = i;
-      }
-    }
-    
-    if (alivePlayers == 1) {
-      isEnding = true;
-      winner = lastPlayer;
-      if(playercount != 4) sound_xmStop();
-      sound_wavPlay(SFX_STOP, false);
-    }
-  } else {
-    float prevEndTime = endTimer;
-    endTimer += deltaTime;
-    if ((int)prevEndTime != (int)endTimer && (int)endTimer == WIN_SHOW_DELAY)
-        sound_wavPlay(SFX_WINNER, false);
-    if (endTimer > WIN_DELAY) {
-      core_set_winner(winner);
-      minigame_end();
-    }
-  }
+  scenes[GAMEPLAY].fixedLoop(&game, deltaTime);
 }
 
 void minigame_loop(float deltaTime)
 {
-  uint8_t colorAmbient[4] = {54, 40, 47, 0xFF};
-  uint8_t colorDir[4]     = {0xFF, 0xAA, 0xAA, 0xFF};
-
-  uint32_t playercount = core_get_playercount();
-
-  viewport_set(viewport, playercount, cam);
-
-  for (size_t i = 0; i < playercount; i++)
-  {
-
-    for (int j = 0; j < NUM_OBJ_TYPES; j++)
-    {
-      for (size_t p = 0; p < MAXPLAYERS; p++)
-      {
-        object_updateBatch(&objects[j], &viewport[i], &players[p]);
-      }
-    }
-
-    cam[i].position = (T3DVec3){{players[i].playerPos.x, players[i].playerPos.y+250.0f, players[i].playerPos.z+100.0f}};
-    cam[i].target = players[i].playerPos;
-  }
-
-  for (size_t p = 0; p < MAXPLAYERS; p++)
-  {
-    player_loop(&players[p], deltaTime, core_get_playercontroller(p), p < playercount);
-  }
-  
-
-  // ======== Draw (3D) ======== //
-
-  rdpq_attach(display_get(), depthBuffer);
-  rdpq_clear(RGBA32(0,0,0,255));
-
-  for (size_t i = 0; i < playercount; i++)
-  {
-    t3d_frame_start();
-    t3d_viewport_attach(&viewport[i]);
-
-    t3d_light_set_ambient(colorAmbient);
-    t3d_light_set_directional(0, colorDir, &lightDirVec);
-    t3d_light_set_count(1);
-
-    t3d_matrix_push_pos(1);
-
-    rdpq_mode_zbuf(false, true);
-    rspq_block_run(map.block);
-
-    for (size_t p = 0; p < MAXPLAYERS; p++)
-    {
-      player_draw(&players[p]);
-    }
-
-    rdpq_mode_zbuf(true, false);
-
-    for (int j = 0; j < NUM_OBJ_TYPES; j++)
-    {
-      object_cull(&objects[j], &viewport[i], playercount);
-    }
-
-    object_drawBatch(&objects[OBJ_HYDRANT]);
-    for (size_t o = 0; o < NUM_OBJECTS; o++)
-    {
-      if(spray[o] && !objects[OBJ_HYDRANT].objects[o].hide) hydrant_water_spray(objects[OBJ_HYDRANT].objects[o].position, &viewport[i]);
-    }
-
-    t3d_frame_start();
-    object_drawBatch(&objects[OBJ_BUILDING]);
-    object_drawBatch(&objects[OBJ_CAR]);
-
-    t3d_matrix_pop(1);
-
-  }
-
-  syncPoint = rspq_syncpoint_new();
-
-  // ======== Draw (2D) ======== //
-  rdpq_sync_tile();
-  rdpq_sync_pipe(); // Hardware crashes otherwise
-
-  viewport_drawScissor();
-
-  ui_print(true);
-
-  rdpq_detach_show();
-
+  scenes[GAMEPLAY].loop(&game, deltaTime);
 }
 
 void minigame_cleanup(void)
