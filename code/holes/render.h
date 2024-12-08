@@ -13,8 +13,8 @@ void render_scene(game_data *game, scene_data *scene)
     for (size_t i = 0; i < game->playerCount; i++)
     {
 
-        // If not alive, do nothing
-        if (!players[i].isAlive)
+        // If not alive, do nothing, only for 4 player though
+        if (!players[i].isAlive && game->playerCount == 4)
             continue;
 
         // Reset render mode and attach player's viewport

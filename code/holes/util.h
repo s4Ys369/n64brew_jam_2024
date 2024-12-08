@@ -74,7 +74,8 @@ typedef struct
   float rotY;
   float currSpeed;
   bool isAlive;
-  PlyNum ai_target;
+  PlyNum ai_targetPlayer;
+  PlyNum ai_targetObject;
   int ai_reactionspeed;
   uint8_t score;
 } player_data;

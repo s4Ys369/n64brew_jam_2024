@@ -31,7 +31,8 @@ void player_init(player_data *player, color_t color, T3DVec3 position, float rot
   player->rotY = rotation;
   player->currSpeed = 0.0f;
   player->isAlive = true;
-  player->ai_target = rand() % NUM_OBJECTS;
+  player->ai_targetPlayer = rand() % MAXPLAYERS;
+  player->ai_targetObject = rand() % NUM_OBJECTS;
   player->ai_reactionspeed = (2 - core_get_aidifficulty()) * 5 + rand() % ((3 - core_get_aidifficulty()) * 3);
 }
 
@@ -106,27 +107,46 @@ void player_fixedloop(game_data *game, player_data *player, object_type *objects
     }
     else
     {
+      player_data *targetPlayer = &player[player->ai_targetPlayer];
+      object_data *targetObject = &objects->objects[player->ai_targetObject];
       if (objects->collisionRadius <= player->scale.x)
       {
-        object_data *target = &objects->objects[player->ai_target];
-        if (target->visible)
+
+        if (targetObject->visible)
         { // Check for a valid target
           // Move towards the direction of the target
           float dist, norm;
-          newDir.v[0] = (target->position.v[0] - player->playerPos.v[0]);
-          newDir.v[2] = (target->position.v[2] - player->playerPos.v[2]);
+          newDir.v[0] = (targetObject->position.v[0] - player->playerPos.v[0]);
+          newDir.v[2] = (targetObject->position.v[2] - player->playerPos.v[2]);
           dist = sqrtf(newDir.v[0] * newDir.v[0] + newDir.v[2] * newDir.v[2]);
           if (dist == 0)
             dist = 1;
           norm = 1 / dist;
           newDir.v[0] *= norm + (0.1f * core_get_aidifficulty());
           newDir.v[2] *= norm + (0.1f * core_get_aidifficulty());
-          speed = 200;
+          speed = 250;
         }
         else
         {
-          player->ai_target = rand() % NUM_OBJECTS; // (Attempt) to aquire a new target this frame
+          player->ai_targetObject = rand() % NUM_OBJECTS; // (Attempt) to aquire a new target this frame
         }
+      }
+      if (player->plynum != targetPlayer->plynum && targetPlayer->isAlive && targetPlayer->scale.x < player->scale.x)
+      {
+        float dist, norm;
+        newDir.v[0] = (targetPlayer->playerPos.v[0] - player->playerPos.v[0]);
+        newDir.v[2] = (targetPlayer->playerPos.v[2] - player->playerPos.v[2]);
+        dist = sqrtf(newDir.v[0] * newDir.v[0] + newDir.v[2] * newDir.v[2]);
+        if (dist == 0)
+          dist = 1;
+        norm = 1 / dist;
+        newDir.v[0] *= norm + (0.3f * core_get_aidifficulty());
+        newDir.v[2] *= norm + (0.3f * core_get_aidifficulty());
+        speed = 150;
+      }
+      else
+      {
+        player->ai_targetPlayer = rand() % MAXPLAYERS; // (Attempt) to aquire a new target this frame
       }
     }
   }
