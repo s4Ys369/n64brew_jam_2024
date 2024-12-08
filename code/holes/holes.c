@@ -70,6 +70,10 @@ void minigame_init(void)
   display_init(RESOLUTION_320x240, DEPTH_16_BPP, 3, GAMMA_NONE, FILTERS_RESAMPLE_ANTIALIAS);
   depthBuffer = display_get_zbuf();
 
+#ifdef DEBUG_RDP
+  rdpq_debug_start();
+#endif
+
   t3d_init((T3DInitParams){});
 
   ui_init();
@@ -159,6 +163,9 @@ void minigame_loop(float deltaTime)
 
 void minigame_cleanup(void)
 {
+#ifdef DEBUG_RDP
+  rdpq_debug_stop();
+#endif
 
   sound_cleanup();
 

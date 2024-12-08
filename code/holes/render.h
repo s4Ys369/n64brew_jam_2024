@@ -40,13 +40,16 @@ void render_scene(game_data *game, scene_data *scene)
         rspq_block_run(map.block);
 
         // reset Z buffer testing for second layer
-        rdpq_mode_zbuf(false, true);
+        rdpq_sync_tile();
+        rdpq_sync_pipe();
         for (size_t p = 0; p < MAXPLAYERS; p++)
         {
             player_draw(&players[p]);
         }
 
         // Disable Z buffer write for last layer
+        rdpq_sync_tile();
+        rdpq_sync_pipe();
         rdpq_mode_zbuf(true, false);
         for (int j = 0; j < NUM_OBJ_TYPES; j++)
         {

@@ -2,6 +2,8 @@
 #define UTIL_H
 
 // Global defines
+// #define DEBUG_RDP
+
 #define HITBOX_RADIUS 40.f
 
 #define COUNTDOWN_DELAY 3.0f
