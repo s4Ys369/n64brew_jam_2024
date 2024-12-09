@@ -45,11 +45,11 @@ float ai_target_priority_object(player_data *player, object_data *object)
     return 0.0f;
 
   if (player->score >= 20)
-    priority -= 0.01f;
+    priority -= 0.3f;
 
   float distance = sqrtf(vec2_dist_squared(&object->position, &player->playerPos));
 
-  if (distance > 0.0001f && object->visible)
+  if (distance > 0 && object->visible)
     priority += 0.5f / distance;
 
   return priority;
@@ -63,15 +63,15 @@ float ai_target_priority_player(player_data *player, player_data *other)
     return 0.0f;
 
   if (player->scale.x > 0.4f)
-    priority += 0.1f;
+    priority += 0.8f;
 
   if (other->scale.x < player->scale.x)
   {
-    priority += 0.5f;
+    priority += 0.8f;
   }
   else if (other->scale.x > player->scale.x)
   {
-    priority -= 0.2f;
+    priority -= 0.3f;
   }
 
   priority *= (1.0f + 0.1f * core_get_aidifficulty());
@@ -150,17 +150,9 @@ void player_fixedloop(game_data *game, player_data *player, object_type *objects
     }
     else
     {
-      int batch = OBJ_HYDRANT;
-      if (player->score >= 2)
-      {
-        batch = OBJ_CAR;
-      }
-      else if (player->score > 6)
-      {
-        batch = OBJ_BUILDING;
-      }
+
       player_data *targetPlayer = &player[player->ai_targetPlayer];
-      object_data *targetObject = &objects[batch].objects[player->ai_targetObject];
+      object_data *targetObject = &objects->objects[player->ai_targetObject];
 
       float playerPriority = ai_target_priority_player(player, targetPlayer);
       float objectPriority = ai_target_priority_object(player, targetObject);
@@ -182,7 +174,7 @@ void player_fixedloop(game_data *game, player_data *player, object_type *objects
         }
         else
         {
-          player->ai_targetObject = rand() % NUM_OBJECTS; // (Attempt) to aquire a new target this frame
+          player->ai_targetObject++;
         }
       }
       else if (objectPriority < playerPriority)
@@ -202,7 +194,7 @@ void player_fixedloop(game_data *game, player_data *player, object_type *objects
         }
         else
         {
-          player->ai_targetPlayer = rand() % MAXPLAYERS; // (Attempt) to aquire a new target this frame
+          player->ai_targetPlayer = 0; // (Attempt) to aquire a new target this frame
         }
       }
       else
@@ -214,8 +206,7 @@ void player_fixedloop(game_data *game, player_data *player, object_type *objects
   }
 
   // Player movement
-  float fps = display_get_fps();
-  bool boost = fps < 45.0f ? true : false;
+  bool boost = game->playerCount > 1 ? true : false;
   if (speed > 0.15f)
   {
     newDir.v[0] /= speed;

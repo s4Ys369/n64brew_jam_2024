@@ -42,6 +42,7 @@ void render_scene(game_data *game, scene_data *scene)
         // reset Z buffer testing for second layer
         rdpq_sync_tile();
         rdpq_sync_pipe();
+        rdpq_mode_zbuf(false, false);
         for (size_t p = 0; p < MAXPLAYERS; p++)
         {
             player_draw(&players[p]);
@@ -95,13 +96,17 @@ void render_scene(game_data *game, scene_data *scene)
             }
             else
             {
-                game->introTimer = 0;
+                game->introTimer = -1;
             }
         }
     }
     else if (game->scene == GAMEPLAY)
     {
-        ui_print(game, true);
+        bool fps = false;
+        if (players[0].btn.held.r)
+            fps = true;
+
+        ui_print(game, fps);
 
         if (game->playerCount == 4)
         {
@@ -132,9 +137,10 @@ void render_scene(game_data *game, scene_data *scene)
             {
                 sound_wavPlay(SFX_STOP, false);
             }
-            else if (resetTimer > 6)
+            else if (resetTimer >= 30)
             {
                 game->isEnding = true;
+                minigame_end();
             }
         }
         if (game->scene == PAUSE && players[0].btn.released.z)
