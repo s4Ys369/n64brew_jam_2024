@@ -1,15 +1,6 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-enum SCENE_ID
-{
-    INTRO,
-    GAMEPLAY,
-    PAUSE,
-    ENDING,
-    NUM_SCENES
-};
-
 extern scene_data scenes[NUM_SCENES];
 
 void intro_fixedLoop(game_data *game, float deltaTime);
@@ -39,7 +30,11 @@ void gameplay_fixedLoop(game_data *game, float deltaTime)
     //////////
 
     sound_setChannels();
-    if (game->countDownTimer > -GO_DELAY)
+    if (game->introTimer > 0)
+    {
+        game->introTimer -= deltaTime;
+    }
+    if (game->scene == GAMEPLAY && game->countDownTimer > -GO_DELAY)
     {
         float prevCountDown = game->countDownTimer;
         game->countDownTimer -= deltaTime;
@@ -61,6 +56,11 @@ void gameplay_fixedLoop(game_data *game, float deltaTime)
                 alivePlayers++;
                 lastPlayer = i;
             }
+            if (players[i].score >= 40)
+            {
+                alivePlayers = 1;
+                lastPlayer = i;
+            }
         }
 
         if (alivePlayers == 1)
@@ -70,6 +70,7 @@ void gameplay_fixedLoop(game_data *game, float deltaTime)
             if (game->playerCount != 4)
                 sound_xmStop();
             sound_wavPlay(SFX_STOP, false);
+            game->scene = ENDING;
         }
     }
     else
@@ -91,33 +92,35 @@ void gameplay_loop(game_data *game, float deltaTime)
 
     viewport_set(viewport, game->playerCount, cam);
 
-    for (size_t i = 0; i < game->playerCount; i++)
+    if (game->scene == GAMEPLAY)
     {
 
-        for (int j = 0; j < NUM_OBJ_TYPES; j++)
+        for (size_t i = 0; i < game->playerCount; i++)
         {
-            for (size_t p = 0; p < MAXPLAYERS; p++)
+
+            for (int j = 0; j < NUM_OBJ_TYPES; j++)
             {
-                object_updateBatch(&objects[j], &viewport[i], &players[p]);
+                for (size_t p = 0; p < MAXPLAYERS; p++)
+                {
+                    object_updateBatch(&objects[j], &viewport[i], &players[p]);
+                }
             }
+
+            cam[i].position = (T3DVec3){{players[i].playerPos.x, players[i].playerPos.y + 250.0f, players[i].playerPos.z + 100.0f}};
+            cam[i].target = players[i].playerPos;
         }
 
-        cam[i].position = (T3DVec3){{players[i].playerPos.x, players[i].playerPos.y + 250.0f, players[i].playerPos.z + 100.0f}};
-        cam[i].target = players[i].playerPos;
+        for (size_t p = 0; p < MAXPLAYERS; p++)
+        {
+            player_loop(game, &players[p], deltaTime, core_get_playercontroller(p), p < game->playerCount);
+        }
     }
 
-    for (size_t p = 0; p < MAXPLAYERS; p++)
-    {
-        player_loop(game, &players[p], deltaTime, core_get_playercontroller(p), p < game->playerCount);
-    }
-
-    render_scene(game, &scenes[GAMEPLAY]);
+    render_scene(game, &scenes[game->scene]);
 }
 
 void scene_init(scene_data *scene)
 {
-    uint8_t tempAmb[4] = {54, 40, 47, 0xFF};
-    uint8_t tempDir[4] = {0xFF, 0xAA, 0xAA, 0xFF};
     for (size_t s = 0; s < NUM_SCENES; s++)
     {
         scene[s].ID = s;
@@ -125,42 +128,50 @@ void scene_init(scene_data *scene)
         switch (s)
         {
         case INTRO:
+            uint8_t tempAmb1[4] = {54, 40, 47, 0xFF};
+            uint8_t tempDir1[4] = {0, 0, 0, 0xFF};
             for (int i = 0; i < 4; i++)
             {
-                scene[s].colorAmbient[i] = tempAmb[i];
-                scene[s].colorDir[i] = tempDir[i];
+                scene[s].colorAmbient[i] = tempAmb1[i];
+                scene[s].colorDir[i] = tempDir1[i];
             }
-            scene[s].lightDirVec = (T3DVec3){{0.0f, 1.0f, 1.0f}};
+            scene[s].lightDirVec = (T3DVec3){{0.0f, 1.0f, 0.0f}};
             scene[s].loop = intro_loop;
             scene[s].fixedLoop = intro_fixedLoop;
             break;
         case GAMEPLAY:
+            uint8_t tempAmb2[4] = {54, 40, 47, 0xFF};
+            uint8_t tempDir2[4] = {0xFF, 0xAA, 0xAA, 0xFF};
             for (int i = 0; i < 4; i++)
             {
-                scene[s].colorAmbient[i] = tempAmb[i];
-                scene[s].colorDir[i] = tempDir[i];
+                scene[s].colorAmbient[i] = tempAmb2[i];
+                scene[s].colorDir[i] = tempDir2[i];
             }
             scene[s].lightDirVec = (T3DVec3){{0.0f, 1.0f, 1.0f}};
             scene[s].loop = gameplay_loop;
             scene[s].fixedLoop = gameplay_fixedLoop;
             break;
         case PAUSE:
+            uint8_t tempAmb3[4] = {54, 40, 47, 0xFF};
+            uint8_t tempDir3[4] = {0xAA, 0, 0, 0xFF};
             for (int i = 0; i < 4; i++)
             {
-                scene[s].colorAmbient[i] = tempAmb[i];
-                scene[s].colorDir[i] = tempDir[i];
+                scene[s].colorAmbient[i] = tempAmb3[i];
+                scene[s].colorDir[i] = tempDir3[i];
             }
-            scene[s].lightDirVec = (T3DVec3){{0.0f, 1.0f, 1.0f}};
+            scene[s].lightDirVec = (T3DVec3){{0.0f, -1.0f, 0.0f}};
             scene[s].loop = pause_loop;
             scene[s].fixedLoop = pause_fixedLoop;
             break;
         case ENDING:
+            uint8_t tempAmb4[4] = {54, 40, 47, 0xFF};
+            uint8_t tempDir4[4] = {0xAA, 0, 0, 0xFF};
             for (int i = 0; i < 4; i++)
             {
-                scene[s].colorAmbient[i] = tempAmb[i];
-                scene[s].colorDir[i] = tempDir[i];
+                scene[s].colorAmbient[i] = tempAmb4[i];
+                scene[s].colorDir[i] = tempDir4[i];
             }
-            scene[s].lightDirVec = (T3DVec3){{0.0f, 1.0f, 1.0f}};
+            scene[s].lightDirVec = (T3DVec3){{1.0f, 1.0f, 0.0f}};
             scene[s].loop = ending_loop;
             scene[s].fixedLoop = ending_fixedLoop;
             break;

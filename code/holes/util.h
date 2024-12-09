@@ -6,6 +6,7 @@
 
 #define HITBOX_RADIUS 40.f
 
+#define INTRO_DELAY 5.0f
 #define COUNTDOWN_DELAY 3.0f
 #define GO_DELAY 1.0f
 #define WIN_DELAY 5.0f
@@ -65,6 +66,13 @@ typedef struct
 
 typedef struct
 {
+  joypad_buttons_t pressed;
+  joypad_buttons_t held;
+  joypad_buttons_t released;
+} control_data;
+
+typedef struct
+{
   PlyNum plynum;
   T3DMat4FP *modelMatFP;
   rspq_block_t *dplHole;
@@ -78,15 +86,18 @@ typedef struct
   PlyNum ai_targetObject;
   int ai_reactionspeed;
   uint8_t score;
+  control_data btn;
 } player_data;
 
 typedef struct
 {
   size_t playerCount;
+  float introTimer;
   float countDownTimer;
   bool isEnding;
   float endTimer;
   PlyNum winner;
+  uint8_t scene;
   rspq_syncpoint_t syncPoint;
 } game_data;
 
@@ -100,6 +111,15 @@ typedef struct
   SceneLoop loop;
   SceneLoop fixedLoop;
 } scene_data;
+
+enum SCENE_ID
+{
+  INTRO,
+  GAMEPLAY,
+  PAUSE,
+  ENDING,
+  NUM_SCENES
+};
 
 // Global variables
 extern camera_data cam[MAXPLAYERS];

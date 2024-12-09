@@ -21,6 +21,7 @@ void player_init(player_data *player, color_t color, T3DVec3 position, float rot
   player->playerPos = position;
   player->scale = (T3DVec3){{0.125f, 0.125f, 0.125f}};
   player->score = 0;
+  memset(&player->btn, 0, sizeof(control_data));
 
   rspq_block_begin();
   t3d_matrix_set(player->modelMatFP, true);
@@ -34,6 +35,48 @@ void player_init(player_data *player, color_t color, T3DVec3 position, float rot
   player->ai_targetPlayer = rand() % MAXPLAYERS;
   player->ai_targetObject = rand() % NUM_OBJECTS;
   player->ai_reactionspeed = (2 - core_get_aidifficulty()) * 5 + rand() % ((3 - core_get_aidifficulty()) * 3);
+}
+
+float ai_target_priority_object(player_data *player, object_data *object)
+{
+  float priority = 0.0f;
+
+  if (!object->visible)
+    return 0.0f;
+
+  if (player->score >= 20)
+    priority -= 0.01f;
+
+  float distance = sqrtf(vec2_dist_squared(&object->position, &player->playerPos));
+
+  if (distance > 0.0001f && object->visible)
+    priority += 0.5f / distance;
+
+  return priority;
+}
+
+float ai_target_priority_player(player_data *player, player_data *other)
+{
+  float priority = 0.0f;
+
+  if (!other->isAlive)
+    return 0.0f;
+
+  if (player->scale.x > 0.4f)
+    priority += 0.1f;
+
+  if (other->scale.x < player->scale.x)
+  {
+    priority += 0.5f;
+  }
+  else if (other->scale.x > player->scale.x)
+  {
+    priority -= 0.2f;
+  }
+
+  priority *= (1.0f + 0.1f * core_get_aidifficulty());
+
+  return priority;
 }
 
 void player_do_damage(player_data *player)
@@ -107,14 +150,25 @@ void player_fixedloop(game_data *game, player_data *player, object_type *objects
     }
     else
     {
+      int batch = OBJ_HYDRANT;
+      if (player->score >= 2)
+      {
+        batch = OBJ_CAR;
+      }
+      else if (player->score > 6)
+      {
+        batch = OBJ_BUILDING;
+      }
       player_data *targetPlayer = &player[player->ai_targetPlayer];
-      object_data *targetObject = &objects->objects[player->ai_targetObject];
-      if (objects->collisionRadius <= player->scale.x)
+      object_data *targetObject = &objects[batch].objects[player->ai_targetObject];
+
+      float playerPriority = ai_target_priority_player(player, targetPlayer);
+      float objectPriority = ai_target_priority_object(player, targetObject);
+      if (objectPriority > playerPriority)
       {
 
         if (targetObject->visible)
-        { // Check for a valid target
-          // Move towards the direction of the target
+        {
           float dist, norm;
           newDir.v[0] = (targetObject->position.v[0] - player->playerPos.v[0]);
           newDir.v[2] = (targetObject->position.v[2] - player->playerPos.v[2]);
@@ -124,29 +178,37 @@ void player_fixedloop(game_data *game, player_data *player, object_type *objects
           norm = 1 / dist;
           newDir.v[0] *= norm + (0.1f * core_get_aidifficulty());
           newDir.v[2] *= norm + (0.1f * core_get_aidifficulty());
-          speed = 250;
+          speed = 20;
         }
         else
         {
           player->ai_targetObject = rand() % NUM_OBJECTS; // (Attempt) to aquire a new target this frame
         }
       }
-      if (player->plynum != targetPlayer->plynum && targetPlayer->isAlive && targetPlayer->scale.x < player->scale.x)
+      else if (objectPriority < playerPriority)
       {
-        float dist, norm;
-        newDir.v[0] = (targetPlayer->playerPos.v[0] - player->playerPos.v[0]);
-        newDir.v[2] = (targetPlayer->playerPos.v[2] - player->playerPos.v[2]);
-        dist = sqrtf(newDir.v[0] * newDir.v[0] + newDir.v[2] * newDir.v[2]);
-        if (dist == 0)
-          dist = 1;
-        norm = 1 / dist;
-        newDir.v[0] *= norm + (0.3f * core_get_aidifficulty());
-        newDir.v[2] *= norm + (0.3f * core_get_aidifficulty());
-        speed = 150;
+        if (targetPlayer->isAlive && player->plynum != targetPlayer->plynum)
+        {
+          float dist, norm;
+          newDir.v[0] = (targetPlayer->playerPos.v[0] - player->playerPos.v[0]);
+          newDir.v[2] = (targetPlayer->playerPos.v[2] - player->playerPos.v[2]);
+          dist = sqrtf(newDir.v[0] * newDir.v[0] + newDir.v[2] * newDir.v[2]);
+          if (dist == 0)
+            dist = 1;
+          norm = 1 / dist;
+          newDir.v[0] *= norm + (0.05f * core_get_aidifficulty());
+          newDir.v[2] *= norm + (0.05f * core_get_aidifficulty());
+          speed = 15;
+        }
+        else
+        {
+          player->ai_targetPlayer = rand() % MAXPLAYERS; // (Attempt) to aquire a new target this frame
+        }
       }
       else
       {
-        player->ai_targetPlayer = rand() % MAXPLAYERS; // (Attempt) to aquire a new target this frame
+        player->ai_targetObject = rand() % NUM_OBJECTS;
+        player->ai_targetPlayer = rand() % MAXPLAYERS;
       }
     }
   }
@@ -215,12 +277,11 @@ void player_fixedloop(game_data *game, player_data *player, object_type *objects
 
 void player_loop(game_data *game, player_data *player, float deltaTime, joypad_port_t port, bool is_human)
 {
-  if (is_human && player_has_control(game, player))
+  if (is_human)
   {
-    joypad_buttons_t btn = joypad_get_buttons_pressed(port);
-
-    if (btn.start)
-      minigame_end();
+    player->btn.pressed = joypad_get_buttons_pressed(port);
+    player->btn.held = joypad_get_buttons_held(port);
+    player->btn.released = joypad_get_buttons_released(port);
   }
 
   // move player...

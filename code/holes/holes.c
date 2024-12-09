@@ -125,13 +125,14 @@ void minigame_init(void)
   //////////
 
   game.playerCount = core_get_playercount();
+  game.introTimer = INTRO_DELAY;
   game.countDownTimer = COUNTDOWN_DELAY;
   game.isEnding = false;
   game.endTimer = 0;
   game.winner = 0;
   game.syncPoint = 0;
-
   scene_init(scenes);
+  game.scene = INTRO;
 
   // Decide whether to limit FPS and/or disable background music
   switch (game.playerCount)

@@ -80,138 +80,86 @@ void ui_printf(float x, float y, const char *txt, ...)
     rdpq_text_vprintf(&txt_debugParms, ID_DEBUG, x, y, txt, args);
 }
 
-// Catch-all print function for Countdown, Score and Winner, with optional FPS print
-void ui_print(game_data *game, float fps)
-{
-    if (game->countDownTimer > 0.0f)
-    {
-        rdpq_textparms_t textparms = {.align = ALIGN_CENTER, .width = 320, .disable_aa_fix = true};
-        rdpq_text_printf(&textparms, ID_DEFAULT, 0, 36, "Strawberry Byte\nPresents\n\nholes: Clone of Hole.io\n\n%d", (int)ceilf(game->countDownTimer));
-    }
-    else if (game->countDownTimer > -GO_DELAY)
-    {
-        rdpq_textparms_t textparms = {.align = ALIGN_CENTER, .width = 320, .disable_aa_fix = true};
-        rdpq_text_print(&textparms, ID_DEFAULT, 0, 126, "GO!");
-    }
-    else if (game->isEnding && game->endTimer >= WIN_SHOW_DELAY)
-    {
-        rdpq_textparms_t textparms = {.align = ALIGN_CENTER, .width = 320, .disable_aa_fix = true};
-        rdpq_text_printf(&textparms, ID_DEFAULT, 0, 116, "Player %d wins!\nScore: %u", game->winner + 1, players[game->winner].score);
-    }
-    else
-    {
-        rdpq_textparms_t textparms = {.align = ALIGN_CENTER, .width = 320, .disable_aa_fix = true};
-        rdpq_text_printf(&textparms, ID_DEFAULT, 0, 38, "P1: %u    P2: %u    P3: %u    P4: %u", players[0].score, players[1].score, players[2].score, players[3].score);
-    }
-
-    if (fps)
-    {
-        rdpq_textparms_t textparms = {.align = ALIGN_CENTER, .width = 320, .disable_aa_fix = true};
-        rdpq_text_printf(&textparms, ID_DEFAULT, 0, 220, "FPS %.2f", display_get_fps());
-    }
-}
-
-void ui_print_winner(int winner)
-{
-    ui_spriteDrawPanel(TILE1, sprite_gloss, T_BLACK, panelPositions[0] - 64, panelPositions[1] - 18, panelPositions[3] - 30, panelPositions[1] + 10, 0, 0, 64, 64);
-    ui_syncText();
-    if (winner != 5) // 5 signifies a Draw
-    {
-        rdpq_textparms_t winnerTextParms = txt_gameParms;
-        winnerTextParms.style_id = STYLE_PLAYER + winner - 1;
-        rdpq_text_printf(&winnerTextParms, ID_DEFAULT, textPositions[0] - 50, textPositions[1], "Player %d Wins", winner);
-    }
-    else
-    {
-        rdpq_text_print(&txt_gameParms, ID_DEFAULT, textPositions[0] - 20, textPositions[1], "TIE!");
-    }
-}
-
 void ui_playerScores(player_data *player)
 {
     static float base[] = {32, 32};
     float position[] = {base[0], base[1]};
     ui_syncText();
     rdpq_textparms_t playerTextParms = txt_gameParms;
-    playerTextParms.style_id = STYLE_PLAYER + (player->plynum - 1);
-    rdpq_text_printf(&playerTextParms, ID_DEFAULT, position[0] + 75 * (player->plynum - 1), position[1], "P%d : %u", player->plynum, player->score);
+    playerTextParms.style_id = STYLE_PLAYER + player->plynum;
+    playerTextParms.align = ALIGN_LEFT;
+    rdpq_text_printf(&playerTextParms, ID_DEFAULT, position[0] + 75 * player->plynum, position[1], "P%d : %u", player->plynum + 1, player->score);
 }
 
-void ui_countdown(int secondsLeft)
+void ui_print_winner(int winner)
 {
-    // Convert secondsLeft integer to a string
-    char countdownText[2];
-    snprintf(countdownText, sizeof(countdownText), "%d", secondsLeft);
-
+    ui_spriteDrawPanel(TILE1, sprite_gloss, T_BLACK, panelPositions[0] - 60, panelPositions[1] - 18, panelPositions[0] + 60, panelPositions[1] + 10, 0, 0, 64, 64);
     ui_syncText();
-    rdpq_text_printf(&txt_titleParms, ID_TITLE, textPositions[0] - 10, textPositions[1] - 10, "%s", countdownText);
-}
-
-// Controller data is passed here for visual feedback for the button press.
-void ui_main_menu(joypad_buttons_t *control, int diff)
-{
-    // Panels
-    ui_spriteDrawPanel(TILE2, sprite_gloss, T_BLUE, panelPositions[0] - 70, panelPositions[1] - 80, panelPositions[2] - 90, panelPositions[3] - 116, 0, 0, 64, 64);
-    ui_spriteDrawPanel(TILE3, sprite_tessalate, T_BLACK, panelPositions[0] - 60, panelPositions[1] - 75, panelPositions[2] - 100, panelPositions[3] - 126, 0, 0, 64, 64);
-
-    // Buttons
-    if (control->start)
+    if (winner != 5) // 5 signifies a Draw
     {
-        ui_spriteDraw(TILE4, sprite_faceButtons0, 1, textPositions[0] + 10, textPositions[1] - 30);
+        rdpq_textparms_t winnerTextParms = txt_gameParms;
+        winnerTextParms.style_id = STYLE_PLAYER + winner;
+        winnerTextParms.align = ALIGN_CENTER;
+        rdpq_text_printf(&winnerTextParms, ID_DEFAULT, 0, textPositions[1], "Player %d Wins", winner + 1);
     }
     else
     {
-        ui_spriteDraw(TILE4, sprite_faceButtons0, 0, textPositions[0] + 10, textPositions[1] - 30);
+        rdpq_text_print(&txt_gameParms, ID_DEFAULT, 0, textPositions[1], "TIE!");
     }
-    ui_spriteDraw(TILE5, sprite_controlStick, 0, textPositions[0] - 68, textPositions[1] + 50);
-    int stickX = 92;
-    int stickY = 138 + (spriteHeight * 2);
-    ui_spriteDraw(TILE5, sprite_controlStick, 1, stickX, stickY);
-
-    // @TODO: Add D Pad
-
-    int count = core_get_playercount();
-
-    // Text
-    ui_syncText();
-    rdpq_text_print(&txt_titleParms, ID_TITLE, textPositions[0] - 54, textPositions[1] - 56, " holes\nA Clone of Hole.io");
-    rdpq_text_print(&txt_gameParms, ID_DEFAULT, textPositions[0] - 32, textPositions[1] - 18, "Press");
-    rdpq_text_printf(&txt_gameParms, ID_DEFAULT, textPositions[0] - 68, textPositions[1] + 20,
-                     "%s %s\n"
-                     "%s %d\n"
-                     "%s %d\n"
-                     "%s\n\n"
-                     "%s\n",
-                     uiMainMenuStrings[TEXT_DIFF], uiMainMenuStrings[TEXT_DIFF + diff + 1],
-                     uiMainMenuStrings[TEXT_PLAYERS], count,
-                     uiMainMenuStrings[TEXT_BOTS], MAXPLAYERS - count,
-                     uiMainMenuStrings[TEXT_CONTROLS],
-                     uiMainMenuStrings[TEXT_RUMBLE]);
 }
 
-void ui_pause(joypad_buttons_t *control)
+// Catch-all print function for Countdown, Score and Winner, with optional FPS print
+void ui_print(game_data *game, float fps)
 {
-
-    ui_spriteDrawPanel(TILE2, sprite_gloss, T_BLUE, 90, 60, 230, 144, 0, 0, 64, 64);
-    ui_spriteDrawPanel(TILE3, sprite_tessalate, T_BLACK, 100, 65, 220, 134, 0, 0, 64, 64);
-
-    if (control->start)
+    if (game->countDownTimer > 0.0f)
     {
-        ui_spriteDraw(TILE4, sprite_faceButtons0, 1, 170, 110);
+        rdpq_text_printf(&txt_titleParms, ID_TITLE, 0, 126, "%d", (int)ceilf(game->countDownTimer));
+    }
+    else if (game->countDownTimer > -GO_DELAY)
+    {
+        rdpq_text_print(&txt_titleParms, ID_TITLE, 0, 126, "GO!");
+    }
+    else if (game->isEnding && game->endTimer >= WIN_SHOW_DELAY)
+    {
+        ui_print_winner(game->winner);
     }
     else
     {
-        ui_spriteDraw(TILE4, sprite_faceButtons0, 0, 170, 110);
+        for (size_t scores = 0; scores < MAXPLAYERS; scores++)
+            if (players[scores].isAlive)
+                ui_playerScores(&players[scores]);
     }
 
-    ui_spriteDraw(TILE5, sprite_dPadTriggers, 5, 160, 180);
-
-    ui_syncText();
-    rdpq_text_print(&txt_titleParms, ID_TITLE, 106, 96, "holes");
-    rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 122, "Press\n\n\n  PAUSED\n\nHold       to\nQuit Game");
+    if (fps)
+        ui_fps(display_get_fps(), 20, 20);
 }
 
-void ui_intro(joypad_buttons_t *control)
+void ui_pause(control_data *control)
+{
+
+    ui_spriteDrawPanel(TILE2, sprite_gloss, T_BLUE, 40, 60, 280, 144, 0, 0, 64, 64);
+    ui_spriteDrawPanel(TILE3, sprite_tessalate, T_BLACK, 50, 65, 270, 134, 0, 0, 64, 64);
+
+    if (control->pressed.start || control->held.start)
+    {
+        ui_spriteDraw(TILE4, sprite_faceButtons0, 1, 142, 110);
+    }
+    else
+    {
+        ui_spriteDraw(TILE4, sprite_faceButtons0, 0, 142, 110);
+    }
+
+    ui_spriteDraw(TILE5, sprite_dPadTriggers, 5, 159, 180);
+
+    ui_syncText();
+    rdpq_text_print(&txt_titleParms, ID_TITLE, 0, 84, "holes\nA Clone of Hole.io");
+    txt_gameParms.align = ALIGN_LEFT;
+    rdpq_text_print(&txt_gameParms, ID_DEFAULT, 98, 122, "Press        to Return");
+    txt_gameParms.align = ALIGN_CENTER;
+    rdpq_text_print(&txt_gameParms, ID_DEFAULT, 0, 164, "PAUSED\n\nHold       to\nQuit Game");
+}
+
+void ui_intro(control_data *control)
 {
     // Basic frame counter for timing
     static uint32_t introTimer = 0;
@@ -230,7 +178,7 @@ void ui_intro(joypad_buttons_t *control)
 
         // Panels
         ui_spriteDrawPanel(TILE1, sprite_strawberryTop, WHITE, 128, 80, 196, 112, 0, 0, 32, 16);
-        if (introTimer >= 240)
+        if (introTimer >= 50)
         {
             ui_spriteDrawPanel(TILE2, sprite_strawberry1, WHITE, 128, 112, 196, 144, 0, 0, 32, 16);
         }
@@ -240,43 +188,56 @@ void ui_intro(joypad_buttons_t *control)
         }
 
         // Buttons
-        if (control->start)
+        if (control->pressed.start || control->held.start)
         {
-            ui_spriteDraw(TILE3, sprite_faceButtons0, 1, 132, 214);
+            introTimer = 101;
+            ui_spriteDraw(TILE3, sprite_faceButtons0, 1, 130, 214);
         }
         else
         {
-            ui_spriteDraw(TILE3, sprite_faceButtons0, 0, 132, 214);
+            ui_spriteDraw(TILE3, sprite_faceButtons0, 0, 130, 214);
         }
 
         // Text
         ui_syncText();
-        rdpq_text_print(&txt_titleParms, ID_TITLE, 68, 56, "Strawberry Byte");
-        if (introTimer >= 240)
-            rdpq_text_print(&txt_titleParms, ID_TITLE, 110, 190, "Presents");
-        rdpq_text_print(&txt_gameParms, ID_DEFAULT, 90, 226, "Press        to Skip Intro");
+        rdpq_text_print(&txt_titleParms, ID_TITLE, 0, 56, "Strawberry Byte");
+        if (introTimer >= 50)
+            rdpq_text_print(&txt_titleParms, ID_TITLE, 0, 190, "Presents");
+        rdpq_text_print(&txt_gameParms, ID_DEFAULT, 0, 226, "Press        to Skip Intro");
     }
     else
     {
 
         // Buttons
-        if (control->start)
+        if (control->pressed.start || control->held.start)
         {
-            ui_spriteDraw(TILE3, sprite_faceButtons0, 1, 170, 66);
+            ui_spriteDraw(TILE3, sprite_faceButtons0, 1, 152, 66);
         }
         else
         {
-            ui_spriteDraw(TILE3, sprite_faceButtons0, 0, 170, 66);
+            ui_spriteDraw(TILE3, sprite_faceButtons0, 0, 152, 66);
         }
+
+        joypad_inputs_t joypad = joypad_get_inputs(PLAYER_1);
+
+        ui_spriteDraw(TILE5, sprite_controlStick, 0, 134, 86);
+        int stickX = 134 + (joypad.stick_x / 15);
+        int stickY = 54 + (spriteHeight * 2) - (joypad.stick_y / 15);
+        ui_spriteDraw(TILE5, sprite_controlStick, 1, stickX, stickY);
+
+        ui_spriteDraw(TILE6, sprite_dPadTriggers, 0, 168, 86);
 
         // Text
         ui_syncText();
-        rdpq_text_print(&txt_titleParms, ID_TITLE, 106, 40, " holes\nA Clone of Hole.io");
-        rdpq_text_print(&txt_gameParms, ID_DEFAULT, 128, 78, "Press");
-        rdpq_text_print(&txt_titleParms, ID_DEFAULT, 32, 94, "CREDITS:");
+        rdpq_text_print(&txt_titleParms, ID_TITLE, 0, 40, "holes\nA Clone of Hole.io");
+        txt_gameParms.align = ALIGN_LEFT;
+        rdpq_text_print(&txt_gameParms, ID_DEFAULT, 108, 78, "Press         to Play");
+        txt_gameParms.align = ALIGN_CENTER;
+        rdpq_text_print(&txt_gameParms, ID_DEFAULT, 0, 100, "or\nto Move");
+        rdpq_text_print(&txt_titleParms, ID_DEFAULT, 0, 136, "CREDITS:");
 
         // @TODO: Probably should make this a rdpq_paragraph
-        rdpq_text_print(&txt_gameParms, ID_DEBUG, 32, 114,
+        rdpq_text_print(&txt_gameParms, ID_DEBUG, 0, 148,
                         "Programming: s4ys\n"
                         "Models: s4ys\n"
                         "Strawberry Sprite by Sonika Rud\n"

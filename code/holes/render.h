@@ -80,7 +80,61 @@ void render_scene(game_data *game, scene_data *scene)
 
     viewport_drawScissor();
 
-    ui_print(game, true);
+    if (game->scene == INTRO)
+    {
+
+        players[0].btn.pressed = joypad_get_buttons_pressed(PLAYER_1);
+        players[0].btn.held = joypad_get_buttons_held(PLAYER_1);
+        players[0].btn.released = joypad_get_buttons_released(PLAYER_1);
+        ui_intro(&players[0].btn);
+        if (players[0].btn.pressed.start)
+        {
+            if (game->introTimer <= 0)
+            {
+                game->scene = GAMEPLAY;
+            }
+            else
+            {
+                game->introTimer = 0;
+            }
+        }
+    }
+    else if (game->scene == GAMEPLAY)
+    {
+        ui_print(game, true);
+        if (players[0].btn.pressed.start && game->countDownTimer < COUNTDOWN_DELAY)
+            game->scene = PAUSE;
+    }
+    else if (game->scene == PAUSE)
+    {
+        players[0].btn.pressed = joypad_get_buttons_pressed(PLAYER_1);
+        players[0].btn.held = joypad_get_buttons_held(PLAYER_1);
+        players[0].btn.released = joypad_get_buttons_released(PLAYER_1);
+        ui_pause(&players[0].btn);
+        if (players[0].btn.pressed.start)
+            game->scene = GAMEPLAY;
+
+        // Hold Z to quit on the Pause screen
+        static int resetTimer = 0;
+        if (game->scene == PAUSE && players[0].btn.held.z)
+        {
+            resetTimer++;
+            if (resetTimer == 5)
+            {
+                sound_wavPlay(SFX_STOP, false);
+            }
+            else if (resetTimer > 6)
+            {
+                game->isEnding = true;
+            }
+        }
+        if (game->scene == PAUSE && players[0].btn.released.z)
+            resetTimer = 0;
+    }
+    else // ENDING
+    {
+        ui_print(game, false);
+    }
 
     rdpq_detach_show();
 }
