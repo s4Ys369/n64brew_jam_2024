@@ -83,9 +83,9 @@ void minigame_init(void)
   map_init(&map);
 
   ////////// OBJECTS
-  modelCar = t3d_model_load("rom:/holes/car.t3dm");
-  modelBuilding = t3d_model_load("rom:/holes/building.t3dm");
-  modelHydrant = t3d_model_load("rom:/holes/hydrant.t3dm");
+  modelCar = t3d_model_load("rom:/sb_holes/car.t3dm");
+  modelBuilding = t3d_model_load("rom:/sb_holes/building.t3dm");
+  modelHydrant = t3d_model_load("rom:/sb_holes/hydrant.t3dm");
 
   for (int i = 0; i < NUM_OBJ_TYPES; i++)
   {
@@ -93,7 +93,7 @@ void minigame_init(void)
   }
 
   ////////// PLAYERS
-  model = t3d_model_load("rom:/holes/hole.t3dm");
+  model = t3d_model_load("rom:/sb_holes/hole.t3dm");
 
   T3DVec3 start_positions[] = {
       (T3DVec3){{-50, 5, -52}},
