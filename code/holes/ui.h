@@ -91,9 +91,42 @@ void ui_playerScores(player_data *player)
     rdpq_text_printf(&playerTextParms, ID_DEFAULT, position[0] + 75 * player->plynum, position[1], "P%d : %u", player->plynum + 1, player->score);
 }
 
+void ui_playerOut(player_data *player)
+{
+    ui_syncText();
+    rdpq_textparms_t playerTxtParms = txt_gameParms;
+    playerTxtParms.style_id = STYLE_PLAYER + player->plynum;
+    float xOffset = 80;
+    float yOffset = 60;
+    float x, y = 0;
+
+    if (player->plynum == 0)
+    {
+        x = -xOffset;
+        y = textPositions[1] - yOffset;
+    }
+    else if (player->plynum == 1)
+    {
+        x = xOffset;
+        y = textPositions[1] - yOffset;
+    }
+    else if (player->plynum == 2)
+    {
+        x = -xOffset;
+        y = textPositions[1] + yOffset;
+    }
+    else // player->plynum == 3
+    {
+        x = xOffset;
+        y = textPositions[1] + yOffset;
+    }
+
+    rdpq_text_printf(&playerTxtParms, ID_DEFAULT, x, y, "Player %d Out", player->plynum + 1);
+}
+
 void ui_print_winner(int winner)
 {
-    ui_spriteDrawPanel(TILE1, sprite_gloss, T_BLACK, panelPositions[0] - 60, panelPositions[1] - 18, panelPositions[0] + 60, panelPositions[1] + 10, 0, 0, 64, 64);
+    ui_spriteDrawPanel(TILE1, sprite_gloss, T_BLACK, panelPositions[0] - 64, panelPositions[1] - 18, panelPositions[0] + 60, panelPositions[1] + 10, 0, 0, 64, 64);
     ui_syncText();
     if (winner != 5) // 5 signifies a Draw
     {

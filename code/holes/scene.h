@@ -12,8 +12,44 @@ void pause_loop(game_data *game, float deltaTime);
 void ending_fixedLoop(game_data *game, float deltaTime);
 void ending_loop(game_data *game, float deltaTime);
 
-void intro_fixedLoop(game_data *game, float deltaTime) {}
-void intro_loop(game_data *game, float deltaTime) {}
+void intro_fixedLoop(game_data *game, float deltaTime)
+{
+    for (size_t i = 0; i < MAXPLAYERS; i++)
+    {
+        for (int j = 0; j < NUM_OBJ_TYPES; j++)
+        {
+            player_fixedloop(game, &players[i], &objects[j], deltaTime, core_get_playercontroller(i), i < game->playerCount);
+        }
+    }
+    sound_setChannels();
+}
+void intro_loop(game_data *game, float deltaTime)
+{
+
+    viewport_set(viewport, game->playerCount, cam);
+
+    for (size_t i = 0; i < game->playerCount; i++)
+    {
+
+        for (int j = 0; j < NUM_OBJ_TYPES; j++)
+        {
+            for (size_t p = 0; p < MAXPLAYERS; p++)
+            {
+                object_updateBatch(&objects[j], &viewport[i], &players[p]);
+            }
+        }
+
+        cam[i].position = (T3DVec3){{players[i].playerPos.x, players[i].playerPos.y + 250.0f, players[i].playerPos.z + 100.0f}};
+        cam[i].target = players[i].playerPos;
+    }
+
+    for (size_t p = 0; p < MAXPLAYERS; p++)
+    {
+        player_loop(game, &players[p], deltaTime, core_get_playercontroller(p), p < game->playerCount);
+    }
+
+    render_scene(game, &scenes[game->scene]);
+}
 
 void gameplay_fixedLoop(game_data *game, float deltaTime)
 {
@@ -119,8 +155,23 @@ void gameplay_loop(game_data *game, float deltaTime)
     render_scene(game, &scenes[game->scene]);
 }
 
-void scene_init(scene_data *scene)
+void pause_fixedLoop(game_data *game, float deltaTime)
 {
+    sound_setChannels();
+}
+void pause_loop(game_data *game, float deltaTime)
+{
+    render_scene(game, &scenes[game->scene]);
+}
+
+void scene_init(game_data *game, scene_data *scene)
+{
+    const uint32_t colors[4] = {
+        0xAA0000FF,
+        0x00AA00FF,
+        0x0000AAFF,
+        0xAAAA00FF,
+    };
     for (size_t s = 0; s < NUM_SCENES; s++)
     {
         scene[s].ID = s;
@@ -165,25 +216,25 @@ void scene_init(scene_data *scene)
             break;
         case ENDING:
             uint8_t tempAmb4[4] = {54, 40, 47, 0xFF};
-            uint8_t tempDir4[4] = {0xAA, 0, 0, 0xFF};
+            uint32_t winnerColor = colors[game->winner];
+            uint8_t tempDir4[4] = {
+                (winnerColor >> 24) & 0xFF,
+                (winnerColor >> 16) & 0xFF,
+                (winnerColor >> 8) & 0xFF,
+                winnerColor & 0xFF};
             for (int i = 0; i < 4; i++)
             {
                 scene[s].colorAmbient[i] = tempAmb4[i];
                 scene[s].colorDir[i] = tempDir4[i];
             }
             scene[s].lightDirVec = (T3DVec3){{1.0f, 1.0f, 0.0f}};
-            scene[s].loop = ending_loop;
-            scene[s].fixedLoop = ending_fixedLoop;
+            scene[s].loop = gameplay_loop;
+            scene[s].fixedLoop = gameplay_fixedLoop;
             break;
         }
 
         t3d_vec3_norm(&scene[s].lightDirVec);
     }
 }
-
-void pause_fixedLoop(game_data *game, float deltaTime) {}
-void pause_loop(game_data *game, float deltaTime) {}
-void ending_fixedLoop(game_data *game, float deltaTime) {}
-void ending_loop(game_data *game, float deltaTime) {}
 
 #endif // SCENE_H

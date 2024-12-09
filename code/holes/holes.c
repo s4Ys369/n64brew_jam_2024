@@ -131,7 +131,7 @@ void minigame_init(void)
   game.endTimer = 0;
   game.winner = 0;
   game.syncPoint = 0;
-  scene_init(scenes);
+  scene_init(&game, scenes);
   game.scene = INTRO;
 
   // Decide whether to limit FPS and/or disable background music
@@ -154,12 +154,12 @@ void minigame_init(void)
 
 void minigame_fixedloop(float deltaTime)
 {
-  scenes[GAMEPLAY].fixedLoop(&game, deltaTime);
+  scenes[game.scene].fixedLoop(&game, deltaTime);
 }
 
 void minigame_loop(float deltaTime)
 {
-  scenes[GAMEPLAY].loop(&game, deltaTime);
+  scenes[game.scene].loop(&game, deltaTime);
 }
 
 void minigame_cleanup(void)

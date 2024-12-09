@@ -102,6 +102,15 @@ void render_scene(game_data *game, scene_data *scene)
     else if (game->scene == GAMEPLAY)
     {
         ui_print(game, true);
+
+        if (game->playerCount == 4)
+        {
+            for (size_t out = 0; out < MAXPLAYERS; out++)
+            {
+                if (!players[out].isAlive)
+                    ui_playerOut(&players[out]);
+            }
+        }
         if (players[0].btn.pressed.start && game->countDownTimer < COUNTDOWN_DELAY)
             game->scene = PAUSE;
     }
